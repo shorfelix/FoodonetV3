@@ -23,6 +23,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,6 +127,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 
     }
 
+    //view pager adapter...
     public static class ViewHolderAdapter extends FragmentPagerAdapter {
 
         public ViewHolderAdapter(FragmentManager fm) {
@@ -161,7 +163,6 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 
         @Override
         public int getCount() {
-
             return 3;
         }
     }
