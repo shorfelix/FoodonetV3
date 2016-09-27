@@ -12,7 +12,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
 
         try {
-            Thread.sleep(4000);
+            Thread.sleep(1000);
             Intent intent = new Intent(this, MainDrawerActivity.class);
             startActivity(intent);
         } catch (InterruptedException e) {
