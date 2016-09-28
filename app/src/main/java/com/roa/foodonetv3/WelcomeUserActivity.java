@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class WelcomeUserActivity extends AppCompatActivity {
+    ///test from roi
 
     private ImageView userImageView;
     private Button finishRegisterationButton;
