@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -199,5 +200,9 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         public int getCount() {
             return 3;
         }
+    }
+
+    public void testAlon(){
+        Toast.makeText(this, "Alon test", Toast.LENGTH_SHORT).show();
     }
 }
