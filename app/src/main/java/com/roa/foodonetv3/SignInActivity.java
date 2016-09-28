@@ -97,7 +97,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 firebaseAuthWithGoogle(account);
             } else {
                 // Google Sign In failed
-                Toast.makeText(this, "fail", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Google Sign In failed."+ result.getStatus());
             }
         }
@@ -120,7 +119,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                             Toast.makeText(SignInActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-                            startActivity(new Intent(SignInActivity.this, MainDrawerActivity.class));
+                            startActivity(new Intent(SignInActivity.this, WelcomeUserActivity.class));
                             finish();
                         }
                     }
