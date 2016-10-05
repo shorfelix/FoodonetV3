@@ -39,7 +39,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     private String mUsername;
     private String mPhotoUrl;
     private GoogleApiClient mGoogleApiClient;
-
+    //test
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
