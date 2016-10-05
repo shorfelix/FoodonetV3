@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_welcome_user"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.roa.foodonetv3.activities.WelcomeUserActivity">
+
+    <TextView
+        android:text="המשך ללא רישים"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"
+        android:id="@+id/withoutRegisterationTxt" />
+
+    <ImageView
+        app:srcCompat="@drawable/common_google_signin_btn_icon_dark_normal"
+        android:layout_below="@+id/textView3"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        android:id="@+id/userImageView"
+        android:layout_width="80dp"
+        android:layout_height="80dp" />
+
+    <Button
+        android:text="התחילו לשתף"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/withoutRegisterationTxt"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="51dp"
+        android:id="@+id/finishRegisterationButton"
+        android:layout_width="200dp" />
+
+    <EditText
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:inputType="phone"
+        android:ems="10"
+        android:layout_above="@+id/finishRegisterationButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="11dp"
+        android:id="@+id/editText"
+        android:hint="טלפון" />
+
+    <TextView
+        android:text="שלב אחרון להתחלה"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/userImageView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:id="@+id/textView4"
+        android:textSize="20sp" />
+
+    <TextView
+        android:text="ברוכים הבאים ל-Foodonet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:id="@+id/textView3"
+        android:textSize="25sp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView3"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="54dp"
+        android:id="@+id/userNameTxt"
+        android:textSize="20sp" />
+
+
+</RelativeLayout>
