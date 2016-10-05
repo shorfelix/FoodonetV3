@@ -1,6 +1,5 @@
 package com.roa.foodonetv3.fragments;
 
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -8,18 +7,17 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.model.Publication;
-
+import com.roa.foodonetv3.tasks.GetPublicationsTask;
 import java.util.ArrayList;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ActiveFragment extends Fragment {
+public class ActiveFragment extends Fragment implements GetPublicationsTask.GetPublicationsListener {
     private PublicationsRecyclerAdapter adapter;
 
     public ActiveFragment() {
@@ -45,8 +43,13 @@ public class ActiveFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        ArrayList<Publication> publications = new ArrayList<>();
-        publications.add(new Publication(123L,1,"Pizza", "good pizza", "my place",(short) 2, 34.44444d,34.5555555d,"now", "later", "phone number", true));
+        String args = "publications/31";
+        GetPublicationsTask task = new GetPublicationsTask(this);
+        task.execute(args);
+    }
+
+    @Override
+    public void onGetPublications(ArrayList<Publication> publications) {
         adapter.updatePublications(publications);
     }
 }

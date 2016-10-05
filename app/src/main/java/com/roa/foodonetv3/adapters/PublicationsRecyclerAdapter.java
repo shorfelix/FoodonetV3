@@ -6,10 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.Publication;
-
 import java.util.ArrayList;
 
 /**
@@ -18,7 +16,7 @@ import java.util.ArrayList;
 
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
     private Context context;
-    private ArrayList<Publication> publications;
+    private ArrayList<Publication> publications = new ArrayList<>();
 
     public PublicationsRecyclerAdapter(Context context) {
         this.context = context;

@@ -225,8 +225,4 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             return 3;
         }
     }
-
-    public void testAlon(){
-        Toast.makeText(this, "Alon test", Toast.LENGTH_SHORT).show();
-    }
 }
