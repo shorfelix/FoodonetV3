@@ -1,4 +1,4 @@
-package com.roa.foodonetv3;
+package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,6 +26,10 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.fragments.ActiveFragment;
+import com.roa.foodonetv3.fragments.ClosestFragment;
+import com.roa.foodonetv3.fragments.RecentFragment;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
@@ -194,7 +198,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 
             switch (position){
                 case 0:
-                    return new ActionFragment();
+                    return new ActiveFragment();
                 case 1:
                     return new RecentFragment();
                 case 2:
