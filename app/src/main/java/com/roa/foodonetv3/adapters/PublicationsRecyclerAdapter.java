@@ -61,7 +61,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             textId.setText("ID: " + publication.getId());
             textTitle.setText("Title: " + publication.getTitle());
             textSubtitle.setText("Subtitle: " + publication.getSubtitle());
-            textAddress.setText("ID: " + publication.getAddress());
+            textAddress.setText("Address: " + publication.getAddress());
         }
     }
 }

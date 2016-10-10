@@ -1,7 +1,13 @@
 package com.roa.foodonetv3.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,20 +16,24 @@ import android.view.ViewGroup;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.tasks.GetPublicationsTask;
+import com.roa.foodonetv3.services.AddPublicationService;
+import com.roa.foodonetv3.services.GetPublicationsService;
 import java.util.ArrayList;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
-public class ActiveFragment extends Fragment implements GetPublicationsTask.GetPublicationsListener {
+public class ActiveFragment extends Fragment implements View.OnClickListener {
     private PublicationsRecyclerAdapter adapter;
 
     public ActiveFragment() {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        GetPublicationsReceiver receiver = new GetPublicationsReceiver();
+        IntentFilter filter = new IntentFilter(GetPublicationsService.ACTION_SERVICE_GET_PUBLICATIONS);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -37,20 +47,37 @@ public class ActiveFragment extends Fragment implements GetPublicationsTask.GetP
         adapter = new PublicationsRecyclerAdapter(getContext());
         activePubRecycler.setAdapter(adapter);
 
+        // temp
+        v.findViewById(R.id.btnAddPub).setOnClickListener(this);
+        //
+
         return v;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        String args = "publications/31";
-        GetPublicationsTask task = new GetPublicationsTask(this);
-        task.execute(args);
+        // temp
+        Intent i = new Intent(getContext(), GetPublicationsService.class);
+        i.putExtra(GetPublicationsService.QUERY_ARGS,"publications.json");
+        getContext().startService(i);
     }
 
     @Override
-    public void onGetPublications(ArrayList<Publication> publications) {
-        adapter.updatePublications(publications);
+    public void onClick(View v) {
+        /** temporary button to add a test publication to the server */
+        Intent i = new Intent(getContext(), AddPublicationService.class);
+        getContext().startService(i);
+    }
+
+
+    public class GetPublicationsReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            ArrayList<Publication> publications = intent.getParcelableArrayListExtra(GetPublicationsService.QUERY_PUBLICATIONS);
+            adapter.updatePublications(publications);
+        }
     }
 }
 
