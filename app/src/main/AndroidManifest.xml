@@ -20,7 +20,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.SignInActivity" />
-        <activity android:name=".activities.WelcomeUserActivity"></activity>
+        <activity android:name=".activities.WelcomeUserActivity" />
+
+        <service
+            android:name=".services.GetPublicationsService"
+            android:exported="false" />
+        <service
+            android:name=".services.AddPublicationService"
+            android:exported="false"></service>
     </application>
 
 </manifest>
