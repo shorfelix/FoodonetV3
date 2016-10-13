@@ -151,7 +151,9 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             // Handle the camera action
         } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_map) {
+            Intent mapIntent = new Intent(this, MapActivity.class);
+            startActivity(mapIntent);
 
         } else if (id == R.id.nav_manage) {
 
