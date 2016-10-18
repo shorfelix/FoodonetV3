@@ -1,9 +1,9 @@
-package com.roa.foodonetv3;
+package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -19,16 +19,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.fragments.ActiveFragment;
+import com.roa.foodonetv3.fragments.ClosestFragment;
+import com.roa.foodonetv3.fragments.RecentFragment;
 
-public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener {
+public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
     private String mUsername;
     private String mPhotoUrl;
+    private GoogleApiClient mGoogleApiClient;
+
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -43,6 +53,12 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                .addApi(Auth.GOOGLE_SIGN_IN_API)
+                .build();
 
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -68,14 +84,14 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         tabs.setOnTabSelectedListener(this);
         tabs.setupWithViewPager(viewPager);
 
-
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+                Intent i = new Intent(MainDrawerActivity.this,AddPublicationActivity.class);
+                startActivity(i);
             }
         });
 
@@ -112,34 +128,24 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id){
+            case R.id.action_settings:
+                mFirebaseAuth.signOut();
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                startActivity(new Intent(this, SignInActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
 
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
+        /** handle the navigation actions in the common methods class */
+        CommonMethods.navigationItemSelectedAction(this,item.getItemId());
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -150,15 +156,14 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     public void onTabSelected(TabLayout.Tab tab) {
         viewPager.setCurrentItem(tab.getPosition());
     }
-
     @Override
     public void onTabUnselected(TabLayout.Tab tab) {
-
     }
-
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
-
+    }
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }
 
     //view pager adapter...
@@ -173,7 +178,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 
             switch (position){
                 case 0:
-                    return new ActionFragment();
+                    return new ActiveFragment();
                 case 1:
                     return new RecentFragment();
                 case 2:

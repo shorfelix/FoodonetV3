@@ -1,4 +1,4 @@
-package com.roa.foodonetv3;
+package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -22,6 +22,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.roa.foodonetv3.R;
 
 public class SignInActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
 
@@ -97,7 +98,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 firebaseAuthWithGoogle(account);
             } else {
                 // Google Sign In failed
-                Toast.makeText(this, "fail", Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "Google Sign In failed."+ result.getStatus());
             }
         }
@@ -120,7 +120,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                             Toast.makeText(SignInActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
-                            startActivity(new Intent(SignInActivity.this, MainDrawerActivity.class));
+                            startActivity(new Intent(SignInActivity.this, WelcomeUserActivity.class));
                             finish();
                         }
                     }
