@@ -10,4 +10,12 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="sign_in">sign in</string>
     <string name="sign_out">Sign out</string>
+    <string name="add_publication">New Share</string>
+    <string name="post_hint_what_would_you_like_to_share">What would you like to share?</string>
+    <string name="post_hint_pickup_address">Pickup address</string>
+    <string name="post_hint_share_with">Share with</string>
+    <string name="post_hint_add_more_details">Add more details</string>
+    <string name="post_please_enter_all_fields">Please enter all fields</string>
+    <string name="post_hint_price">Price</string>
+    <string name="post_toast_please_enter_a_price_in_numbers">Please enter a price in numbers</string>
 </resources>

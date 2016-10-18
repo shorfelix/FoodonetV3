@@ -45,6 +45,7 @@ dependencies {
     // Firebase UI
     compile 'com.firebaseui:firebase-ui-database:0.4.0'
     testCompile 'junit:junit:4.12'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha1'
 }
 
 apply plugin: 'com.google.gms.google-services'
