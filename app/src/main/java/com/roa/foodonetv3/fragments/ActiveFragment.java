@@ -20,7 +20,7 @@ import com.roa.foodonetv3.services.AddPublicationService;
 import com.roa.foodonetv3.services.GetPublicationsService;
 import java.util.ArrayList;
 
-public class ActiveFragment extends Fragment implements View.OnClickListener {
+public class ActiveFragment extends Fragment {
     private PublicationsRecyclerAdapter adapter;
 
     public ActiveFragment() {
@@ -47,34 +47,22 @@ public class ActiveFragment extends Fragment implements View.OnClickListener {
         adapter = new PublicationsRecyclerAdapter(getContext());
         activePubRecycler.setAdapter(adapter);
 
-        // temp
-        v.findViewById(R.id.btnAddPub).setOnClickListener(this);
-        //
-
         return v;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // temp
+        // temp request publications update from the server on fragment resume
         Intent i = new Intent(getContext(), GetPublicationsService.class);
         i.putExtra(GetPublicationsService.QUERY_ARGS,"publications.json");
         getContext().startService(i);
     }
 
-    @Override
-    public void onClick(View v) {
-        /** temporary button to add a test publication to the server */
-        Intent i = new Intent(getContext(), AddPublicationService.class);
-        getContext().startService(i);
-    }
-
-
     public class GetPublicationsReceiver extends BroadcastReceiver{
-
         @Override
         public void onReceive(Context context, Intent intent) {
+            /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
             ArrayList<Publication> publications = intent.getParcelableArrayListExtra(GetPublicationsService.QUERY_PUBLICATIONS);
             adapter.updatePublications(publications);
         }
