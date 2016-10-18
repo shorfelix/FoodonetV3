@@ -29,6 +29,7 @@ public class AddPublicationService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             Log.d("AddPublicationService","entered service");
+            String jsonPublication = intent.getStringExtra(Publication.PUBLICATION_KEY);
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             StringBuilder urlAddressBuilder = new StringBuilder(getResources().getString(R.string.foodonet_server));
@@ -42,11 +43,7 @@ public class AddPublicationService extends IntentService {
                 connection.setDoOutput(true);
                 OutputStream os = connection.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"utf-8"));
-                Publication testPub = new Publication(-1,-1,"testAlon","testAlonSub","ניר עציון,ניר עציון",(short)2,32.6973198,34.9903382,"1476000120.0","1476172920.0","0506765833",
-                        true,"8360c4c4be9e1398","",16,0,"Roi Shaul",0.0,"");
-                JSONObject jsonObject = Publication.getPublicationJson(testPub);
-                Log.d("ALONTEST",jsonObject.toString());
-                writer.write(jsonObject.toString());
+                writer.write(jsonPublication);
                 writer.flush();
                 writer.close();
                 os.close();
