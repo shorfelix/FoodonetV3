@@ -4,14 +4,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.roa.foodonetv3.R;
@@ -20,11 +26,20 @@ import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.GetPublicationsService;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
 
     private GoogleMap mMap;
     private ArrayList<Publication> publications = new ArrayList<>();
+    private LocationManager locationManager;
+    private Timer timer;
+    private boolean gotLocation;
+    private String providerName;
+    private LatLng userLocation;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +49,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         GetPublicationsReceiver receiver = new GetPublicationsReceiver();
         IntentFilter filter = new IntentFilter(GetPublicationsService.ACTION_SERVICE_GET_PUBLICATIONS);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
+        startGps();
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//        providerName = LocationManager.GPS_PROVIDER;
+//        try {
+//            locationManager.requestLocationUpdates(providerName, 1000, 100, MapActivity.this);
+//        }
+//        catch(SecurityException e){
+//            Log.e("Location", e.getMessage());
+//        }
 
-        // temp
-        Intent i = new Intent(this, GetPublicationsService.class);
-        i.putExtra(GetPublicationsService.QUERY_ARGS,"publications.json");
-        startService(i);
+
+
 
 
     }
@@ -63,13 +85,43 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mMap = googleMap;
 
 
+        if(userLocation!=null){
+            mMap.addMarker(new MarkerOptions().position(userLocation).title("You are here")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
+        }
         // Add a publications markers
         for(int i = 0; i< publications.size(); i++){
             LatLng publicationTest = new LatLng(publications.get(i).getLat(), publications.get(i).getLng());
             mMap.addMarker(new MarkerOptions().position(publicationTest).title("Publication Marker"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(publicationTest));
 
         }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        gotLocation = true;
+        timer.cancel();
+        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        // temp
+        Intent i = new Intent(this, GetPublicationsService.class);
+        i.putExtra(GetPublicationsService.QUERY_ARGS,"publications.json");
+        startService(i);
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
     }
 
     private class GetPublicationsReceiver extends BroadcastReceiver {
@@ -81,7 +133,58 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             // Obtain the SupportMapFragment and get notified when the map is ready to be used.
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.map);
-            mapFragment.getMapAsync(MapActivity.this);
+            if(mapFragment!=null) {
+                mapFragment.getMapAsync(MapActivity.this);
+            }
         }
+    }
+
+    public void startGps(){
+        gotLocation = false;
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        providerName = LocationManager.GPS_PROVIDER;
+        try {
+            locationManager.requestLocationUpdates(providerName, 1000, 100, MapActivity.this);
+        }
+        catch(SecurityException e){
+            Log.e("Location", e.getMessage());
+        }
+        timer = new Timer("provider");
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                // if we do not have a location yet
+                if(!gotLocation) {
+                    try {
+                        // remove old location provider(gps)
+                        locationManager.removeUpdates(MapActivity.this);
+                        // change provider name to NETWORK
+                        providerName = LocationManager.NETWORK_PROVIDER;
+                        // start listening to location again on the main thread
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                                    builder.setMessage("Your NETWORK or your GPS seems to be disabled, please turn it on")
+                                            .setPositiveButton("Ok", null);
+                                    AlertDialog dialog = builder.create();
+                                    dialog.show();
+                                }
+                                try {
+                                    locationManager.requestLocationUpdates(providerName, 1000, 100, (LocationListener) MapActivity.this);
+                                } catch (SecurityException e) {
+                                    Log.e("Location Timer", e.getMessage());
+                                }
+                            }
+                        });
+                    } catch (SecurityException e) {
+                        Log.e("Location", e.getMessage());
+                    }
+                }
+            }
+        };
+        // schedule the timer to run the task after 5 seconds from now
+        timer.schedule(task, new Date(System.currentTimeMillis() + 5000));
     }
 }
