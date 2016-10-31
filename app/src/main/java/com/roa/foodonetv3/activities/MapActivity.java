@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,6 +20,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.fragments.ActiveFragment;
@@ -27,6 +29,7 @@ import com.roa.foodonetv3.services.GetPublicationsService;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,8 +40,9 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
     private LocationManager locationManager;
     private Timer timer;
     private boolean gotLocation;
-    private String providerName;
+    private String providerName, hashMapKey;
     private LatLng userLocation;
+    private HashMap<String, Publication> hashMap;
 
 
     @Override
@@ -51,6 +55,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
         startGps();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        hashMap = new HashMap<>();
 //        providerName = LocationManager.GPS_PROVIDER;
 //        try {
 //            locationManager.requestLocationUpdates(providerName, 1000, 100, MapActivity.this);
@@ -92,10 +97,23 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         }
         // Add a publications markers
         for(int i = 0; i< publications.size(); i++){
+            MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_xxh));
             LatLng publicationTest = new LatLng(publications.get(i).getLat(), publications.get(i).getLng());
-            mMap.addMarker(new MarkerOptions().position(publicationTest).title("Publication Marker"));
-
+            //put in the hashMap's key the value of thr marker to get it later
+            hashMapKey = publicationTest.latitude+","+publicationTest.longitude;
+            hashMap.put(hashMapKey, publications.get(i));
+            mMap.addMarker(markerOptions.position(publicationTest).title("Publication Marker"));
         }
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                hashMapKey = marker.getPosition().latitude+","+marker.getPosition().longitude;
+                String ms = hashMap.get(hashMapKey).getSubtitle();
+                Toast.makeText(MapActivity.this, ms , Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
     }
 
     @Override
