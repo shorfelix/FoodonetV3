@@ -34,7 +34,7 @@ public class DatePickerDialog extends Dialog implements View.OnClickListener {
         int day = picker.getDayOfMonth();
         String dateSt = String.format("%1$d/%2$02d/%3$02d", year,month,day);
         Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, day);
+        calendar.set(year, month, day,23,59,59);
         long dateInMillis = calendar.getTimeInMillis();
         dialogResult.finish(dateInMillis, dateSt);
 
