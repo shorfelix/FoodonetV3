@@ -113,7 +113,7 @@ public class Publication implements Parcelable {
             publicationJson.put(PUBLICATION_TYPE_OF_COLLECTION_KEY, publication.getTypeOfCollecting()); // was +1
             publicationJson.put(PUBLICATION_IS_ON_AIR_KEY, publication.isOnAir());
             publicationJson.put(PUBLICATION_PHOTO_URL, publication.getPhotoURL());
-            publicationJson.put(PUBLICATION_PUBLISHER_UUID_KEY, publication.getPublisherID());
+            publicationJson.put(PUBLICATION_PUBLISHER_UUID_KEY, publication.getActiveDeviceDevUUID());
             publicationJson.put(PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY, publication.getIdentityProviderUserName());
             publicationJson.put(PUBLICATION_PUBLISHER_ID_KEY, publication.getPublisherID());
             publicationJson.put(PUBLICATION_PRICE_KEY, publication.getPrice());

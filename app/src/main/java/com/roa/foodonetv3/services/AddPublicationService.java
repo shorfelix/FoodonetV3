@@ -30,6 +30,10 @@ public class AddPublicationService extends IntentService {
         if (intent != null) {
             Log.d("AddPublicationService","entered service");
             String jsonPublication = intent.getStringExtra(Publication.PUBLICATION_KEY);
+
+            //todo use localID to later save the correct server id to the database
+            long publicationLocalID = intent.getLongExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,-1);
+
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             StringBuilder urlAddressBuilder = new StringBuilder(getResources().getString(R.string.foodonet_server));
@@ -56,6 +60,9 @@ public class AddPublicationService extends IntentService {
                 while((line = reader.readLine())!= null){
                     builder.append(line);
                 }
+                //todo save the response server id to the database, replacing the local one
+
+
                 Log.d("SERVER RESPONSE", builder.toString());
             } catch (IOException e) {
                 Log.e("AddPublicationService",e.getMessage());
