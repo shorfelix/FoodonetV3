@@ -1,6 +1,7 @@
 package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -77,6 +78,7 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
         String priceS = editTextPriceAddPublication.getText().toString();
         String shareWith = editTextShareWithAddPublication.getText().toString();
         String details = editTextDetailsAddPublication.getText().toString();
+        long localPublicationID = CommonMethods.getNewLocalPublicationID();
         if(title.equals("") || location.equals("") || shareWith.equals("")){
             Toast.makeText(this, R.string.post_please_enter_all_fields, Toast.LENGTH_SHORT).show();
         } else{
@@ -93,10 +95,11 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
                     return;
                 }
             }
-            Publication publication = new Publication(-1,-1,title,details,location,(short)2,32.0907185,34.873032,"1476351454.0","1479029854.0","0500000000",
-                    true,"8360c4c4be9e1398","",16,0,"Alon",price,"");
+            Publication publication = new Publication(localPublicationID,-1,title,details,location,(short)2,32.0907185,34.873032,"1476351454.0","1479029854.0","0500000000",
+                    true,CommonMethods.getDeviceUUID(this),"",16,0,"Alon",price,"");
             Intent i = new Intent(this, AddPublicationService.class);
             i.putExtra(Publication.PUBLICATION_KEY,Publication.getPublicationJson(publication).toString());
+            i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,publication.getId());
             startService(i);
         }
     }

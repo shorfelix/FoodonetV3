@@ -5,14 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
 import java.util.ArrayList;
-
-/**
- * Created by Owner on 05/10/2016.
- */
 
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
     private Context context;
@@ -46,22 +44,24 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
 
     class PublicationHolder extends RecyclerView.ViewHolder{
         private Publication publication;
-        private TextView textId, textTitle, textSubtitle, textAddress;
+        private ImageView imagePublication,imagePublicationGroup;
+        private TextView textPublicationTitle, textPublicationAddressDistance;
 
         PublicationHolder(View itemView) {
             super(itemView);
-            textId = (TextView) itemView.findViewById(R.id.textPublicationItemId);
-            textTitle = (TextView) itemView.findViewById(R.id.textPublicationItemTitle);
-            textSubtitle = (TextView) itemView.findViewById(R.id.textPublicationItemSubtitle);
-            textAddress = (TextView) itemView.findViewById(R.id.textPublicationItemAddress);
+            imagePublication = (ImageView) itemView.findViewById(R.id.imagePublication);
+            imagePublicationGroup = (ImageView) itemView.findViewById(R.id.imagePublicationGroup);
+            textPublicationTitle = (TextView) itemView.findViewById(R.id.textPublicationTitle);
+            textPublicationAddressDistance = (TextView) itemView.findViewById(R.id.textPublicationAddressDistance);
+
         }
 
         private void bindPublication(Publication publication) {
             this.publication = publication;
-            textId.setText("ID: " + publication.getId());
-            textTitle.setText("Title: " + publication.getTitle());
-            textSubtitle.setText("Subtitle: " + publication.getSubtitle());
-            textAddress.setText("Address: " + publication.getAddress());
+            // TODO: add image logic, add distance logic, number of users who joined, currently hard coded
+            textPublicationTitle.setText(publication.getTitle());
+            String addressDistance = CommonMethods.getRoundedStringFromNumber(15.7f);
+            textPublicationAddressDistance.setText(addressDistance);
         }
     }
 }
