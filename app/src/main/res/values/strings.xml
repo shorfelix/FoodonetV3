@@ -16,6 +16,7 @@
     <string name="post_hint_share_with">Share with</string>
     <string name="post_hint_add_more_details">Add more details</string>
     <string name="post_please_enter_all_fields">Please enter all fields</string>
+    <string name="post_hint_choose_date_to_end">Choose date to end</string>
     <string name="post_hint_price">Price</string>
     <string name="post_toast_please_enter_a_price_in_numbers">Please enter a price in numbers</string>
     <string name="title_activity_map">Map</string>

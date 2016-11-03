@@ -49,7 +49,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
+    private static FirebaseUser mFirebaseUser;
 
 
 
@@ -227,5 +227,9 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         public int getCount() {
             return 3;
         }
+    }
+
+    public static FirebaseUser getFireBaseUser(){
+        return mFirebaseUser;
     }
 }

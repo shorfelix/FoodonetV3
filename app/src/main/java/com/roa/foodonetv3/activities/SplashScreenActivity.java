@@ -16,6 +16,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         try {
             Thread.sleep(1000);
             Intent intent = new Intent(this, MainDrawerActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             finish();
         } catch (InterruptedException e) {
