@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.DatePicker;
 
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by roa on 02/11/2016.
@@ -15,13 +14,13 @@ import java.util.Date;
 public class DatePickerDialog extends Dialog implements View.OnClickListener {
 
     private DatePicker picker;
+    private EndDateDialogListener listener;
     private Context context;
-    private OnMyDialogResult dialogResult;
 
-    public DatePickerDialog(Context context, OnMyDialogResult dialogResult) {
+    public DatePickerDialog(Context context) {
         super(context);
         this.context = context;
-        this.dialogResult = dialogResult;
+        listener = (EndDateDialogListener) context;
         setContentView(R.layout.date_picker_dialog);
         picker = (DatePicker) findViewById(R.id.datePicker);
         findViewById(R.id.chooseDateButton).setOnClickListener(this);
@@ -36,13 +35,13 @@ public class DatePickerDialog extends Dialog implements View.OnClickListener {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day,23,59,59);
         long dateInMillis = calendar.getTimeInMillis();
-        dialogResult.finish(dateInMillis, dateSt);
+        listener.OnEndDatePicked(dateInMillis, dateSt);
 
         this.dismiss();
 
     }
 
-    public interface OnMyDialogResult{
-        void finish(long endingDate, String date);
+    public interface EndDateDialogListener {
+        void OnEndDatePicked(long endingDate, String date);
     }
 }
