@@ -1,6 +1,7 @@
 package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -12,14 +13,20 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.roa.foodonetv3.DatePickerDialog;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.AddPublicationService;
 
-public class AddPublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+public class AddPublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, DatePickerDialog.OnMyDialogResult {
+
     private EditText editTextTitleAddPublication,editTextLocationAddPublication,editTextPriceAddPublication,editTextShareWithAddPublication,editTextDetailsAddPublication;
+    private TextView endDateTxt;
+    private long endingDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +50,25 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
         editTextShareWithAddPublication = (EditText) findViewById(R.id.editTextShareWithAddPublication);
         editTextDetailsAddPublication = (EditText) findViewById(R.id.editTextDetailsAddPublication);
         editTextPriceAddPublication = (EditText) findViewById(R.id.editTextPriceAddPublication);
+        endDateTxt = (TextView) findViewById(R.id.dateEndTxt);
+        endDateTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DatePickerDialog dialog = new DatePickerDialog(AddPublicationActivity.this, AddPublicationActivity.this);
+                dialog.show();
+            }
+        });
+
 
         /** temporary button to add a test publication to the server */
         findViewById(R.id.buttonTestAdd).setOnClickListener(this);
     }
 
+    @Override
+    public void finish(long endingDate, String date) {
+        endDateTxt.setText(date);
+        this.endingDate = endingDate;
+    }
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -77,6 +98,7 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
         String priceS = editTextPriceAddPublication.getText().toString();
         String shareWith = editTextShareWithAddPublication.getText().toString();
         String details = editTextDetailsAddPublication.getText().toString();
+        long localPublicationID = CommonMethods.getNewLocalPublicationID();
         if(title.equals("") || location.equals("") || shareWith.equals("")){
             Toast.makeText(this, R.string.post_please_enter_all_fields, Toast.LENGTH_SHORT).show();
         } else{
@@ -93,11 +115,16 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
                     return;
                 }
             }
-            Publication publication = new Publication(-1,-1,title,details,location,(short)2,32.0907185,34.873032,"1476351454.0","1479029854.0","0500000000",
-                    true,"8360c4c4be9e1398","",16,0,"Alon",price,"");
+            // 1479029854.0
+            Publication publication = new Publication(localPublicationID,-1,title,details,location,(short)2,32.0907185,34.873032,"1476351454.0",endingDate+"","0500000000",
+                    true,CommonMethods.getDeviceUUID(this),"",16,0,"Alon",price,"");
             Intent i = new Intent(this, AddPublicationService.class);
             i.putExtra(Publication.PUBLICATION_KEY,Publication.getPublicationJson(publication).toString());
+            i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,publication.getId());
             startService(i);
+            finish();
         }
     }
+
+
 }
