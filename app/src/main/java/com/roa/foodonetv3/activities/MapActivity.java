@@ -97,7 +97,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         }
         // Add a publications markers
         for(int i = 0; i< publications.size(); i++){
-            MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_xxh));
+            MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_xh));
             LatLng publicationTest = new LatLng(publications.get(i).getLat(), publications.get(i).getLng());
             //put in the hashMap's key the value of thr marker to get it later
             hashMapKey = publicationTest.latitude+","+publicationTest.longitude;
