@@ -55,7 +55,7 @@ public class ActiveFragment extends Fragment {
         super.onResume();
         // temp request publications update from the server on fragment resume
         Intent i = new Intent(getContext(), GetPublicationsService.class);
-        i.putExtra(GetPublicationsService.QUERY_ARGS,"publications.json");
+        i.putExtra(GetPublicationsService.QUERY_ARGS,getResources().getString(R.string.foodonet_publications));
         getContext().startService(i);
     }
 

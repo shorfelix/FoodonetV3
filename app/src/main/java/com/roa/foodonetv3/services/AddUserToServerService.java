@@ -2,11 +2,15 @@ package com.roa.foodonetv3.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.model.Publication;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.model.User;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -19,35 +23,32 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class AddPublicationService extends IntentService {
 
-    public AddPublicationService() {
-        super("AddPublicationService");
+public class AddUserToServerService extends IntentService {
+    public AddUserToServerService() {
+        super("AddUserToServerService");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
-            Log.d("AddPublicationService","entered service");
-            String jsonPublication = intent.getStringExtra(Publication.PUBLICATION_KEY);
-
-            //todo use localID to later save the correct server id to the database
-            long publicationLocalID = intent.getLongExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,-1);
+            Log.d("AddUserToServerService","entered service");
+            String jsonUser = intent.getStringExtra(User.USER_KEY);
 
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             StringBuilder urlAddressBuilder = new StringBuilder(getResources().getString(R.string.foodonet_server));
-            urlAddressBuilder.append(getResources().getString(R.string.foodonet_publications));
+            urlAddressBuilder.append(getResources().getString(R.string.foodonet_user));
             try {
                 URL url = new URL(urlAddressBuilder.toString());
                 connection = (HttpsURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
-                connection.addRequestProperty("Accept","application/json");
-                connection.addRequestProperty("Content-Type","application/json");
+//                connection.addRequestProperty("Accept","application/json");
+//                connection.addRequestProperty("Content-Type","application/json");
                 connection.setDoOutput(true);
                 OutputStream os = connection.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"utf-8"));
-                writer.write(jsonPublication);
+                writer.write(jsonUser);
                 writer.flush();
                 writer.close();
                 os.close();
@@ -60,14 +61,24 @@ public class AddPublicationService extends IntentService {
                 while((line = reader.readLine())!= null){
                     builder.append(line);
                 }
-                //todo save the response server id to the database, replacing the local one
-
+                JSONObject root = new JSONObject(builder.toString());
+                JSONObject userResponse = root.getJSONObject("user_response");
+                String status = userResponse.getString("status");
+                int id = userResponse.getInt("id");
+                if(status.equals("created")){
+                    // TODO: 06/11/2016 add message
+                } else {
+                    // TODO: 06/11/2016 add message
+                }
+                CommonMethods.setMyUserID(this,id);
+                Log.d("Add user response",status + " ,"+id);
 
                 Log.d("SERVER RESPONSE", builder.toString());
             } catch (IOException e) {
-                Log.e("AddPublicationService",e.getMessage());
-            }
-            finally {
+                Log.e("AddUserService",e.getMessage());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } finally {
                 if(connection!= null){
                     connection.disconnect();
                 }
@@ -75,7 +86,7 @@ public class AddPublicationService extends IntentService {
                     try {
                         reader.close();
                     } catch (IOException e) {
-                        Log.e("AddPublicationService",e.getMessage());
+                        Log.e("AddUserService",e.getMessage());
                     }
                 }
             }

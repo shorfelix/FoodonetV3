@@ -33,6 +33,7 @@ import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
+import com.roa.foodonetv3.model.User;
 
 import java.util.UUID;
 
@@ -124,7 +125,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         SharedPreferences.Editor edit = preferenceManager.edit();
         edit.putBoolean("initialized",true);
         String deviceUUID = UUID.randomUUID().toString();
-        edit.putString("device_uuid", deviceUUID).apply();
+        edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
         Log.v("Got new device UUID",deviceUUID);
     }
 
