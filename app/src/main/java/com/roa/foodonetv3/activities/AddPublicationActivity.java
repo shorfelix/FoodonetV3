@@ -143,6 +143,7 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
                 Log.d(TAG,"photo path: " + mCurrentPhotoPath);
             } catch (IOException ex) {
                 // Error occurred while creating the File
+                Log.e(TAG,ex.getMessage());
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
