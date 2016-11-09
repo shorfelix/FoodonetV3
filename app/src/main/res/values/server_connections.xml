@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="foodonet_server">https://prv-fd-server.herokuapp.com</string>
+    <string name="amazon_base_url_for_images">https://s3.amazonaws.com/foodcollectordev</string>
+    <string name="amazon_url_for_user_avatar">https://s3.amazonaws.com/foodonetusersdev</string>
+    <string name="amazon_sub_path_publication_images">foodcollectordev</string>
+    <string name="amazon_sub_path_user_images">foodonetusersdev</string>
+    <string name="amazon_user_avatar_image_name">fduser{0}.jpg</string>
+
+    <string name="foodonet_publications">/publications.json</string>
+    <string name="foodonet_user">/users</string>
+
+    <string name="amazon_bucket">foodonet</string>
+    <string name="amazon_pool_id">eu-west-1:007b7059-b8d5-4067-b57d-ddadcf36f2d5</string>
+
+</resources>

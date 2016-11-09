@@ -99,6 +99,7 @@ public class Publication implements Parcelable {
     };
 
     public static JSONObject getPublicationJson(Publication publication){
+        /** creates a json objedt from the publication as to be sent to the server */
         JSONObject publicationJsonRoot = new JSONObject();
         JSONObject publicationJson = new JSONObject();
         try {
