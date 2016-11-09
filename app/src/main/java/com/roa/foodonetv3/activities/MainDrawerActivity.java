@@ -21,8 +21,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
-
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -33,10 +31,11 @@ import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
-
+import com.roa.foodonetv3.model.User;
 import java.util.UUID;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+    private static final String TAG = "MainDrawerActivity";
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
@@ -45,7 +44,6 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     private String mPhotoUrl;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
-
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -124,7 +122,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         SharedPreferences.Editor edit = preferenceManager.edit();
         edit.putBoolean("initialized",true);
         String deviceUUID = UUID.randomUUID().toString();
-        edit.putString("device_uuid", deviceUUID).apply();
+        edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
         Log.v("Got new device UUID",deviceUUID);
     }
 
