@@ -32,6 +32,7 @@ public class AddUserToServerService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
+            // TODO: 08/11/2016 not tested yet!!!
             Log.d("AddUserToServerService","entered service");
             String jsonUser = intent.getStringExtra(User.USER_KEY);
 

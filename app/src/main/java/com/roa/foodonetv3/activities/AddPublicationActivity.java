@@ -1,15 +1,8 @@
 package com.roa.foodonetv3.activities;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ContentUris;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.v4.content.FileProvider;
@@ -26,38 +19,28 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.DatePickerDialog;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.commonMethods.AmazonImageUploader;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.AddPublicationService;
 import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class AddPublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, DatePickerDialog.EndDateDialogListener{
 
     private static final String TAG = "AddPublicationActivity";
-    private static final int ACTION_TAKE_PICTURE = 1;
-    private static final int ACTION_GET_PATH = 2;
+    private static final int INTENT_TAKE_PICTURE = 1;
     private EditText editTextTitleAddPublication,editTextLocationAddPublication,editTextPriceAddPublication,editTextShareWithAddPublication,editTextDetailsAddPublication;
     private TextView textEndDate;
     private long endingDate;
     private String mCurrentPhotoPath;
     private ImageView imagePictureAddPublication;
 
-    // The TransferUtility is the primary class for managing transfer to S3
+    /**The TransferUtility is the primary class for managing transfer to S3*/
     private TransferUtility transferUtility;
 
     @Override
@@ -65,9 +48,10 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_publication);
 
+        /** instantiate the transfer utility for the s3*/
         transferUtility = CommonMethods.getTransferUtility(this);
+        /** local image path that will be used for saving locally and uploading the file name to the server*/
         mCurrentPhotoPath = "";
-//        TransferListener listener = new UploadListener();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -91,13 +75,13 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
         findViewById(R.id.imageTakePictureAddPublication).setOnClickListener(this);
         imagePictureAddPublication = (ImageView) findViewById(R.id.imagePictureAddPublication);
 
-
         /** temporary button to add a test publication to the server */
         findViewById(R.id.buttonTestAdd).setOnClickListener(this);
     }
 
     @Override
     public void OnEndDatePicked(long endingDate, String date) {
+        // TODO: 09/11/2016 the ios server string for dates are totally different...
         textEndDate.setText(date);
         this.endingDate = endingDate;
     }
@@ -125,52 +109,38 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.buttonTestAdd:
-////                AmazonImageUploader uploader = new AmazonImageUploader(this);
-////                // TODO: 06/11/2016 currently hard coded
-////                uploader.uploadPublicationImageToAmazon(new File(mCurrentPhotoPath),false);
-//                // temp button until we get a button in the toolbar !!!!
-//                // most of the information is hard coded right now, I'm just testing the layout and activation of the add function to the server
-//                Intent intent = new Intent();
-//                if (Build.VERSION.SDK_INT >= 19) {
-//                    // For Android versions of KitKat or later, we use a
-//                    // different intent to ensure
-//                    // we can get the file path from the returned intent URI
-//                    intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
-//                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-//                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-//                } else {
-//                    intent.setAction(Intent.ACTION_GET_CONTENT);
-//                }
-
-//                intent.setType("image/*");
-//                startActivityForResult(intent, 0);
-                if(mCurrentPhotoPath!= null){
-                    uploadPublicationToServer();
-                    if(!mCurrentPhotoPath.equals("")){
-                        beginUpload(mCurrentPhotoPath);
-                    }
+                /** button for uploading the publication to the server, if an image was taken,
+                 *  start uploading to the s3 server as well, currently no listener for s3 finished upload*/
+                uploadPublicationToServer();
+                if(!mCurrentPhotoPath.equals("")){
+                    beginS3Upload("file:"+mCurrentPhotoPath);
                 } else{
                     Toast.makeText(this, "no photo path", Toast.LENGTH_SHORT).show();
                 }
                 break;
             case R.id.textEndDate:
+                /** starts the date picker dialog for the end date */
                 DatePickerDialog datePickerDialog = new DatePickerDialog(this);
                 datePickerDialog.show();
                 break;
             case R.id.imageTakePictureAddPublication:
+                /** starts the image taking intent through the default app*/
                 dispatchTakePictureIntent();
                 break;
         }
     }
 
     private void dispatchTakePictureIntent() {
+        /** starts the image taking intent through the default app*/
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the File where the photo should go
             File photoFile = null;
             try {
-                photoFile = createImageFile();
+                photoFile = CommonMethods.createImageFile(this);
+                mCurrentPhotoPath = photoFile.getPath();
+                Log.d(TAG,"photo path: " + mCurrentPhotoPath);
             } catch (IOException ex) {
                 // Error occurred while creating the File
             }
@@ -180,49 +150,28 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
                         "com.roa.foodonetv3.fileprovider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePictureIntent, ACTION_TAKE_PICTURE);
+                startActivityForResult(takePictureIntent, INTENT_TAKE_PICTURE);
             }
         }
-    }
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-//        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-        mCurrentPhotoPath = image.getAbsolutePath();
-        return image;
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode){
-                case ACTION_TAKE_PICTURE:
-//                    Bundle extras = data.getExtras();
-//                    Bitmap imageBitmap = (Bitmap) extras.get("data");
-                    Picasso.with(this).load(mCurrentPhotoPath).into(imagePictureAddPublication);
-//                    imagePictureAddPublication.setImageBitmap(imageBitmap);
-                    break;
-                case ACTION_GET_PATH:
-//                    Uri uri = data.getData();
-//                    try {
-//                        String path = mCurrentPhotoPath;
-//                        beginUpload(path); // /storage/emulated/0/DCIM/Camera/IMG_20161024_163813.jpg , from example
-//                    } catch (URISyntaxException e) {
-//                        Toast.makeText(this,
-//                                "Unable to get the file from the given URI.  See error log for details",
-//                                Toast.LENGTH_LONG).show();
-//                        Log.e(TAG, "Unable to upload file from the given uri", e);
-//                    }
+                case INTENT_TAKE_PICTURE:
+                    /** an image was successfully taken, since we have the path already,
+                     *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
+                     *  returns true if successful*/
+                    if(CommonMethods.editOverwriteImage(this,mCurrentPhotoPath)){
+                        /** let picasso handle the caching and scaling to the imageView */
+                        Picasso.with(this)
+                                    .load("file:"+mCurrentPhotoPath)
+                                    .resize(imagePictureAddPublication.getWidth(),imagePictureAddPublication.getHeight())
+                                    .centerCrop()
+                                    .into(imagePictureAddPublication);
+    //                    imagePictureAddPublication.setImageBitmap(scaledBitmap);
+                    }
                     break;
             }
         }
@@ -230,6 +179,7 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
 
 //    @Override
     public void uploadPublicationToServer() {
+        /** upload the publication to the foodonet server */
         FirebaseUser user = MainDrawerActivity.getFireBaseUser();
         String title = editTextTitleAddPublication.getText().toString();
         String location = editTextLocationAddPublication.getText().toString();
@@ -252,10 +202,10 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
                     return;
                 }
             }
-            // TODO: 08/11/2016 repair starting time and ending time
+            // TODO: 08/11/2016 repair starting time and ending time. also currently some fields are hard coded for testing
             Publication publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, 32.0907185, 34.873032,
                     String.valueOf(System.currentTimeMillis()/1000), String.valueOf(endingDate/1000),
-                    "0500000000", true, CommonMethods.getDeviceUUID(this), mCurrentPhotoPath, 16, 0, user.getDisplayName(), price, "");
+                    "0500000000", true, CommonMethods.getDeviceUUID(this), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), 16, 0, user.getDisplayName(), price, "");
             Intent i = new Intent(this, AddPublicationService.class);
             i.putExtra(Publication.PUBLICATION_KEY, Publication.getPublicationJson(publication).toString());
             i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY, publication.getId());
@@ -267,124 +217,24 @@ public class AddPublicationActivity extends AppCompatActivity implements Navigat
     /*
      * Begins to upload the file specified by the file path.
      */
-    private void beginUpload(String filePath) {
+    private void beginS3Upload(String filePath) {
+        /** upload the file to the S3 server */
         if (filePath == null) {
             Toast.makeText(this, "Could not find the filepath of the selected file",
                     Toast.LENGTH_LONG).show();
             return;
         }
-        File file = new File(filePath);
+        String[] split = filePath.split(":");
+        File file = new File(split[1]);
         transferUtility.upload(getResources().getString(R.string.amazon_bucket), file.getName(),file);
+        // TODO: 09/11/2016 add logic to completion or failure of upload image
         /*
          * Note that usually we set the transfer listener after initializing the
          * transfer. However it isn't required in this sample app. The flow is
          * click upload button -> start an activity for image selection
-         * startActivityForResult -> onActivityResult -> beginUpload -> onResume
+         * startActivityForResult -> onActivityResult -> beginS3Upload -> onResume
          * -> set listeners to in progress transfers.
          */
         // observer.setTransferListener(new UploadListener());
-    }
-
-//    /*
-//     * Gets the file path of the given Uri.
-//     */
-//    @SuppressLint("NewApi")
-//    private String getPath(Uri uri) throws URISyntaxException {
-//        final boolean needToCheckUri = Build.VERSION.SDK_INT >= 19;
-//        String selection = null;
-//        String[] selectionArgs = null;
-//        // Uri is different in versions after KITKAT (Android 4.4), we need to
-//        // deal with different Uris.
-//        if (needToCheckUri && DocumentsContract.isDocumentUri(getApplicationContext(), uri)) {
-//            if (isExternalStorageDocument(uri)) {
-//                final String docId = DocumentsContract.getDocumentId(uri);
-//                final String[] split = docId.split(":");
-//                return Environment.getExternalStorageDirectory() + "/" + split[1];
-//            } else if (isDownloadsDocument(uri)) {
-//                final String id = DocumentsContract.getDocumentId(uri);
-//                uri = ContentUris.withAppendedId(
-//                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-//            } else if (isMediaDocument(uri)) {
-//                final String docId = DocumentsContract.getDocumentId(uri);
-//                final String[] split = docId.split(":");
-//                final String type = split[0];
-//                if ("image".equals(type)) {
-//                    uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-//                } else if ("video".equals(type)) {
-//                    uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-//                } else if ("audio".equals(type)) {
-//                    uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-//                }
-//                selection = "_id=?";
-//                selectionArgs = new String[] {
-//                        split[1]
-//                };
-//            }
-//        }
-//        if ("content".equalsIgnoreCase(uri.getScheme())) {
-//            String[] projection = {
-//                    MediaStore.Images.Media.DATA
-//            };
-//            Cursor cursor = null;
-//            try {
-//                cursor = getContentResolver()
-//                        .query(uri, projection, selection, selectionArgs, null);
-//                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-//                if (cursor.moveToFirst()) {
-//                    return cursor.getString(column_index);
-//                }
-//            } catch (Exception e) {
-//            }
-//        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
-//            return uri.getPath(); //content://media/external/images/media , from example
-//        }
-//        return null;
-//    }
-
-//    /**
-//     * @param uri The Uri to check.
-//     * @return Whether the Uri authority is ExternalStorageProvider.
-//     */
-//    public static boolean isExternalStorageDocument(Uri uri) {
-//        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-//    }
-//
-//    /**
-//     * @param uri The Uri to check.
-//     * @return Whether the Uri authority is DownloadsProvider.
-//     */
-//    public static boolean isDownloadsDocument(Uri uri) {
-//        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-//    }
-//
-//    /**
-//     * @param uri The Uri to check.
-//     * @return Whether the Uri authority is MediaProvider.
-//     */
-//    public static boolean isMediaDocument(Uri uri) {
-//        return "com.android.providers.media.documents".equals(uri.getAuthority());
-//    }
-
-    private class UploadListener implements TransferListener {
-
-        // Simply updates the UI list when notified.
-        @Override
-        public void onError(int id, Exception e) {
-            Log.e(TAG, "Error during upload: " + id, e);
-//            updateList();
-        }
-
-        @Override
-        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-            Log.d(TAG, String.format("onProgressChanged: %d, total: %d, current: %d",
-                    id, bytesTotal, bytesCurrent));
-//            updateList();
-        }
-
-        @Override
-        public void onStateChanged(int id, TransferState newState) {
-            Log.d(TAG, "onStateChanged: " + id + ", " + newState);
-//            updateList();
-        }
     }
 }

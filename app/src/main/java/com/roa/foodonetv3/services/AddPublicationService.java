@@ -3,12 +3,8 @@ package com.roa.foodonetv3.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
-
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.Publication;
-
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,10 +12,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
-
 import javax.net.ssl.HttpsURLConnection;
 
 public class AddPublicationService extends IntentService {
+    private static final String TAG = "AddPublicationService";
 
     public AddPublicationService() {
         super("AddPublicationService");
@@ -38,6 +34,7 @@ public class AddPublicationService extends IntentService {
             BufferedReader reader = null;
             StringBuilder urlAddressBuilder = new StringBuilder(getResources().getString(R.string.foodonet_server));
             urlAddressBuilder.append(getResources().getString(R.string.foodonet_publications));
+            Log.d(TAG,"address: " + urlAddressBuilder.toString());
             try {
                 URL url = new URL(urlAddressBuilder.toString());
                 connection = (HttpsURLConnection) url.openConnection();
@@ -65,7 +62,7 @@ public class AddPublicationService extends IntentService {
 
                 Log.d("SERVER RESPONSE", builder.toString());
             } catch (IOException e) {
-                Log.e("AddPublicationService",e.getMessage());
+                Log.e(TAG,e.getMessage());
             }
             finally {
                 if(connection!= null){
@@ -75,7 +72,7 @@ public class AddPublicationService extends IntentService {
                     try {
                         reader.close();
                     } catch (IOException e) {
-                        Log.e("AddPublicationService",e.getMessage());
+                        Log.e(TAG,e.getMessage());
                     }
                 }
             }

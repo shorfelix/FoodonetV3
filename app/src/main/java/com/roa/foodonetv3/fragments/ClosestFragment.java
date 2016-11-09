@@ -10,18 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.User;
-import com.roa.foodonetv3.services.AddUserToServerService;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
 public class ClosestFragment extends Fragment implements View.OnClickListener {
 
-
+    private static final String TAG = "ClosestFragment";
     public ClosestFragment() {
         // Required empty public constructor
     }

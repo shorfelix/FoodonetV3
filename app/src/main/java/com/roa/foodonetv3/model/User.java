@@ -1,15 +1,11 @@
 package com.roa.foodonetv3.model;
 
 import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-/**
- * Created by Owner on 05/11/2016.
- */
-
 public class User {
+    private static final String TAG = "User";
     private String identityProvider, identityProviderUserID,identityProviderToken,phoneNumber,identityProviderEmail,identityProviderUserName,activeDeviceDevUuid;
     private boolean isLoggedIn;
     public static final String USER_KEY = "user";
@@ -36,6 +32,7 @@ public class User {
     }
 
     public JSONObject getUserJson(){
+        // not tested yet!!!
         JSONObject userJsonRoot = new JSONObject();
         JSONObject userJson = new JSONObject();
         try {
