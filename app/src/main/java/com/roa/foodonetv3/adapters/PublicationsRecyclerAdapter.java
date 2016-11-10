@@ -1,6 +1,10 @@
 package com.roa.foodonetv3.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +20,8 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.squareup.picasso.Picasso;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +37,8 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
     public PublicationsRecyclerAdapter(Context context) {
         this.context = context;
         transferUtility = CommonMethods.getTransferUtility(context);
+//        setHasStableIds(true);
+
     }
 
     public void updatePublications(ArrayList<Publication> publications){
@@ -60,6 +68,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         private ImageView imagePublication,imagePublicationGroup;
         private TextView textPublicationTitle, textPublicationAddressDistance;
         private File mCurrentPhotoFile;
+        private int observerId;
 
 
         PublicationHolder(View itemView) {
@@ -76,30 +85,51 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             textPublicationTitle.setText(publication.getTitle());
             String addressDistance = CommonMethods.getRoundedStringFromNumber(15.7f);
             textPublicationAddressDistance.setText(addressDistance);
-            if(!publication.getPhotoURL().equals("")){
-                try {
-                    mCurrentPhotoFile = CommonMethods.createImageFile(context,publication.getId());
-                    TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_bucket),
-                            publication.getPhotoURL(), mCurrentPhotoFile
-                            );
-                    observer.setTransferListener(this);
-                } catch (IOException e) {
-                    e.printStackTrace();
+            imagePublication.setImageResource(R.drawable.camera_xxh);
+            //add photo here
+            if(publication.getPhotoURL().equals("")){
+                /** no image saved, display default image */
+                // TODO: 10/11/2016 display default image 
+
+            }else{
+                /** there is an image available to download or is currently on the device */
+                // TODO: 10/11/2016 check version of the publication as well
+                /** check if the image is already saved on the device */
+                mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId()));
+                if (mCurrentPhotoFile.exists()) {
+                    /** image was found and is the same as the publication id */
+                    Picasso.with(context)
+                            .load(mCurrentPhotoFile)
+                            .resize(imagePublication.getWidth(), imagePublication.getHeight())
+                            .centerCrop()
+                            .into(imagePublication);
+                } else {
+                    /** image ready to download, not on the device */
+                        TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_bucket),
+                                publication.getPhotoURL(), mCurrentPhotoFile
+                        );
+                        observer.setTransferListener(this);
+                        observerId = observer.getId();
+
                 }
             }
+
         }
 
         @Override
         public void onStateChanged(int id, TransferState state) {
             /** listener for the s3 server download, needs to be adapter wide since it's currently keeps using the same image in different layout */
             // TODO: 09/11/2016 check picasso adapter for the images and using the s3 observer on an adapter scale
-            Log.d(TAG,"amazon onStateChanged" + id + " "  + state.toString());
+            Log.d(TAG,"amazon onStateChanged " + id + " "  + state.toString());
             if(state == TransferState.COMPLETED){
+                if(observerId==id){
                 Picasso.with(context)
                         .load(mCurrentPhotoFile)
                         .resize(imagePublication.getWidth(),imagePublication.getHeight())
                         .centerCrop()
                         .into(imagePublication);
+                }
+
             }
         }
         @Override

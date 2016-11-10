@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
@@ -92,18 +93,46 @@ public class CommonMethods {
     }
     public static File createImageFile(Context context, long publicationID) throws IOException {
         /** Creates a local image file name for downloaded images from s3 server of a specific publication */
-        String imageFileName = "JPEG_" + publicationID + "_";
+        String imageFileName = "PublicationID." + publicationID;
         File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */);
+//        return File.createTempFile(
+//                imageFileName,  /* prefix */
+//                ".jpg",         /* suffix */
+//                storageDir      /* directory */);
+
+        File newFile = new File(storageDir.getPath()+"/"+imageFileName+".jpg");
+        Log.d(TAG,"newFile = "+newFile.getPath());
+        return newFile;
     }
+
 
     public static String getFileNameFromPath(String path){
         /** returns the file name without the path */
         String [] segments = path.split("/");
         return segments[segments.length-1];
+    }
+
+    public static String getPublicationIDFromFile(String path){
+        /** returns the file name without the path */
+        String [] segments = path.split(".");
+        if (segments.length > 1) {
+            return segments[segments.length - 2];
+        }else {
+            return "n";
+        }
+    }
+
+    public static String getPhotoPathByID(Context context,long publicationID){
+        /** Creates a local image file name for downloaded images from s3 server of a specific publication */
+        String imageFileName = "PublicationID." + publicationID;
+        String storageDir = (context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
+//        return File.createTempFile(
+//                imageFileName,  /* prefix */
+//                ".jpg",         /* suffix */
+//                storageDir      /* directory */);
+        String newFile = storageDir+"/"+imageFileName+".jpg";
+        Log.d(TAG,"newFile = "+newFile);
+        return newFile;
     }
 
     public static boolean editOverwriteImage(Context context,String mCurrentPhotoPath){

@@ -40,6 +40,7 @@ public class Publication implements Parcelable {
     public static final String PUBLICATION_AUDIENCE_KEY = "audience";
     public static final String PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY = "publisher_user_name";
 
+
     public Publication(long id, int version, String title, String subtitle, String address, short typeOfCollecting,
                        double lat, double lng, String startingDate, String endingDate, String contactInfo, boolean isOnAir,
                        String activeDeviceDevUUID, String photoURL, int publisherID, int audience, String identityProviderUserName,
