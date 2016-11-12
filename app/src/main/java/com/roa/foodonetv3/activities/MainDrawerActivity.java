@@ -37,6 +37,10 @@ import java.util.UUID;
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
 
+    // TODO: 12/11/2016 move two constants to different class
+    public static final String PUBLICATION = "publication";
+    public static final int OPEN_ADD_PUBLICATION = 1;
+
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
@@ -102,7 +106,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-                Intent i = new Intent(MainDrawerActivity.this,AddPublicationActivity.class);
+                Intent i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
+                i.putExtra(PUBLICATION,OPEN_ADD_PUBLICATION);
                 startActivity(i);
             }
         });
