@@ -85,9 +85,9 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             textPublicationTitle.setText(publication.getTitle());
             String addressDistance = CommonMethods.getRoundedStringFromNumber(15.7f);
             textPublicationAddressDistance.setText(addressDistance);
-            imagePublication.setImageResource(R.drawable.camera_xxh);
             //add photo here
             if(publication.getPhotoURL().equals("")){
+                imagePublication.setImageResource(R.drawable.camera_xxh);
                 /** no image saved, display default image */
                 // TODO: 10/11/2016 display default image 
 
@@ -98,9 +98,10 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
                 mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId()));
                 if (mCurrentPhotoFile.exists()) {
                     /** image was found and is the same as the publication id */
+
                     Picasso.with(context)
                             .load(mCurrentPhotoFile)
-                            .resize(imagePublication.getWidth(), imagePublication.getHeight())
+                            .resize(1000, 1000)
                             .centerCrop()
                             .into(imagePublication);
                 } else {
