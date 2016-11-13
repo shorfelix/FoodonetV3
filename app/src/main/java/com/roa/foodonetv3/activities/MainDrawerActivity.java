@@ -1,7 +1,9 @@
 package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -9,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,7 +21,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -29,8 +31,16 @@ import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
+import com.roa.foodonetv3.model.User;
+import java.util.UUID;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+    private static final String TAG = "MainDrawerActivity";
+
+    // TODO: 12/11/2016 move two constants to different class
+    public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
+    public static final int OPEN_ADD_PUBLICATION = 1;
+    public static final int OPEN_PUBLICATION_DETAIL = 2;
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
@@ -38,11 +48,11 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     private String mUsername;
     private String mPhotoUrl;
     private GoogleApiClient mGoogleApiClient;
-
+    private SharedPreferences preferenceManager;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
+    private static FirebaseUser mFirebaseUser;
 
 
 
@@ -53,6 +63,13 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        /** get the string into a static field or a resource string*/
+        /** check if the app is initialized*/
+        preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
+        if(!preferenceManager.getBoolean("initialized",false)){
+            init();
+        }
 
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -90,7 +107,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-                Intent i = new Intent(MainDrawerActivity.this,AddPublicationActivity.class);
+                Intent i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
+                i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,OPEN_ADD_PUBLICATION);
                 startActivity(i);
             }
         });
@@ -103,6 +121,15 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void init(){
+        /** get the string into a static field or a resource string*/
+        SharedPreferences.Editor edit = preferenceManager.edit();
+        edit.putBoolean("initialized",true);
+        String deviceUUID = UUID.randomUUID().toString();
+        edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
+        Log.v("Got new device UUID",deviceUUID);
     }
 
     @Override
@@ -204,5 +231,9 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         public int getCount() {
             return 3;
         }
+    }
+
+    public static FirebaseUser getFireBaseUser(){
+        return mFirebaseUser;
     }
 }

@@ -16,11 +16,14 @@ import android.view.ViewGroup;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.services.AddPublicationService;
 import com.roa.foodonetv3.services.GetPublicationsService;
+import com.roa.foodonetv3.services.GetReportService;
+
 import java.util.ArrayList;
 
 public class ActiveFragment extends Fragment {
+    private static final String TAG = "ActiveFragment";
+
     private PublicationsRecyclerAdapter adapter;
 
     public ActiveFragment() {
@@ -30,6 +33,8 @@ public class ActiveFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /** set the broadcast receiver for getting all publications from the server */
         GetPublicationsReceiver receiver = new GetPublicationsReceiver();
         IntentFilter filter = new IntentFilter(GetPublicationsService.ACTION_SERVICE_GET_PUBLICATIONS);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
@@ -42,6 +47,7 @@ public class ActiveFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.fragment_active, container, false);
 
+        /** set the recycler view and adapter for all publications */
         RecyclerView activePubRecycler = (RecyclerView) v.findViewById(R.id.activePubRecycler);
         activePubRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new PublicationsRecyclerAdapter(getContext());
@@ -53,10 +59,14 @@ public class ActiveFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // temp request publications update from the server on fragment resume
+        /** temp request publications update from the server on fragment resume */
+        // TODO: 09/11/2016 change!
         Intent i = new Intent(getContext(), GetPublicationsService.class);
-        i.putExtra(GetPublicationsService.QUERY_ARGS,"publications.json");
+        i.putExtra(GetPublicationsService.QUERY_ARGS,getResources().getString(R.string.foodonet_publications));
         getContext().startService(i);
+
+        Intent r = new Intent(getContext(), GetReportService.class);
+        getContext().startService(r);
     }
 
     public class GetPublicationsReceiver extends BroadcastReceiver{

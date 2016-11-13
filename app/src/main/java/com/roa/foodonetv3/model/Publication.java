@@ -40,6 +40,7 @@ public class Publication implements Parcelable {
     public static final String PUBLICATION_AUDIENCE_KEY = "audience";
     public static final String PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY = "publisher_user_name";
 
+
     public Publication(long id, int version, String title, String subtitle, String address, short typeOfCollecting,
                        double lat, double lng, String startingDate, String endingDate, String contactInfo, boolean isOnAir,
                        String activeDeviceDevUUID, String photoURL, int publisherID, int audience, String identityProviderUserName,
@@ -99,6 +100,7 @@ public class Publication implements Parcelable {
     };
 
     public static JSONObject getPublicationJson(Publication publication){
+        /** creates a json objedt from the publication as to be sent to the server */
         JSONObject publicationJsonRoot = new JSONObject();
         JSONObject publicationJson = new JSONObject();
         try {
@@ -113,7 +115,7 @@ public class Publication implements Parcelable {
             publicationJson.put(PUBLICATION_TYPE_OF_COLLECTION_KEY, publication.getTypeOfCollecting()); // was +1
             publicationJson.put(PUBLICATION_IS_ON_AIR_KEY, publication.isOnAir());
             publicationJson.put(PUBLICATION_PHOTO_URL, publication.getPhotoURL());
-            publicationJson.put(PUBLICATION_PUBLISHER_UUID_KEY, publication.getPublisherID());
+            publicationJson.put(PUBLICATION_PUBLISHER_UUID_KEY, publication.getActiveDeviceDevUUID());
             publicationJson.put(PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY, publication.getIdentityProviderUserName());
             publicationJson.put(PUBLICATION_PUBLISHER_ID_KEY, publication.getPublisherID());
             publicationJson.put(PUBLICATION_PRICE_KEY, publication.getPrice());
