@@ -1,7 +1,9 @@
 package com.roa.foodonetv3.fragments;
 
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,14 +14,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
+import com.roa.foodonetv3.model.ReportFromServer;
+import com.roa.foodonetv3.services.AddReportService;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.nio.charset.MalformedInputException;
 import java.util.Locale;
 
-public class PublicationDetailFragment extends Fragment {
+public class PublicationDetailFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "PublicationDetailFrag";
     private TextView textCategory,textTimeRemaining,textJoined,textTitlePublication,textPublicationAddress,textPublicationRating,textPublisherName,textPublicationPrice,textPublicationDetails;
     private ImageView imagePicturePublication,imagePublisherUser,imageActionPublicationJoin,imageActionPublicationReport,imageActionPublicationPhone,imageActionPublicationMap;
@@ -57,6 +63,10 @@ public class PublicationDetailFragment extends Fragment {
         imageActionPublicationReport = (ImageView) v.findViewById(R.id.imageActionPublicationReport);
         imageActionPublicationPhone = (ImageView) v.findViewById(R.id.imageActionPublicationPhone);
         imageActionPublicationMap = (ImageView) v.findViewById(R.id.imageActionPublicationMap);
+        imageActionPublicationJoin.setOnClickListener(this);
+        imageActionPublicationReport.setOnClickListener(this);
+        imageActionPublicationPhone.setOnClickListener(this);
+        imageActionPublicationMap.setOnClickListener(this);
 
         return v;
     }
@@ -116,4 +126,42 @@ public class PublicationDetailFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onClick(View v) {
+        Intent i;
+        switch (v.getId()){
+            case R.id.imageActionPublicationJoin:
+                // TODO: 13/11/2016 add join logic
+                break;
+            case R.id.imageActionPublicationReport:
+                ReportFromServer reportFromServer = new ReportFromServer(-1,publication.getId(),publication.getVersion(),3,publication.getActiveDeviceDevUUID(),
+                        "","",String.valueOf(System.currentTimeMillis()), MainDrawerActivity.getFireBaseUser().getDisplayName(),
+                        "0500000000",999,4);
+                String reportJson = reportFromServer.getAddReportJson().toString();
+                Log.d(TAG,"report json:"+reportJson);
+                i = new Intent(getContext(),AddReportService.class);
+                i.putExtra(ReportFromServer.REPORT_KEY,reportJson);
+                i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,publication.getId());
+                getContext().startService(i);
+                break;
+            case R.id.imageActionPublicationPhone:
+                if (publication.getContactInfo().matches("[0-9]+") && publication.getContactInfo().length() > 2) {
+                    i = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" + publication.getContactInfo()));
+                    startActivity(i);
+                }
+                break;
+            case R.id.imageActionPublicationMap:
+                if(publication.getLat()!=0 && publication.getLng()!= 0){
+                    i = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("geo:" + publication.getLat() + "," +
+                                    publication.getLng()
+//                                    + "?q=" + getStreet() + "+" +
+//                                    getHousenumber() + "+" + getPostalcode() + "+" +
+//                                    getCity()
+                            ));
+                    startActivity(i);
+                }
+                break;
+        }
+    }
 }

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.Publication;
+import com.roa.foodonetv3.model.ReportFromServer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -37,7 +38,7 @@ public class AddReportService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             Log.d("AddPublicationService","entered service");
-            String jsonReport = intent.getStringExtra("report");
+            String jsonReport = intent.getStringExtra(ReportFromServer.REPORT_KEY);
 
             //todo use localID to later save the correct server id to the database
             long publicationLocalID = intent.getLongExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,-1);
