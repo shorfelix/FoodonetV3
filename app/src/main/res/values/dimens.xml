@@ -14,5 +14,6 @@
     <dimen name="margin_32">32dp</dimen>
     <dimen name="image_size_16">16dp</dimen>
     <dimen name="image_size_68">68dp</dimen>
+    <dimen name="image_size_height_200">200dp</dimen>
 
 </resources>

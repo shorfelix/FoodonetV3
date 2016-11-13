@@ -1,5 +1,6 @@
 package com.roa.foodonetv3.activities;
 
+import android.content.Intent;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
@@ -12,11 +13,14 @@ import android.view.MenuItem;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.fragments.AddPublicationFragment;
+import com.roa.foodonetv3.fragments.PublicationDetailFragment;
+import com.roa.foodonetv3.model.Publication;
 
 public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private static final String TAG = "PublicationActivity";
     private FragmentManager fragmentManager;
+    private Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +39,11 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        int intentToken = getIntent().getIntExtra(MainDrawerActivity.PUBLICATION,MainDrawerActivity.OPEN_ADD_PUBLICATION);
+        intent = getIntent();
+        int openFragType = intent.getIntExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_ADD_PUBLICATION);
         fragmentManager = getSupportFragmentManager();
         if(savedInstanceState==null){
-            if(intentToken == MainDrawerActivity.OPEN_ADD_PUBLICATION) {
-                fragmentManager.beginTransaction().add(R.id.container_publication, new AddPublicationFragment(), "addPublicationFrag").commit();
-            }
+            openNewPublicationFrag(openFragType);
         }
     }
     @Override
@@ -61,5 +64,21 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void openNewPublicationFrag(int type){
+        switch (type){
+            case MainDrawerActivity.OPEN_ADD_PUBLICATION:
+                fragmentManager.beginTransaction().add(R.id.container_publication, new AddPublicationFragment(), "addPublicationFrag").commit();
+                break;
+            case MainDrawerActivity.OPEN_PUBLICATION_DETAIL:
+                Publication publication = getIntent().getParcelableExtra(Publication.PUBLICATION_KEY);
+                PublicationDetailFragment publicationDetailFragment = new PublicationDetailFragment();
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(Publication.PUBLICATION_KEY,publication);
+                publicationDetailFragment.setArguments(bundle);
+                fragmentManager.beginTransaction().add(R.id.container_publication, publicationDetailFragment, "publicationDetailFrag").commit();
+                break;
+        }
     }
 }

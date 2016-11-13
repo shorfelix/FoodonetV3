@@ -1,10 +1,7 @@
 package com.roa.foodonetv3.adapters;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.provider.MediaStore;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,13 +14,13 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.MainDrawerActivity;
+import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.squareup.picasso.Picasso;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
@@ -63,12 +60,13 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         return publications.size();
     }
 
-    class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener {
+    class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener, View.OnClickListener {
         private Publication publication;
         private ImageView imagePublication,imagePublicationGroup;
         private TextView textPublicationTitle, textPublicationAddressDistance;
         private File mCurrentPhotoFile;
         private int observerId;
+        private int publicationImageSize;
 
 
         PublicationHolder(View itemView) {
@@ -77,6 +75,8 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             imagePublicationGroup = (ImageView) itemView.findViewById(R.id.imagePublicationGroup);
             textPublicationTitle = (TextView) itemView.findViewById(R.id.textPublicationTitle);
             textPublicationAddressDistance = (TextView) itemView.findViewById(R.id.textPublicationAddressDistance);
+            publicationImageSize = (int)context.getResources().getDimension(R.dimen.image_size_68);
+            itemView.setOnClickListener(this);
         }
 
         private void bindPublication(Publication publication) {
@@ -87,21 +87,26 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             textPublicationAddressDistance.setText(addressDistance);
             //add photo here
             if(publication.getPhotoURL().equals("")){
-                imagePublication.setImageResource(R.drawable.camera_xxh);
                 /** no image saved, display default image */
-                // TODO: 10/11/2016 display default image 
+//                imagePublication.setImageResource(R.drawable.camera_xxh);
+                Picasso.with(context)
+                        .load(R.drawable.foodonet_image)
+                        .resize(publicationImageSize,publicationImageSize)
+                        .centerCrop()
+                        .into(imagePublication);
+                // TODO: 10/11/2016 display default image
 
             }else{
                 /** there is an image available to download or is currently on the device */
                 // TODO: 10/11/2016 check version of the publication as well
                 /** check if the image is already saved on the device */
                 mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId()));
-                if (mCurrentPhotoFile.exists()) {
+                if (mCurrentPhotoFile.isFile()) {
                     /** image was found and is the same as the publication id */
 
                     Picasso.with(context)
                             .load(mCurrentPhotoFile)
-                            .resize(1000, 1000)
+                            .resize(publicationImageSize,publicationImageSize)
                             .centerCrop()
                             .into(imagePublication);
                 } else {
@@ -111,10 +116,8 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
                         );
                         observer.setTransferListener(this);
                         observerId = observer.getId();
-
                 }
             }
-
         }
 
         @Override
@@ -126,7 +129,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
                 if(observerId==id){
                 Picasso.with(context)
                         .load(mCurrentPhotoFile)
-                        .resize(imagePublication.getWidth(),imagePublication.getHeight())
+                        .resize(publicationImageSize,publicationImageSize)
                         .centerCrop()
                         .into(imagePublication);
                 }
@@ -140,6 +143,14 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         @Override
         public void onError(int id, Exception ex) {
             Log.d(TAG,"amazon onError" + id + " " + ex.toString());
+        }
+
+        @Override
+        public void onClick(View v) {
+            Intent i = new Intent(context, PublicationActivity.class);
+            i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_PUBLICATION_DETAIL);
+            i.putExtra(Publication.PUBLICATION_KEY,publication);
+            context.startActivity(i);
         }
     }
 }

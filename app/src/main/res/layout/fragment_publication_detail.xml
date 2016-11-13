@@ -12,65 +12,83 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:id="@+id/detailTopPanelLayout"
-        >
+        android:baselineAligned="false">
 
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_weight="1">
+        <!--<LinearLayout-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:orientation="horizontal"-->
+            <!--android:layout_weight="1">-->
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                app:srcCompat="@drawable/camera_xxh"
-                android:id="@+id/imageGroup" />
+            <!--<ImageView-->
+                <!--android:layout_width="20dp"-->
+                <!--android:layout_height="20dp"-->
+                <!--app:srcCompat="@drawable/camera_xxh"-->
+                <!--android:id="@+id/imageGroup" />-->
 
             <TextView
                 android:text="Public"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textCategory" />
-        </LinearLayout>
+                android:id="@+id/textCategory"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/group_public"
+                android:drawableStart="@drawable/group_public"
+                android:gravity="center"
+                android:paddingLeft="5dp"
+                android:paddingStart="5dp" />
+        <!--</LinearLayout>-->
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_weight="1">
+        <!--<LinearLayout-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:orientation="horizontal"-->
+            <!--android:layout_weight="1">-->
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                app:srcCompat="@drawable/camera_xxh"
-                android:id="@+id/imageTime" />
+            <!--<ImageView-->
+                <!--android:layout_width="20dp"-->
+                <!--android:layout_height="20dp"-->
+                <!--app:srcCompat="@drawable/camera_xxh"-->
+                <!--android:id="@+id/imageTime" />-->
 
             <TextView
                 android:text="12h 35min"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textTimeRemaining" />
-        </LinearLayout>
+                android:id="@+id/textTimeRemaining"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/clock"
+                android:drawableStart="@drawable/clock"
+                android:gravity="center"
+                android:paddingLeft="5dp"
+                android:paddingStart="5dp" />
+        <!--</LinearLayout>-->
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_weight="1">
+        <!--<LinearLayout-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:orientation="horizontal"-->
+            <!--android:layout_weight="1">-->
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                app:srcCompat="@drawable/camera_xxh"
-                android:id="@+id/imageJoined" />
+            <!--<ImageView-->
+                <!--android:layout_width="20dp"-->
+                <!--android:layout_height="20dp"-->
+                <!--app:srcCompat="@drawable/camera_xxh"-->
+                <!--android:id="@+id/imageJoined" />-->
 
             <TextView
                 android:text="Joined"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textJoined" />
-        </LinearLayout>
+                android:id="@+id/textJoined"
+                android:layout_weight="1"
+                android:drawableLeft="@drawable/user_icon"
+                android:drawableStart="@drawable/user_icon"
+                android:gravity="center"
+                android:paddingLeft="5dp"
+                android:paddingStart="5dp" />
+        <!--</LinearLayout>-->
 
     </LinearLayout>
     <View
@@ -82,7 +100,7 @@
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="@dimen/image_size_height_200"
         app:srcCompat="@drawable/camera_xxh"
         android:id="@+id/imagePicturePublication"
         android:layout_below="@+id/divider"/>
@@ -121,15 +139,15 @@
         android:layout_below="@+id/textPublicationAddress"
         android:layout_toRightOf="@+id/imagePublisherUser"
         android:layout_toEndOf="@+id/imagePublisherUser"
-        android:id="@+id/imageView3" />
+        android:id="@+id/imageStar" />
 
     <TextView
         android:text="4.2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textPublicationAddress"
-        android:layout_toRightOf="@+id/imageView3"
-        android:layout_toEndOf="@+id/imageView3"
+        android:layout_toRightOf="@+id/imageStar"
+        android:layout_toEndOf="@+id/imageStar"
         android:id="@+id/textPublicationRating" />
 
     <TextView
@@ -168,13 +186,13 @@
         android:layout_alignParentStart="true"
         android:id="@+id/textPublicationDetails" />
 
-    <android.support.v7.widget.RecyclerView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/textPublicationDetails"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/recyclerPublicationReport"/>
+    <!--<android.support.v7.widget.RecyclerView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_below="@+id/textPublicationDetails"-->
+        <!--android:layout_alignParentLeft="true"-->
+        <!--android:layout_alignParentStart="true"-->
+        <!--android:id="@+id/recyclerPublicationReport"/>-->
 
     <LinearLayout
         android:layout_width="match_parent"
