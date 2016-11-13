@@ -14,5 +14,11 @@
     <dimen name="margin_32">32dp</dimen>
     <dimen name="image_size_16">16dp</dimen>
     <dimen name="image_size_68">68dp</dimen>
+    <dimen name="image_size_height_200">200dp</dimen>
+    <dimen name="text_size_20">20sp</dimen>
+    <dimen name="text_size_16">16sp</dimen>
+    <dimen name="text_size_12">12sp</dimen>
+
+
 
 </resources>

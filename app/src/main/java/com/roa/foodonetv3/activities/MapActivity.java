@@ -93,24 +93,31 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         if(userLocation!=null){
             mMap.addMarker(new MarkerOptions().position(userLocation).title("You are here")
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 8));
         }
         // Add a publications markers
         for(int i = 0; i< publications.size(); i++){
-            MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_xxh));
+            MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_xh));
             LatLng publicationTest = new LatLng(publications.get(i).getLat(), publications.get(i).getLng());
+            mMap.addMarker(markerOptions.position(publicationTest).title("Publication Marker"));
             //put in the hashMap's key the value of thr marker to get it later
             hashMapKey = publicationTest.latitude+","+publicationTest.longitude;
             hashMap.put(hashMapKey, publications.get(i));
-            mMap.addMarker(markerOptions.position(publicationTest).title("Publication Marker"));
+        }
+        try {
+            locationManager.removeUpdates(MapActivity.this);
+        }catch (SecurityException e){
+            Log.e("Location", e.getMessage());
         }
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 hashMapKey = marker.getPosition().latitude+","+marker.getPosition().longitude;
-                String ms = hashMap.get(hashMapKey).getSubtitle();
-                Toast.makeText(MapActivity.this, ms , Toast.LENGTH_SHORT).show();
+                if (hashMap.get(hashMapKey)!=null) {
+                    String ms = hashMap.get(hashMapKey).getTitle();
+                    Toast.makeText(MapActivity.this, ms, Toast.LENGTH_SHORT).show();
+                }
                 return true;
             }
         });
@@ -123,7 +130,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         // temp
         Intent i = new Intent(this, GetPublicationsService.class);
-        i.putExtra(GetPublicationsService.QUERY_ARGS,"publications.json");
+        i.putExtra(GetPublicationsService.QUERY_ARGS,getResources().getString(R.string.foodonet_publications));
         startService(i);
     }
 
