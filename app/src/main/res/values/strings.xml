@@ -25,5 +25,6 @@
     <string name="group">Group</string>
     <string name="joined">Joined</string>
     <string name="free">Free</string>
+    <string name="km">km</string>
 
 </resources>

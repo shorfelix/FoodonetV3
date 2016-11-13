@@ -22,6 +22,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
     /** recycler adapter for publication */
@@ -83,7 +84,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             this.publication = publication;
             // TODO: add image logic, add distance logic, number of users who joined, currently hard coded
             textPublicationTitle.setText(publication.getTitle());
-            String addressDistance = CommonMethods.getRoundedStringFromNumber(15.7f);
+            String addressDistance = String.format(Locale.US,"%1$s %2$s",CommonMethods.getRoundedStringFromNumber(15.7f),context.getResources().getString(R.string.km));
             textPublicationAddressDistance.setText(addressDistance);
             //add photo here
             if(publication.getPhotoURL().equals("")){
