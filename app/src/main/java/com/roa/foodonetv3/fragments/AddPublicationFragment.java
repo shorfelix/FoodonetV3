@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
@@ -105,8 +106,10 @@ public class AddPublicationFragment extends Fragment implements View.OnClickList
                 break;
             case R.id.textEndDate:
                 /** starts the date picker dialog for the end date */
-                DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity());
-                datePickerDialog.show();
+                // TODO: 14/11/2016 currently not working!
+                Snackbar.make(textEndDate,"Temporarily disabled",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
+//                DatePickerDialog datePickerDialog = new DatePickerDialog(getActivity());
+//                datePickerDialog.show();
                 break;
             case R.id.imageTakePictureAddPublication:
                 /** starts the image taking intent through the default app*/
