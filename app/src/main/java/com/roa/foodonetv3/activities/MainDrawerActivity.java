@@ -97,7 +97,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         viewPager = (ViewPager) findViewById(R.id.viewPager);
         adapter = new ViewHolderAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
-        viewPager.setCurrentItem(1);
+        viewPager.setCurrentItem(0);
         tabs.setOnTabSelectedListener(this);
         tabs.setupWithViewPager(viewPager);
 
