@@ -11,6 +11,7 @@
     <string name="sign_in">sign in</string>
     <string name="sign_out">Sign out</string>
     <string name="add_publication">New Share</string>
+    <string name="publication">Publication</string>
     <string name="post_hint_what_would_you_like_to_share">What would you like to share?</string>
     <string name="post_hint_pickup_address">Pickup address</string>
     <string name="post_hint_share_with">Share with</string>
@@ -26,5 +27,6 @@
     <string name="joined">Joined</string>
     <string name="free">Free</string>
     <string name="km">km</string>
+
 
 </resources>
