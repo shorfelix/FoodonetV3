@@ -1,10 +1,22 @@
 package com.roa.foodonetv3.model;
 
-/**
- * Created by roa on 13/11/2016.
- */
+import android.util.Log;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class ReportFromServer {
+
+    public static final String REPORT_KEY = "publication_report";
+    private static final String REPORT_PUBLICATION_ID = "publication_id";
+    private static final String REPORT_PUBLICATION_VERSION = "publication_version";
+    private static final String REPORT_REPORT = "report";
+    private static final String REPORT_DATE_OF_REPORT = "“date_of_report";
+    private static final String REPORT_ACTIVE_DEVICE_DEV_UUID = "“active_device_dev_uuid";
+    private static final String REPORT_USER_NAME = "report_user_name";
+    private static final String REPORT_CONTACT_INFO = "report_contact_info";
+    private static final String REPORT_RATING = "rating";
+    private static final String REPORT_REPORTER_USER_ID = "reporter_user_id";
 
     private long reportId, publicationId;
     private int publicationVersion, reportType, reportUserId, rating;
@@ -26,6 +38,28 @@ public class ReportFromServer {
         this.reportUserId = reportUserId;
         this.reportUserName = reportUserName;
         this.updateDate = updateDate;
+    }
+
+    public JSONObject getAddReportJson() {
+        /** creates a json object from the publication as to be sent to the server */
+        JSONObject reportJsonRoot = new JSONObject();
+        JSONObject reportJson = new JSONObject();
+        try {
+            reportJson.put(REPORT_PUBLICATION_ID, getPublicationId());
+            reportJson.put(REPORT_PUBLICATION_VERSION, getPublicationVersion());
+            reportJson.put(REPORT_REPORT, getReportType());
+            reportJson.put(REPORT_DATE_OF_REPORT, getDateOfReport());
+            reportJson.put(REPORT_ACTIVE_DEVICE_DEV_UUID,getActive_device_dev_uuid());
+            reportJson.put(REPORT_USER_NAME,getReportUserName());
+            reportJson.put(REPORT_CONTACT_INFO,getReportContactInfo());
+            reportJson.put(REPORT_RATING,getRating());
+            reportJson.put(REPORT_REPORTER_USER_ID,getReportUserId());
+
+            reportJsonRoot.put(REPORT_KEY, reportJson);
+        } catch (JSONException e) {
+            Log.e("getPublicationJson", e.getMessage());
+        }
+        return reportJsonRoot;
     }
 
     public String getActive_device_dev_uuid() {
