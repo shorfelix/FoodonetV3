@@ -21,4 +21,10 @@
     <string name="post_toast_please_enter_a_price_in_numbers">Please enter a price in numbers</string>
     <string name="title_activity_map">Map</string>
     <string name="item_price">Item price:</string>
+    <string name="audience_public">Public</string>
+    <string name="group">Group</string>
+    <string name="joined">Joined</string>
+    <string name="free">Free</string>
+    <string name="km">km</string>
+
 </resources>

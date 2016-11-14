@@ -78,6 +78,19 @@ public class AddPublicationFragment extends Fragment implements View.OnClickList
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if(mCurrentPhotoPath == null){
+            /** check if there is no path yet, if not, load the default image */
+            // TODO: 13/11/2016 fix image size error
+            Picasso.with(getContext()).load(R.drawable.foodonet_image)
+    //                .resize(imagePictureAddPublication.getWidth(),imagePictureAddPublication.getHeight())
+    //                .centerCrop()
+                    .into(imagePictureAddPublication);
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.buttonTestAdd:
