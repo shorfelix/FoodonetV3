@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -132,17 +133,20 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         switch (v.getId()){
             case R.id.imageActionPublicationJoin:
                 // TODO: 13/11/2016 add join logic
+                Snackbar.make(imageActionPublicationJoin,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
                 break;
             case R.id.imageActionPublicationReport:
-                ReportFromServer reportFromServer = new ReportFromServer(-1,publication.getId(),publication.getVersion(),3,publication.getActiveDeviceDevUUID(),
-                        "","",String.valueOf(System.currentTimeMillis()), MainDrawerActivity.getFireBaseUser().getDisplayName(),
-                        "0500000000",999,4);
-                String reportJson = reportFromServer.getAddReportJson().toString();
-                Log.d(TAG,"report json:"+reportJson);
-                i = new Intent(getContext(),AddReportService.class);
-                i.putExtra(ReportFromServer.REPORT_KEY,reportJson);
-                i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,publication.getId());
-                getContext().startService(i);
+                // TODO: 14/11/2016 not working!
+                Snackbar.make(imageActionPublicationReport,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
+//                ReportFromServer reportFromServer = new ReportFromServer(-1,publication.getId(),publication.getVersion(),3,publication.getActiveDeviceDevUUID(),
+//                        "","",String.valueOf(System.currentTimeMillis()), MainDrawerActivity.getFireBaseUser().getDisplayName(),
+//                        "0500000000",999,4);
+//                String reportJson = reportFromServer.getAddReportJson().toString();
+//                Log.d(TAG,"report json:"+reportJson);
+//                i = new Intent(getContext(),AddReportService.class);
+//                i.putExtra(ReportFromServer.REPORT_KEY,reportJson);
+//                i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,publication.getId());
+//                getContext().startService(i);
                 break;
             case R.id.imageActionPublicationPhone:
                 if (publication.getContactInfo().matches("[0-9]+") && publication.getContactInfo().length() > 2) {
