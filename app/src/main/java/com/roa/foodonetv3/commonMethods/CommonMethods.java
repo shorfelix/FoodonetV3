@@ -34,20 +34,32 @@ public class CommonMethods {
 
     public static void navigationItemSelectedAction(Context context, int id){
         /** handle the navigation actions from the drawer*/
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        switch (id){
+            case R.id.nav_my_shares:
 
-        } else if (id == R.id.nav_map) {
-            Intent intent = new Intent(context, MapActivity.class);
-            context.startActivity(intent);
+                break;
+            case R.id.nav_all_events:
 
-        } else if (id == R.id.nav_manage) {
+                break;
+            case R.id.nav_map_view:
+                Intent intent = new Intent(context, MapActivity.class);
+                context.startActivity(intent);
+                break;
+            case R.id.nav_notifications:
 
-        } else if (id == R.id.nav_share) {
+                break;
+            case R.id.nav_groups:
 
-        } else if (id == R.id.nav_send) {
+                break;
+            case R.id.nav_settings:
 
+                break;
+            case R.id.nav_contact_us:
+
+                break;
+            case R.id.nav_about:
+
+                break;
         }
     }
 

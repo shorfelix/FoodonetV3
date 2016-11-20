@@ -40,7 +40,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     // TODO: 12/11/2016 move two constants to different class
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
     public static final int OPEN_ADD_PUBLICATION = 1;
-    public static final int OPEN_PUBLICATION_DETAIL = 2;
+    public static final int OPEN_EDIT_PUBLICATION = 2;
+    public static final int OPEN_PUBLICATION_DETAIL = 3;
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
