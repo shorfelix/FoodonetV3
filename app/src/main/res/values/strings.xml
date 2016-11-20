@@ -28,5 +28,8 @@
     <string name="free">Free</string>
     <string name="km">km</string>
 
+    <string name="facebook_app_id">1059200874178777</string>
+    <string name="fb_login_protocol_scheme">fb1059200874178777</string>
+
 
 </resources>
