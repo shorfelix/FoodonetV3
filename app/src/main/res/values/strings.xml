@@ -36,4 +36,8 @@
     <string name="drawer_contact_us">Contact Us</string>
     <string name="drawer_about">About</string>
 
+    <string name="facebook_app_id">1059200874178777</string>
+    <string name="fb_login_protocol_scheme">fb1059200874178777</string>
+
+
 </resources>
