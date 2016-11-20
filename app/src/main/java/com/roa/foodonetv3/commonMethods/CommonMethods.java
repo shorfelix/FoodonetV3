@@ -15,6 +15,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MapActivity;
+import com.roa.foodonetv3.activities.SignInActivity;
+import com.roa.foodonetv3.activities.WelcomeUserActivity;
 import com.roa.foodonetv3.model.User;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,6 +45,8 @@ public class CommonMethods {
             context.startActivity(intent);
 
         } else if (id == R.id.nav_manage) {
+            Intent intent = new Intent(context, SignInActivity.class);
+            context.startActivity(intent);
 
         } else if (id == R.id.nav_share) {
 
