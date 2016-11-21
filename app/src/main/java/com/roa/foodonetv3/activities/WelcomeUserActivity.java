@@ -17,7 +17,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 
 public class WelcomeUserActivity extends AppCompatActivity {
-    ///test from roi
 
     private ImageView userImageView;
     private Button finishRegisterationButton;
@@ -60,13 +59,13 @@ public class WelcomeUserActivity extends AppCompatActivity {
     }
 
     public Boolean isLegalNumber(String number){
-
+        // TODO: 21/11/2016 currently just checking israeli mobile phone numbers, should allow line phones as well
         if(number.length()<10){
             Toast.makeText(this, "you miss digit", Toast.LENGTH_SHORT).show();
             return false;
         }
         if(number.length()>10){
-            Toast.makeText(this, "you have to much digits", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "you have too much digits", Toast.LENGTH_SHORT).show();
             return false;
         }
 
