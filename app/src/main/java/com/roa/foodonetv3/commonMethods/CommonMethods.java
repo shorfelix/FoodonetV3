@@ -36,6 +36,7 @@ public class CommonMethods {
 
     public static void navigationItemSelectedAction(Context context, int id){
         /** handle the navigation actions from the drawer*/
+        Intent intent;
         switch (id){
             case R.id.nav_my_shares:
 
@@ -44,7 +45,7 @@ public class CommonMethods {
 
                 break;
             case R.id.nav_map_view:
-                Intent intent = new Intent(context, MapActivity.class);
+                intent = new Intent(context, MapActivity.class);
                 context.startActivity(intent);
                 break;
             case R.id.nav_notifications:
@@ -54,7 +55,8 @@ public class CommonMethods {
 
                 break;
             case R.id.nav_settings:
-
+                intent = new Intent(context,SignInActivity.class);
+                context.startActivity(intent);
                 break;
             case R.id.nav_contact_us:
 
