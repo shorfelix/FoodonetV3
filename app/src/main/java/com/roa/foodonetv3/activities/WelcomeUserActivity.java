@@ -1,6 +1,9 @@
 package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -15,9 +18,9 @@ import com.facebook.Profile;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.model.User;
 
 public class WelcomeUserActivity extends AppCompatActivity {
-    ///test from roi
 
     private ImageView userImageView;
     private Button finishRegisterationButton;
@@ -26,6 +29,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
     private FirebaseAuth mFirebaseAuth;
     private EditText userPhoneNumber;
     private String userName = "";
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +40,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
         finishRegisterationButton = (Button) findViewById(R.id.finishRegisterationButton);
         userNameTxt = (TextView) findViewById(R.id.userNameTxt);
         userPhoneNumber = (EditText) findViewById(R.id.userPhoneNumberTxt);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -49,7 +54,13 @@ public class WelcomeUserActivity extends AppCompatActivity {
         finishRegisterationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(isLegalNumber(userPhoneNumber.getText().toString())) {
+                String phoneNumber = userPhoneNumber.getText().toString();
+                if(isLegalNumber(phoneNumber)) {
+                    //save user phone number to sharePreferences
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString(User.PHONE_NUMBER, phoneNumber);
+                    editor.apply();
+
                     Intent intent = new Intent(WelcomeUserActivity.this, MainDrawerActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
@@ -60,13 +71,13 @@ public class WelcomeUserActivity extends AppCompatActivity {
     }
 
     public Boolean isLegalNumber(String number){
-
+        // TODO: 21/11/2016 currently just checking israeli mobile phone numbers, should allow line phones as well
         if(number.length()<10){
             Toast.makeText(this, "you miss digit", Toast.LENGTH_SHORT).show();
             return false;
         }
         if(number.length()>10){
-            Toast.makeText(this, "you have to much digits", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "you have too much digits", Toast.LENGTH_SHORT).show();
             return false;
         }
 
