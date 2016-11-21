@@ -3,49 +3,53 @@ package com.roa.foodonetv3.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
+
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.Publication;
+import com.roa.foodonetv3.model.ReportFromServer;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class AddPublicationService extends IntentService {
-    private static final String TAG = "AddPublicationService";
 
-    public AddPublicationService() {
-        super("AddPublicationService");
+/**
+ * An {@link IntentService} subclass for handling asynchronous task requests in
+ * a service on a separate handler thread.
+ * <p>
+ * TODO: Customize class - update intent actions and extra parameters.
+ */
+public class AddReportService extends IntentService {
+    private static final String TAG = "AddReportService";
+
+
+    public AddReportService() {
+        super("AddReportService");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             Log.d("AddPublicationService","entered service");
-            String jsonPublication = intent.getStringExtra(Publication.PUBLICATION_KEY);
+            String jsonReport = intent.getStringExtra(ReportFromServer.REPORT_KEY);
 
             //todo use localID to later save the correct server id to the database
             long publicationLocalID = intent.getLongExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,-1);
+
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             StringBuilder urlAddressBuilder = new StringBuilder(getResources().getString(R.string.foodonet_server));
-            if(publicationLocalID<0){
-                /** if the publication id is negative - it is a new publication to add */
-                urlAddressBuilder.append(getResources().getString(R.string.foodonet_publications));
-                urlAddressBuilder.append(getResources().getString(R.string._json));
-            } else{
-                /** if the publication id is positive - it is an edit of an existing publication */
-                urlAddressBuilder.append(getResources().getString(R.string.foodonet_publications));
-                urlAddressBuilder.append(String.format(Locale.US,"/%1$d",publicationLocalID));
-                urlAddressBuilder.append(getResources().getString(R.string._json));
-            }
-
+            ///publications/<id>/rpublication_reports.json
+            urlAddressBuilder.append("/publications/" + publicationLocalID + "/rpublication_reports.json");
             Log.d(TAG,"address: " + urlAddressBuilder.toString());
+
             try {
                 URL url = new URL(urlAddressBuilder.toString());
                 connection = (HttpsURLConnection) url.openConnection();
@@ -55,7 +59,7 @@ public class AddPublicationService extends IntentService {
                 connection.setDoOutput(true);
                 OutputStream os = connection.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"utf-8"));
-                writer.write(jsonPublication);
+                writer.write(jsonReport);
                 writer.flush();
                 writer.close();
                 os.close();
@@ -68,18 +72,15 @@ public class AddPublicationService extends IntentService {
                 while((line = reader.readLine())!= null){
                     builder.append(line);
                 }
-                //todo save the response server id to the database, replacing the local one and / or update the version number of an edit
-
 
                 Log.d("SERVER RESPONSE", builder.toString());
             } catch (IOException e) {
+                e.printStackTrace();
                 Log.e(TAG,e.getMessage());
-            }
-            finally {
+            }finally {
                 if(connection!= null){
                     connection.disconnect();
-                }
-                if(reader != null){
+                } if(reader != null){
                     try {
                         reader.close();
                     } catch (IOException e) {
@@ -89,4 +90,6 @@ public class AddPublicationService extends IntentService {
             }
         }
     }
+
+
 }

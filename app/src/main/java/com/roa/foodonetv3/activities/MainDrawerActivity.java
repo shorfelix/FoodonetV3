@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -36,6 +37,12 @@ import java.util.UUID;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
+
+    // TODO: 12/11/2016 move two constants to different class
+    public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
+    public static final int OPEN_ADD_PUBLICATION = 1;
+    public static final int OPEN_EDIT_PUBLICATION = 2;
+    public static final int OPEN_PUBLICATION_DETAIL = 3;
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
@@ -77,9 +84,10 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         if (mFirebaseUser == null) {
             // Not signed in, launch the Sign In activity
-            startActivity(new Intent(this, SignInActivity.class));
-            finish();
-            return;
+            // TODO: 21/11/2016 removed the mandatory sign in here
+//            startActivity(new Intent(this, SignInActivity.class));
+//            finish();
+//            return;
         } else {
             mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
@@ -92,7 +100,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         viewPager = (ViewPager) findViewById(R.id.viewPager);
         adapter = new ViewHolderAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
-        viewPager.setCurrentItem(1);
+        viewPager.setCurrentItem(0);
         tabs.setOnTabSelectedListener(this);
         tabs.setupWithViewPager(viewPager);
 
@@ -102,7 +110,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-                Intent i = new Intent(MainDrawerActivity.this,AddPublicationActivity.class);
+                Intent i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
+                i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,OPEN_ADD_PUBLICATION);
                 startActivity(i);
             }
         });
@@ -153,12 +162,12 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             case R.id.action_settings:
                 mFirebaseAuth.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                startActivity(new Intent(this, SignInActivity.class));
+//                startActivity(new Intent(this, SignInActivity.class));
+                Snackbar.make(viewPager,"Signed out successfully",Snackbar.LENGTH_SHORT).show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
-
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
