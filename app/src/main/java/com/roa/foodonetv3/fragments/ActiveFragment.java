@@ -21,7 +21,7 @@ import com.roa.foodonetv3.services.GetReportService;
 
 import java.util.ArrayList;
 
-public class ActiveFragment extends Fragment {
+public class ActiveFragment extends Fragment{
     private static final String TAG = "ActiveFragment";
 
     private PublicationsRecyclerAdapter adapter;
@@ -64,9 +64,6 @@ public class ActiveFragment extends Fragment {
         Intent i = new Intent(getContext(), GetPublicationsService.class);
         i.putExtra(GetPublicationsService.QUERY_ARGS,getResources().getString(R.string.foodonet_publications));
         getContext().startService(i);
-
-        Intent r = new Intent(getContext(), GetReportService.class);
-        getContext().startService(r);
     }
 
     public class GetPublicationsReceiver extends BroadcastReceiver{

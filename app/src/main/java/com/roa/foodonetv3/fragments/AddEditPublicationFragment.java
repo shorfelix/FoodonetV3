@@ -267,7 +267,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             // TODO: 08/11/2016 repair starting time and ending time. also currently some fields are hard coded for testing
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, latlng.latitude, latlng.longitude,
                     String.valueOf(startingDate/1000), String.valueOf(endingDate/1000),
-                    "0500000000", true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), 16, 0, user.getDisplayName(), price, "");
+                    "0500000000", true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), 15, 0, user.getDisplayName(), price, "");
             Intent i = new Intent(getContext(), AddPublicationService.class);
             i.putExtra(Publication.PUBLICATION_KEY, publication.getPublicationJson().toString());
             i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY, publication.getId());

@@ -38,6 +38,13 @@
 
     <string name="facebook_app_id">1059200874178777</string>
     <string name="fb_login_protocol_scheme">fb1059200874178777</string>
+    <string name="minutes">minutes</string>
+    <string name="hours">hours</string>
+    <string name="days">days</string>
+    <string name="report_has_more_to_offer">has more to offer</string>
+    <string name="report_took_all">took all</string>
+    <string name="report_found_nothing_there">found nothing there</string>
+    <string name="ago">ago</string>
 
 
 </resources>
