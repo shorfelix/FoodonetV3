@@ -213,13 +213,13 @@
         android:layout_marginLeft="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16" />
 
-    <!--<android.support.v7.widget.RecyclerView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_below="@+id/textPublicationDetails"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:layout_alignParentStart="true"-->
-        <!--android:id="@+id/recyclerPublicationReport"/>-->
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/textPublicationDetails"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/recyclerPublicationReport"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -248,7 +248,7 @@
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:src="@drawable/sms"
-                android:id="@+id/imageActionPublicationReport"
+                android:id="@+id/imageActionPublicationSMS"
                 android:layout_centerHorizontal="true" />
 
         </RelativeLayout>

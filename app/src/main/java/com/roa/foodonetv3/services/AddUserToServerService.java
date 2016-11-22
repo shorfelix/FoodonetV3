@@ -44,8 +44,8 @@ public class AddUserToServerService extends IntentService {
                 URL url = new URL(urlAddressBuilder.toString());
                 connection = (HttpsURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
-//                connection.addRequestProperty("Accept","application/json");
-//                connection.addRequestProperty("Content-Type","application/json");
+                connection.addRequestProperty("Accept","application/json");
+                connection.addRequestProperty("Content-Type","application/json");
                 connection.setDoOutput(true);
                 OutputStream os = connection.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"utf-8"));
@@ -63,18 +63,11 @@ public class AddUserToServerService extends IntentService {
                     builder.append(line);
                 }
                 JSONObject root = new JSONObject(builder.toString());
-                JSONObject userResponse = root.getJSONObject("user_response");
-                String status = userResponse.getString("status");
-                int id = userResponse.getInt("id");
-                if(status.equals("created")){
-                    // TODO: 06/11/2016 add message
-                } else {
-                    // TODO: 06/11/2016 add message
-                }
+                int id = root.getInt("id");
                 CommonMethods.setMyUserID(this,id);
-                Log.d("Add user response",status + " ,"+id);
-
-                Log.d("SERVER RESPONSE", builder.toString());
+                Log.d("Add user response","id: "+id);
+                // TODO: 23/11/2016 add some response that the user was successfully signed to foodonet server
+//                Log.d("SERVER RESPONSE", builder.toString());
             } catch (IOException e) {
                 Log.e("AddUserService",e.getMessage());
             } catch (JSONException e) {

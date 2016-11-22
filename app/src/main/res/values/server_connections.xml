@@ -8,6 +8,8 @@
     <string name="amazon_user_avatar_image_name">fduser{0}.jpg</string>
 
     <string name="foodonet_publications">/publications</string>
+    <string name="foodonet_reports_version">/publication_reports?publication_version=</string>
+    <string name="foodonet_publication_reports">/publication_reports.json</string>
     <string name=".json">.json</string>
     <string name="foodonet_user">/users</string>
 
