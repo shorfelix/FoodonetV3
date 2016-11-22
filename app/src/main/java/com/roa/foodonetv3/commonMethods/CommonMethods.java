@@ -14,6 +14,8 @@ import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MapActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
@@ -34,7 +36,6 @@ public class CommonMethods {
     private static AmazonS3Client sS3Client;
     private static CognitoCachingCredentialsProvider sCredProvider;
     private static TransferUtility sTransferUtility;
-
 
     public static void navigationItemSelectedAction(Context context, int id){
         /** handle the navigation actions from the drawer*/

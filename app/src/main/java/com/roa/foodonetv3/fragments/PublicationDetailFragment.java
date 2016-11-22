@@ -20,8 +20,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
+import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.adapters.ReportsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
@@ -155,42 +159,50 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     @Override
     public void onClick(View v) {
         Intent i;
-        switch (v.getId()){
-            case R.id.imageActionPublicationJoin:
-                // TODO: 13/11/2016 add join logic
-                Snackbar.make(imageActionPublicationJoin,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
-                break;
-            case R.id.imageActionPublicationSMS:
-                // TODO: 14/11/2016 not working!
-                Snackbar.make(imageActionPublicationReport,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
-                ReportFromServer reportFromServer = new ReportFromServer(-1,publication.getId(),publication.getVersion(),3,publication.getActiveDeviceDevUUID(),
-                        "","",String.valueOf(System.currentTimeMillis()), MainDrawerActivity.getFireBaseUser().getDisplayName(),
-                        "0500000000",999,4);
-                String reportJson = reportFromServer.getAddReportJson().toString();
-                Log.d(TAG,"report json:"+reportJson);
-                i = new Intent(getContext(),AddReportService.class);
-                i.putExtra(ReportFromServer.REPORT_KEY,reportJson);
-                i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,publication.getId());
-                getContext().startService(i);
-                break;
-            case R.id.imageActionPublicationPhone:
-                if (publication.getContactInfo().matches("[0-9]+") && publication.getContactInfo().length() > 2) {
-                    i = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" + publication.getContactInfo()));
-                    startActivity(i);
-                }
-                break;
-            case R.id.imageActionPublicationMap:
-                if(publication.getLat()!=0 && publication.getLng()!= 0){
-                    i = new Intent(Intent.ACTION_VIEW,
-                            Uri.parse("geo:" + publication.getLat() + "," +
-                                    publication.getLng()
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if(user==null){
+            /** if the user is not signed in, all buttons are disabled, take him to the sign in activity */
+            i = new Intent(getContext(), SignInActivity.class);
+            startActivity(i);
+        } else{
+            switch (v.getId()){
+                case R.id.imageActionPublicationJoin:
+                    // TODO: 13/11/2016 add join logic
+                    Snackbar.make(imageActionPublicationJoin,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
+                    break;
+                case R.id.imageActionPublicationSMS:
+                    // TODO: 14/11/2016 not working! test for adding a report, hard coded
+
+                    Snackbar.make(imageActionPublicationReport,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
+                    ReportFromServer reportFromServer = new ReportFromServer(-1,publication.getId(),publication.getVersion(),3,publication.getActiveDeviceDevUUID(),
+                            "","",String.valueOf(System.currentTimeMillis()),user.getDisplayName(),
+                            "0500000000",17,4);
+                    String reportJson = reportFromServer.getAddReportJson().toString();
+                    Log.d(TAG,"report json:"+reportJson);
+                    i = new Intent(getContext(),AddReportService.class);
+                    i.putExtra(ReportFromServer.REPORT_KEY,reportJson);
+                    i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,publication.getId());
+                    getContext().startService(i);
+                case R.id.imageActionPublicationPhone:
+                    if (publication.getContactInfo().matches("[0-9]+") && publication.getContactInfo().length() > 2) {
+                        i = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" + publication.getContactInfo()));
+                        startActivity(i);
+                    }
+                    break;
+                case R.id.imageActionPublicationMap:
+                    // TODO: 22/11/2016 fix to allow both waze and google maps to work
+                    if(publication.getLat()!=0 && publication.getLng()!= 0){
+                        i = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("geo:" + publication.getLat() + "," +
+                                                publication.getLng()
 //                                    + "?q=" + getStreet() + "+" +
 //                                    getHousenumber() + "+" + getPostalcode() + "+" +
 //                                    getCity()
-                            ));
-                    startActivity(i);
-                }
-                break;
+                                ));
+                        startActivity(i);
+                    }
+                    break;
+            }
         }
     }
 

@@ -2,8 +2,10 @@ package com.roa.foodonetv3.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -23,11 +25,13 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
+import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.AddPublicationService;
 import com.squareup.picasso.Picasso;
 import java.io.File;
@@ -230,7 +234,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
     public void uploadPublicationToServer() {
         /** upload the publication to the foodonet server */
-        FirebaseUser user = MainDrawerActivity.getFireBaseUser();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String contactInfo = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(User.PHONE_NUMBER,"");
         String title = editTextTitleAddPublication.getText().toString();
         String location = textLocationAddPublication.getText().toString();
         String priceS = editTextPriceAddPublication.getText().toString();
@@ -267,7 +272,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             // TODO: 08/11/2016 repair starting time and ending time. also currently some fields are hard coded for testing
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, latlng.latitude, latlng.longitude,
                     String.valueOf(startingDate/1000), String.valueOf(endingDate/1000),
-                    "0500000000", true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), 15, 0, user.getDisplayName(), price, "");
+                    contactInfo, true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "");
             Intent i = new Intent(getContext(), AddPublicationService.class);
             i.putExtra(Publication.PUBLICATION_KEY, publication.getPublicationJson().toString());
             i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY, publication.getId());
