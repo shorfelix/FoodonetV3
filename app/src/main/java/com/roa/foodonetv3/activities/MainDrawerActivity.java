@@ -162,6 +162,11 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             case R.id.action_settings:
                 mFirebaseAuth.signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                // remove user phone number from sharePreferences
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.remove(User.PHONE_NUMBER);
+                editor.apply();
 //                startActivity(new Intent(this, SignInActivity.class));
                 Snackbar.make(viewPager,"Signed out successfully",Snackbar.LENGTH_SHORT).show();
                 return true;
