@@ -22,6 +22,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -34,6 +36,8 @@ import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
 import java.util.UUID;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
@@ -51,6 +55,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     private String mPhotoUrl;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
+    private CircleImageView circleImageView;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -78,10 +83,19 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+//        View hView =  navigationView.inflateHeaderView(R.layout.nav_header_main);
+//        circleImageView imgvw = (CircleImageView)hView.findViewById(R.id.headerCircleImage);
 
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+        //set the header imageView
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View hView =  navigationView.getHeaderView(0);
+        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        circleImageView.setImageResource(R.drawable.foodonet_image);
         if (mFirebaseUser == null) {
             // Not signed in, launch the Sign In activity
             // TODO: 21/11/2016 removed the mandatory sign in here
@@ -92,6 +106,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+                Glide.with(this).load(mUsername).into(circleImageView);
             }
         }
 
@@ -122,7 +137,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
 

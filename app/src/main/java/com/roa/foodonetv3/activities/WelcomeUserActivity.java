@@ -20,15 +20,17 @@ import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.User;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class WelcomeUserActivity extends AppCompatActivity {
 
-    private ImageView userImageView;
     private Button finishRegisterationButton;
     private TextView userNameTxt;
     private FirebaseUser mFirebaseUser;
     private FirebaseAuth mFirebaseAuth;
     private EditText userPhoneNumber;
     private String userName = "";
+    private CircleImageView circleImageView;
     private SharedPreferences preferences;
 
     @Override
@@ -36,10 +38,10 @@ public class WelcomeUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome_user);
 
-        userImageView = (ImageView) findViewById(R.id.userImageView);
         finishRegisterationButton = (Button) findViewById(R.id.finishRegisterationButton);
         userNameTxt = (TextView) findViewById(R.id.userNameTxt);
         userPhoneNumber = (EditText) findViewById(R.id.userPhoneNumberTxt);
+        circleImageView = (CircleImageView) findViewById(R.id.circleImage);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Initialize Firebase Auth
@@ -48,7 +50,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
         userName = mFirebaseUser.getDisplayName();
 
         //load the photo from fireBase
-        Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(userImageView);
+        Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
         userNameTxt.setText(userName);
 
         finishRegisterationButton.setOnClickListener(new View.OnClickListener() {
