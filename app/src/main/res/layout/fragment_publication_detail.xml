@@ -118,7 +118,7 @@
         style="@style/DetailTitleTextView"
         android:layout_marginTop="@dimen/margin_8" />
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:src="@drawable/camera_xxh"

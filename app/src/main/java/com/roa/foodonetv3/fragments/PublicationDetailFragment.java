@@ -38,10 +38,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class PublicationDetailFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "PublicationDetailFrag";
     private TextView textCategory,textTimeRemaining,textJoined,textTitlePublication,textPublicationAddress,textPublicationRating,textPublisherName,textPublicationPrice,textPublicationDetails;
-    private ImageView imagePicturePublication,imagePublisherUser,imageActionPublicationJoin,imageActionPublicationReport,imageActionPublicationPhone,imageActionPublicationMap;
+    private ImageView imagePicturePublication,imageActionPublicationJoin,imageActionPublicationReport,imageActionPublicationPhone,imageActionPublicationMap;
+    private CircleImageView imagePublisherUser;
     private Publication publication;
     private ReportsRecyclerAdapter adapter;
 
@@ -81,7 +84,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         textPublicationPrice = (TextView) v.findViewById(R.id.textPublicationPrice);
         textPublicationDetails = (TextView) v.findViewById(R.id.textPublicationDetails);
         imagePicturePublication = (ImageView) v.findViewById(R.id.imagePicturePublication);
-        imagePublisherUser = (ImageView) v.findViewById(R.id.imagePublisherUser);
+        imagePublisherUser = (CircleImageView) v.findViewById(R.id.imagePublisherUser);
         imageActionPublicationJoin = (ImageView) v.findViewById(R.id.imageActionPublicationJoin);
         imageActionPublicationReport = (ImageView) v.findViewById(R.id.imageActionPublicationSMS);
         imageActionPublicationPhone = (ImageView) v.findViewById(R.id.imageActionPublicationPhone);
