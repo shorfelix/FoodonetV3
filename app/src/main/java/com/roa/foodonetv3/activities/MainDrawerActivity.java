@@ -41,7 +41,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
-
+    //test//
     // TODO: 12/11/2016 move two constants to different class
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
     public static final int OPEN_ADD_PUBLICATION = 1;
