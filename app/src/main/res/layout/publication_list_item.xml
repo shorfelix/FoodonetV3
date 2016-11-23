@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="80dp">
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:layout_width="@dimen/image_size_68"
         android:layout_height="@dimen/image_size_68"
         android:id="@+id/imagePublication"
@@ -16,6 +16,7 @@
         android:layout_alignParentStart="true"
         android:layout_marginRight="@dimen/margin_16"
         android:layout_marginEnd="@dimen/margin_16" />
+
 
     <ImageView
         android:layout_width="@dimen/image_size_16"

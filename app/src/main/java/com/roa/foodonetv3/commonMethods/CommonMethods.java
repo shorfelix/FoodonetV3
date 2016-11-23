@@ -17,9 +17,13 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.activities.MapActivity;
+import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.activities.WelcomeUserActivity;
+import com.roa.foodonetv3.fragments.MyPublicationsFragment;
+import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,7 +46,9 @@ public class CommonMethods {
         Intent intent;
         switch (id){
             case R.id.nav_my_shares:
-
+                intent = new Intent(context, PublicationActivity.class);
+                intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                context.startActivity(intent);
                 break;
             case R.id.nav_all_events:
 

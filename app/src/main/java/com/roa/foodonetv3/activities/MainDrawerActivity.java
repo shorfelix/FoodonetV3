@@ -22,6 +22,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -35,20 +37,33 @@ import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
 import java.util.UUID;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
-
+    //test//
     // TODO: 12/11/2016 move two constants to different class
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
     public static final int OPEN_ADD_PUBLICATION = 1;
     public static final int OPEN_EDIT_PUBLICATION = 2;
     public static final int OPEN_PUBLICATION_DETAIL = 3;
+    public static final int OPEN_MY_PUBLICATIONS = 4;
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
+    private String mUsername;
+    private String mPhotoUrl;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
+    private CircleImageView circleImageView;
+
+    // Firebase instance variables
+    private FirebaseAuth mFirebaseAuth;
+    private static FirebaseUser mFirebaseUser;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +84,32 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+//        View hView =  navigationView.inflateHeaderView(R.layout.nav_header_main);
+//        circleImageView imgvw = (CircleImageView)hView.findViewById(R.id.headerCircleImage);
+
+        // Initialize Firebase Auth
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+        //set the header imageView
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View hView =  navigationView.getHeaderView(0);
+        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        circleImageView.setImageResource(R.drawable.foodonet_image);
+        if (mFirebaseUser == null) {
+            // Not signed in, launch the Sign In activity
+            // TODO: 21/11/2016 removed the mandatory sign in here
+//            startActivity(new Intent(this, SignInActivity.class));
+//            finish();
+//            return;
+        } else {
+            mUsername = mFirebaseUser.getDisplayName();
+            if (mFirebaseUser.getPhotoUrl() != null) {
+                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+                Glide.with(this).load(mUsername).into(circleImageView);
+            }
+        }
 
         tabs = (TabLayout) findViewById(R.id.tabs);
 
@@ -104,7 +145,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
 
@@ -221,5 +262,9 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         public int getCount() {
             return 3;
         }
+    }
+
+    public static FirebaseUser getFireBaseUser(){
+        return mFirebaseUser;
     }
 }

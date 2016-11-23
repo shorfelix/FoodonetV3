@@ -24,6 +24,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
     /** recycler adapter for publication */
     private static final String TAG = "PubsRecyclerAdapter";
@@ -63,7 +65,8 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
 
     class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener, View.OnClickListener, View.OnLongClickListener {
         private Publication publication;
-        private ImageView imagePublication,imagePublicationGroup;
+        private ImageView imagePublicationGroup;
+        private CircleImageView imagePublication;
         private TextView textPublicationTitle, textPublicationAddressDistance;
         private File mCurrentPhotoFile;
         private int observerId;
@@ -72,7 +75,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
 
         PublicationHolder(View itemView) {
             super(itemView);
-            imagePublication = (ImageView) itemView.findViewById(R.id.imagePublication);
+            imagePublication = (CircleImageView) itemView.findViewById(R.id.imagePublication);
             imagePublicationGroup = (ImageView) itemView.findViewById(R.id.imagePublicationGroup);
             textPublicationTitle = (TextView) itemView.findViewById(R.id.textPublicationTitle);
             textPublicationAddressDistance = (TextView) itemView.findViewById(R.id.textPublicationAddressDistance);
