@@ -47,17 +47,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
-    private String mUsername;
-    private String mPhotoUrl;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
-
-    // Firebase instance variables
-    private FirebaseAuth mFirebaseAuth;
-    private static FirebaseUser mFirebaseUser;
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,22 +70,6 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
 
-        // Initialize Firebase Auth
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        if (mFirebaseUser == null) {
-            // Not signed in, launch the Sign In activity
-            // TODO: 21/11/2016 removed the mandatory sign in here
-//            startActivity(new Intent(this, SignInActivity.class));
-//            finish();
-//            return;
-        } else {
-            mUsername = mFirebaseUser.getDisplayName();
-            if (mFirebaseUser.getPhotoUrl() != null) {
-                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-            }
-        }
-
         tabs = (TabLayout) findViewById(R.id.tabs);
 
         viewPager = (ViewPager) findViewById(R.id.viewPager);
@@ -110,8 +85,15 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-                Intent i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
-                i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,OPEN_ADD_PUBLICATION);
+                Intent i;
+                if(FirebaseAuth.getInstance().getCurrentUser()==null){
+                    /** no user logged in yet, open the sign in activity */
+                    i = new Intent(MainDrawerActivity.this,SignInActivity.class);
+                } else{
+                    /** a user is logged in, continue to open the activity and fragment of the add publication */
+                    i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
+                    i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,OPEN_ADD_PUBLICATION);
+                }
                 startActivity(i);
             }
         });
@@ -160,10 +142,15 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         int id = item.getItemId();
         switch (id){
             case R.id.action_settings:
-                mFirebaseAuth.signOut();
+                FirebaseAuth.getInstance().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                /** remove user phone number from sharePreferences */
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.remove(User.PHONE_NUMBER);
+                editor.apply();
 //                startActivity(new Intent(this, SignInActivity.class));
-                Snackbar.make(viewPager,"Signed out successfully",Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -234,9 +221,5 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         public int getCount() {
             return 3;
         }
-    }
-
-    public static FirebaseUser getFireBaseUser(){
-        return mFirebaseUser;
     }
 }
