@@ -8,11 +8,14 @@ import android.nfc.Tag;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MapActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
@@ -24,6 +27,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class CommonMethods {
     private static final String TAG = "CommonMethods";
@@ -32,7 +36,6 @@ public class CommonMethods {
     private static AmazonS3Client sS3Client;
     private static CognitoCachingCredentialsProvider sCredProvider;
     private static TransferUtility sTransferUtility;
-
 
     public static void navigationItemSelectedAction(Context context, int id){
         /** handle the navigation actions from the drawer*/
@@ -55,6 +58,7 @@ public class CommonMethods {
 
                 break;
             case R.id.nav_settings:
+                // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
                 intent = new Intent(context,SignInActivity.class);
                 context.startActivity(intent);
                 break;
@@ -65,6 +69,45 @@ public class CommonMethods {
 
                 break;
         }
+    }
+
+    public static double getCurrentTimeSeconds(){
+        /** returns current epoch time in seconds(NOT MILLIS!) */
+        return System.currentTimeMillis()/1000;
+    }
+
+    public static String getTimeDifference(Context context, Double earlierTime, Double laterTime){
+        /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the length */
+        long timeDiff =(long) (laterTime - earlierTime)/60; // minutes as start
+        String typeOfTime;
+        if(timeDiff < 0){
+            return "N/A";
+        } else if(timeDiff < 60){
+            /** returns time in minutes */
+            typeOfTime = context.getResources().getString(R.string.minutes);
+        } else if(timeDiff /60 < 48 ){
+            /** returns time in hours */
+            typeOfTime = context.getResources().getString(R.string.hours);
+            timeDiff /=60;
+        } else{
+            /** returns time in days */
+            typeOfTime = context.getResources().getString(R.string.days);
+            timeDiff /=60/24;
+        }
+        return String.format(Locale.US,"%1$d %2$s",timeDiff,typeOfTime);
+    }
+
+    public static String getReportStringFromType(Context context,int typeOfReport){
+        /** get the message according to the server specified report type */
+        switch (typeOfReport){
+            case 1:
+                return context.getResources().getString(R.string.report_has_more_to_offer);
+            case 3:
+                return context.getResources().getString(R.string.report_took_all);
+            case 5:
+                return context.getResources().getString(R.string.report_found_nothing_there);
+        }
+        return null;
     }
 
     public static String getDeviceUUID(Context context){
