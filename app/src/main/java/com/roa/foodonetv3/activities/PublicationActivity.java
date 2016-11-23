@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.fragments.AddEditPublicationFragment;
+import com.roa.foodonetv3.fragments.MyPublicationsFragment;
 import com.roa.foodonetv3.fragments.PublicationDetailFragment;
 import com.roa.foodonetv3.model.Publication;
 
@@ -94,6 +95,9 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 bundle.putParcelable(Publication.PUBLICATION_KEY,publication);
                 publicationDetailFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, publicationDetailFragment, "publicationDetailFrag").commit();
+                break;
+            case MainDrawerActivity.OPEN_MY_PUBLICATIONS:
+                fragmentManager.beginTransaction().add(R.id.container_publication, new MyPublicationsFragment(), "my_publications").commit();
                 break;
         }
     }

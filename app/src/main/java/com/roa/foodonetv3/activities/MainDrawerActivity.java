@@ -43,6 +43,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     public static final int OPEN_ADD_PUBLICATION = 1;
     public static final int OPEN_EDIT_PUBLICATION = 2;
     public static final int OPEN_PUBLICATION_DETAIL = 3;
+    public static final int OPEN_MY_PUBLICATIONS = 4;
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
