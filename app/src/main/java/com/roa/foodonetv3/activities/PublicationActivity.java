@@ -10,17 +10,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.fragments.AddEditPublicationFragment;
 import com.roa.foodonetv3.fragments.PublicationDetailFragment;
 import com.roa.foodonetv3.model.Publication;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     private static final String TAG = "PublicationActivity";
     private FragmentManager fragmentManager;
     private Intent intent;
+    private CircleImageView circleImageView;
+
+    // Firebase instance variables
+    private FirebaseAuth mFirebaseAuth;
+    private static FirebaseUser mFirebaseUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +56,18 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         fragmentManager = getSupportFragmentManager();
         if(savedInstanceState==null){
             openNewPublicationFrag(openFragType);
+        }
+
+        // Initialize Firebase Auth
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        //set header imageView
+        View hView = navigationView.getHeaderView(0);
+        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        if (mFirebaseUser!=null && mFirebaseUser.getPhotoUrl()!=null) {
+            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
+        }else {
+            circleImageView.setImageResource(R.drawable.foodonet_image);
         }
     }
     @Override
