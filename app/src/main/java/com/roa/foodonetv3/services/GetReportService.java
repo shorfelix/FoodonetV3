@@ -2,6 +2,7 @@ package com.roa.foodonetv3.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.roa.foodonetv3.R;
@@ -18,18 +19,15 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
-
-/**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p>
- * TODO: Customize class - update intent actions and extra parameters.
- */
 public class GetReportService extends IntentService {
-    public static final String ACTION_SERVICE_GET_PUBLICATIONS = "com.roa.foodonetv3.services.ACTION_SERVICE_GET_REPORT";
+    private static final String TAG = "GetReportService";
+    public static final String ACTION_SERVICE_GET_REPORTS = "com.roa.foodonetv3.services.ACTION_SERVICE_GET_REPORTS";
+    public static final String QUERY_REPORTS = "query_reports";
+    public static final String QUERY_ERROR = "query_error";
 
     public GetReportService() {
         super("GetReportService");
@@ -40,8 +38,17 @@ public class GetReportService extends IntentService {
         boolean queryError = false;
         ArrayList<ReportFromServer> reports = new ArrayList<>();
         if (intent != null) {
+            long publicationID = intent.getLongExtra(Publication.PUBLICATION_UNIQUE_ID_KEY,-1);
+            int publicationVersion = intent.getIntExtra(Publication.PUBLICATION_VERSION_KEY,1);
             StringBuilder urlAddressBuilder = new StringBuilder();
-            urlAddressBuilder.append("https://prv-fd-server.herokuapp.com/publications/2/publication_reports?publication_version=1");
+//            urlAddressBuilder.append("https://prv-fd-server.herokuapp.com/publications/2/publication_reports?publication_version=1");
+            urlAddressBuilder.append(getResources().getString(R.string.foodonet_server));
+            urlAddressBuilder.append(getResources().getString(R.string.foodonet_publications));
+            urlAddressBuilder.append(String.format(Locale.US,"/%1$s",publicationID));
+            urlAddressBuilder.append(getResources().getString(R.string.foodonet_reports_version));
+            urlAddressBuilder.append(publicationVersion);
+            // TODO: 21/11/2016 delete below code, test
+            Log.d(TAG,"address: "+urlAddressBuilder.toString());
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             URL url;
@@ -58,28 +65,40 @@ public class GetReportService extends IntentService {
                     builder.append(line);
                 }
                 JSONArray root = new JSONArray(builder.toString());
+                /** declarations */
+                long reportId;
+                int reportType;
+                String active_device_dev_uuid;
+                String createdDate;
+                String updateDate;
+                String dateOfReport;
+                String reportUserName;
+                String reportContactInfo;
+                int reportUserId;
+                int rating;
                 for (int i = 0; i < root.length(); i++) {
                     JSONObject report = root.getJSONObject(i);
-                    long reportId = report.getLong("id");
-                    long publicationId = report.getLong("publication_id");
-                    int publicationVersion = report.getInt("publication_version");
-                    int reportType = report.getInt("report");
-                    String active_device_dev_uuid = report.getString("active_device_dev_uuid");
-                    String createdDate = report.getString("created_at");
-                    String updateDate = report.getString("updated_at");
-                    String dateOfReport = report.getString("date_of_report");
-                    String reportUserName = "No user name";
+                    reportId = report.getLong("id");
+                    publicationID = report.getLong("publication_id");
+                    publicationVersion = report.getInt("publication_version");
+                    reportType = report.getInt("report");
+                    active_device_dev_uuid = report.getString("active_device_dev_uuid");
+                    createdDate = report.getString("created_at");
+                    updateDate = report.getString("updated_at");
+                    dateOfReport = report.getString("date_of_report");
+                    reportUserName = "No user name";
                     if (report.getString("report_user_name") != null) {
                          reportUserName = report.getString("report_user_name");
                     }
-                    String reportContactInfo = report.getString("report_contact_info");
-                    int reportUserId = report.getInt("reporter_user_id");
-                    int rating = report.getInt("rating");
+                    reportContactInfo = report.getString("report_contact_info");
+                    reportUserId = report.getInt("reporter_user_id");
+                    rating = report.getInt("rating");
 
-                    reports.add(new ReportFromServer(reportId, publicationId, publicationVersion, reportType, active_device_dev_uuid,
+                    reports.add(new ReportFromServer(reportId, publicationID, publicationVersion, reportType, active_device_dev_uuid,
                             createdDate, updateDate, dateOfReport, reportUserName, reportContactInfo, reportUserId, rating));
 
                 }
+
             } catch (IOException | JSONException e) {
                 Log.e("GetReportTask", e.getMessage());
                 queryError = true;
@@ -95,10 +114,10 @@ public class GetReportService extends IntentService {
                     }
                 }
             }
-
-
         }
+        Intent i = new Intent(ACTION_SERVICE_GET_REPORTS);
+        i.putExtra(QUERY_ERROR,queryError);
+        i.putExtra(QUERY_REPORTS,reports);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     }
-
-
 }

@@ -16,16 +16,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
-
-/**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p>
- * TODO: Customize class - update intent actions and extra parameters.
- */
 public class AddReportService extends IntentService {
     private static final String TAG = "AddReportService";
 
@@ -45,9 +39,11 @@ public class AddReportService extends IntentService {
 
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
+            ///publications/{0}/publication_reports.json
             StringBuilder urlAddressBuilder = new StringBuilder(getResources().getString(R.string.foodonet_server));
-            ///publications/<id>/rpublication_reports.json
-            urlAddressBuilder.append("/publications/" + publicationLocalID + "/rpublication_reports.json");
+            urlAddressBuilder.append(getResources().getString(R.string.foodonet_publications));
+            urlAddressBuilder.append(String.format(Locale.US,"/%1$d",publicationLocalID));
+            urlAddressBuilder.append(getResources().getString(R.string.foodonet_publication_reports));
             Log.d(TAG,"address: " + urlAddressBuilder.toString());
 
             try {
@@ -90,6 +86,4 @@ public class AddReportService extends IntentService {
             }
         }
     }
-
-
 }

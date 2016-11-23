@@ -6,6 +6,7 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,13 +18,16 @@ import com.bumptech.glide.Glide;
 import com.facebook.Profile;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.User;
+import com.roa.foodonetv3.services.AddUserToServerService;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class WelcomeUserActivity extends AppCompatActivity {
 
+    private static final String TAG = "WelcomeUserActivity";
     private Button finishRegisterationButton;
     private TextView userNameTxt;
     private FirebaseUser mFirebaseUser;
@@ -58,14 +62,31 @@ public class WelcomeUserActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String phoneNumber = userPhoneNumber.getText().toString();
                 if(isLegalNumber(phoneNumber)) {
-                    //save user phone number to sharePreferences
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putString(User.PHONE_NUMBER, phoneNumber);
-                    editor.apply();
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WelcomeUserActivity.this);
+                    /** save user phone number to sharePreferences */
+                    sharedPreferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
 
-                    Intent intent = new Intent(WelcomeUserActivity.this, MainDrawerActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+                    /** sign in the user to foodonet server and get his new (or old) id and save it to the shared preferences through the service */
+                    String uuid = sharedPreferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
+                    String providerId = "";
+                    for (UserInfo userInfo : mFirebaseUser.getProviderData()) {
+                        String tempProviderId = userInfo.getProviderId();
+                        if(tempProviderId.equals("google.com")){
+                            providerId = "google";
+                        }
+                        if (tempProviderId.equals("facebook.com")) {
+                            providerId = "facebook";
+                        }
+                    }
+                    User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,mFirebaseUser.getEmail(),mFirebaseUser.getDisplayName(),true,uuid);
+
+                    Intent i = new Intent(WelcomeUserActivity.this, AddUserToServerService.class);
+                    i.putExtra(User.USER_KEY,user.getUserJson().toString());
+                    WelcomeUserActivity.this.startService(i);
+
+                    String message = "user: "+user.getUserJson().toString();
+                    Log.d(TAG,message);
+                    finish();
                 }
             }
         });
