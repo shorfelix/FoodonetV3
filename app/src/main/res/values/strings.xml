@@ -12,6 +12,8 @@
     <string name="sign_out">Sign out</string>
     <string name="add_publication">New Share</string>
     <string name="publication">Publication</string>
+    <string name="ago">ago</string>
+
     <string name="post_hint_what_would_you_like_to_share">What would you like to share?</string>
     <string name="post_hint_pickup_address">Pickup address</string>
     <string name="post_hint_share_with">Share with</string>
@@ -20,13 +22,19 @@
     <string name="post_hint_choose_date_to_end">Choose date to end</string>
     <string name="post_hint_price">Price</string>
     <string name="post_toast_please_enter_a_price_in_numbers">Please enter a price in numbers</string>
+
     <string name="title_activity_map">Map</string>
     <string name="item_price">Item price:</string>
     <string name="audience_public">Public</string>
     <string name="group">Group</string>
     <string name="joined">Joined</string>
     <string name="free">Free</string>
+
     <string name="km">km</string>
+    <string name="minutes">minutes</string>
+    <string name="hours">hours</string>
+    <string name="days">days</string>
+
     <string name="drawer_my_shares">My Shares</string>
     <string name="drawer_all_events">All Events</string>
     <string name="drawer_map_view">Map View</string>
@@ -38,7 +46,12 @@
 
     <string name="facebook_app_id">1059200874178777</string>
     <string name="fb_login_protocol_scheme">fb1059200874178777</string>
-    <string name="signed_out_successfully">signed out successfully</string>
+
+    <string name="report_has_more_to_offer">has more to offer</string>
+    <string name="report_took_all">took all</string>
+    <string name="report_found_nothing_there">found nothing there</string>
+
+    <string name="signed_out_successfully">Signed out successfully</string>
 
 
 </resources>
