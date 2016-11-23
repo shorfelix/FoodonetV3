@@ -5,7 +5,7 @@
     android:layout_height="80dp">
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:layout_width="68dp"
+        android:layout_width="@dimen/image_size_68"
         android:layout_height="@dimen/image_size_68"
         android:id="@+id/imagePublication"
         app:srcCompat="@drawable/camera_xxh"

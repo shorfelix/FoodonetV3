@@ -7,6 +7,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Publication;
 
 import org.json.JSONArray;
@@ -23,7 +25,6 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class GetPublicationsService extends IntentService {
     public static final String ACTION_SERVICE_GET_PUBLICATIONS = "com.roa.foodonetv3.services.ACTION_SERVICE_GET_PUBLICATIONS";
-    public static final String QUERY_ARGS = "query_args";
     public static final String QUERY_ERROR = "query_error";
     public static final String QUERY_PUBLICATIONS = "query_publications";
 
@@ -38,7 +39,7 @@ public class GetPublicationsService extends IntentService {
         if (intent != null) {
             StringBuilder urlAddressBuilder = new StringBuilder();
             urlAddressBuilder.append(getResources().getString(R.string.foodonet_server));
-            urlAddressBuilder.append(intent.getStringExtra(QUERY_ARGS));
+            urlAddressBuilder.append(getResources().getString(R.string.foodonet_publications));
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             URL url;
@@ -56,29 +57,34 @@ public class GetPublicationsService extends IntentService {
                 }
                 JSONArray root = new JSONArray(builder.toString());
                 // temp
+                int userID = CommonMethods.getMyUserID(this);
+                int action = intent.getIntExtra(StartServiceMethods.ACTION_TYPE,1);
                 for (int i = 0; i < root.length(); i++) {
                     JSONObject publication = root.getJSONObject(i);
-                    long id = publication.getLong("id");
-                    int version = publication.getInt("version");
-                    String title = publication.getString("title");
-                    String subtitle = publication.getString("subtitle");
-                    String address = publication.getString("address");
-                    short typeOfCollecting = (short) publication.getInt("type_of_collecting");
-                    Double lat = publication.getDouble("latitude");
-                    Double lng = publication.getDouble("longitude");
-                    String startingDate = publication.getString("starting_date");
-                    String endingDate = publication.getString("ending_date");
-                    String contactInfo = publication.getString("contact_info");
-                    boolean isOnAir = publication.getBoolean("is_on_air");
-                    String activeDeviceDevUUID = publication.getString("active_device_dev_uuid");
-                    String photoURL = publication.getString("photo_url");
                     int publisherID = publication.getInt("publisher_id");
-                    int audience = publication.getInt("audience");
-                    String identityProviderUserName = publication.getString("identity_provider_user_name");
-                    Double price = publication.getDouble("price");
-                    String priceDescription = "price_description";
-                    publications.add(new Publication(id, version, title, subtitle, address, typeOfCollecting, lat, lng, startingDate, endingDate, contactInfo, isOnAir,
-                            activeDeviceDevUUID,photoURL,publisherID,audience,identityProviderUserName,price,priceDescription));
+                    if(action == StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER && publisherID!=userID || action == StartServiceMethods.ACTION_GET_USER_PUBLICATIONS && publisherID == userID){
+                        /** depending on the action intended, either get all publications except the ones created by the user, or get only the publications created by the user */
+                        long id = publication.getLong("id");
+                        int version = publication.getInt("version");
+                        String title = publication.getString("title");
+                        String subtitle = publication.getString("subtitle");
+                        String address = publication.getString("address");
+                        short typeOfCollecting = (short) publication.getInt("type_of_collecting");
+                        Double lat = publication.getDouble("latitude");
+                        Double lng = publication.getDouble("longitude");
+                        String startingDate = publication.getString("starting_date");
+                        String endingDate = publication.getString("ending_date");
+                        String contactInfo = publication.getString("contact_info");
+                        boolean isOnAir = publication.getBoolean("is_on_air");
+                        String activeDeviceDevUUID = publication.getString("active_device_dev_uuid");
+                        String photoURL = publication.getString("photo_url");
+                        int audience = publication.getInt("audience");
+                        String identityProviderUserName = publication.getString("identity_provider_user_name");
+                        Double price = publication.getDouble("price");
+                        String priceDescription = "price_description";
+                        publications.add(new Publication(id, version, title, subtitle, address, typeOfCollecting, lat, lng, startingDate, endingDate, contactInfo, isOnAir,
+                                activeDeviceDevUUID,photoURL,publisherID,audience,identityProviderUserName,price,priceDescription));
+                    }
                 }
                 //
 
