@@ -122,7 +122,7 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
             mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-                Glide.with(this).load(mUsername).into(circleImageView);
+                Glide.with(this).load(mPhotoUrl).into(circleImageView);
             }
         }
 

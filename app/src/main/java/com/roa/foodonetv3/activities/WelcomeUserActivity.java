@@ -86,6 +86,10 @@ public class WelcomeUserActivity extends AppCompatActivity {
 
                     String message = "user: "+user.getUserJson().toString();
                     Log.d(TAG,message);
+
+                    Intent a = new Intent(WelcomeUserActivity.this, MainDrawerActivity.class);
+                    a.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(a);
                     finish();
                 }
             }
