@@ -23,6 +23,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.GetPublicationsService;
@@ -129,9 +130,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         timer.cancel();
         userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         // temp
-        Intent i = new Intent(this, GetPublicationsService.class);
-        i.putExtra(GetPublicationsService.QUERY_ARGS,getResources().getString(R.string.foodonet_publications));
-        startService(i);
+        StartServiceMethods.startGetPublicationsService(this,StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
     }
 
     @Override

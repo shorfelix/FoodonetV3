@@ -1,5 +1,6 @@
 package com.roa.foodonetv3.fragments;
 
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,23 +19,19 @@ import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.GetPublicationsService;
-import com.roa.foodonetv3.services.GetReportService;
 
 import java.util.ArrayList;
 
-public class ActiveFragment extends Fragment{
-    private static final String TAG = "ActiveFragment";
-
+public class MyPublicationsFragment extends Fragment {
     private PublicationsRecyclerAdapter adapter;
 
-    public ActiveFragment() {
+    public MyPublicationsFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         /** set the broadcast receiver for getting all publications from the server */
         GetPublicationsReceiver receiver = new GetPublicationsReceiver();
         IntentFilter filter = new IntentFilter(GetPublicationsService.ACTION_SERVICE_GET_PUBLICATIONS);
@@ -45,14 +42,12 @@ public class ActiveFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        View v = inflater.inflate(R.layout.fragment_my_publications, container, false);
 
-        View v = inflater.inflate(R.layout.fragment_active, container, false);
-
-        /** set the recycler view and adapter for all publications */
-        RecyclerView activePubRecycler = (RecyclerView) v.findViewById(R.id.activePubRecycler);
-        activePubRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
+        RecyclerView recyclerMyPublications = (RecyclerView) v.findViewById(R.id.recyclerMyPublications);
+        recyclerMyPublications.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new PublicationsRecyclerAdapter(getContext());
-        activePubRecycler.setAdapter(adapter);
+        recyclerMyPublications.setAdapter(adapter);
 
         return v;
     }
@@ -60,11 +55,11 @@ public class ActiveFragment extends Fragment{
     @Override
     public void onResume() {
         super.onResume();
-        /** temp request publications update from the server on fragment resume */
-        StartServiceMethods.startGetPublicationsService(getContext(),StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
+        // TODO: 23/11/2016 testing, should be loaded from db and checked from server as well
+        StartServiceMethods.startGetPublicationsService(getContext(),StartServiceMethods.ACTION_GET_USER_PUBLICATIONS);
     }
 
-    public class GetPublicationsReceiver extends BroadcastReceiver{
+    public class GetPublicationsReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
@@ -73,4 +68,3 @@ public class ActiveFragment extends Fragment{
         }
     }
 }
-

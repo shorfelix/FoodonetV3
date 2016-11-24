@@ -2,6 +2,9 @@ package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -12,6 +15,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -27,6 +31,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -35,27 +40,38 @@ import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
+
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+public class MainDrawerActivity extends AppCompatActivity implements LocationListener, NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
     //test//
     // TODO: 12/11/2016 move two constants to different class
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
+    public static final String FIRST_USER_LATITUDE = "user_latitude";
+    public static final String FIRST_USER_LONGITUDE = "user_longitude";
     public static final int OPEN_ADD_PUBLICATION = 1;
     public static final int OPEN_EDIT_PUBLICATION = 2;
     public static final int OPEN_PUBLICATION_DETAIL = 3;
+    public static final int OPEN_MY_PUBLICATIONS = 4;
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
     private String mUsername;
-    private String mPhotoUrl;
+    private String mPhotoUrl, providerName;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
     private CircleImageView circleImageView;
+    private LocationManager locationManager;
+    private boolean gotLocation;
+    private Timer timer;
+    private LatLng userLocation;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -106,7 +122,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-                Glide.with(this).load(mUsername).into(circleImageView);
+                Glide.with(this).load(mPhotoUrl).into(circleImageView);
             }
         }
 
@@ -146,6 +162,10 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 
 //        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+
     }
 
     private void init(){
@@ -223,6 +243,33 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        gotLocation = true;
+        timer.cancel();
+        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
+        SharedPreferences.Editor editor = preferenceManager.edit();
+        editor.putString(FIRST_USER_LATITUDE, userLocation.latitude+"");
+        editor.putString(FIRST_USER_LONGITUDE, userLocation.longitude+"");
+        editor.apply();
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
     //view pager adapter...
     public static class ViewHolderAdapter extends FragmentPagerAdapter {
 
@@ -266,4 +313,55 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     public static FirebaseUser getFireBaseUser(){
         return mFirebaseUser;
     }
+
+    public void startGps(){
+        gotLocation = false;
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        providerName = LocationManager.GPS_PROVIDER;
+        try {
+            locationManager.requestLocationUpdates(providerName, 1000, 100, (LocationListener) MainDrawerActivity.this);
+        }
+        catch(SecurityException e){
+            Log.e("Location", e.getMessage());
+        }
+        timer = new Timer("provider");
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                // if we do not have a location yet
+                if(!gotLocation) {
+                    try {
+                        // remove old location provider(gps)
+                        locationManager.removeUpdates((LocationListener) MainDrawerActivity.this);
+                        // change provider name to NETWORK
+                        providerName = LocationManager.NETWORK_PROVIDER;
+                        // start listening to location again on the main thread
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainDrawerActivity.this);
+                                    builder.setMessage("Your NETWORK or your GPS seems to be disabled, please turn it on")
+                                            .setPositiveButton("Ok", null);
+                                    AlertDialog dialog = builder.create();
+                                    dialog.show();
+                                }
+                                try {
+                                    locationManager.requestLocationUpdates(providerName, 1000, 100, (LocationListener) MainDrawerActivity.this);
+                                } catch (SecurityException e) {
+                                    Log.e("Location Timer", e.getMessage());
+                                }
+                            }
+                        });
+                    } catch (SecurityException e) {
+                        Log.e("Location", e.getMessage());
+                    }
+                }
+            }
+        };
+        // schedule the timer to run the task after 5 seconds from now
+        timer.schedule(task, new Date(System.currentTimeMillis() + 5000));
+    }
 }
+
+
