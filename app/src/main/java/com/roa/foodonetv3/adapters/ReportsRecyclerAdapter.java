@@ -16,6 +16,8 @@ import java.util.Locale;
 
 public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecyclerAdapter.ReportsHolder> {
     private static final String TAG = "ReportsRecyclerAdapter";
+    private static final int REPORT_VIEW = 1;
+    private static final int REPORT_SPACER = 2;
     private Context context;
     private ArrayList<ReportFromServer> reports;
 
@@ -30,19 +32,34 @@ public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecycler
     }
 
     @Override
+    public int getItemViewType(int position) {
+        if(position==reports.size()){
+            return REPORT_SPACER;
+        } return REPORT_VIEW;
+    }
+
+    @Override
     public ReportsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        return new ReportsHolder(inflater.inflate(R.layout.report_list_item,parent,false));
+        if(viewType == REPORT_VIEW){
+            return new ReportsHolder(inflater.inflate(R.layout.report_list_item,parent,false));
+        } else{
+            return new ReportsHolder(inflater.inflate(R.layout.report_list_spacer,parent,false));
+        }
     }
 
     @Override
     public void onBindViewHolder(ReportsHolder holder, int position) {
-        holder.bindReport(reports.get(position));
+        if(getItemViewType(position)==REPORT_VIEW){
+            holder.bindReport(reports.get(position));
+        } else{
+            holder.bindSpacer();
+        }
     }
 
     @Override
     public int getItemCount() {
-        return reports.size();
+        return reports.size()+1;
     }
 
     public class ReportsHolder extends RecyclerView.ViewHolder{
@@ -59,6 +76,9 @@ public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecycler
                     CommonMethods.getTimeDifference(context,Double.parseDouble(report.getDateOfReport()),CommonMethods.getCurrentTimeSeconds()),
                     context.getResources().getString(R.string.ago)));
 
+        }
+        public void bindSpacer(){
+            // do nothing
         }
     }
 }

@@ -49,13 +49,11 @@ import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class MainDrawerActivity extends AppCompatActivity implements LocationListener, NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
-    //test//
+
     // TODO: 12/11/2016 move two constants to different class
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
-    public static final String FIRST_USER_LATITUDE = "user_latitude";
-    public static final String FIRST_USER_LONGITUDE = "user_longitude";
     public static final int OPEN_ADD_PUBLICATION = 1;
     public static final int OPEN_EDIT_PUBLICATION = 2;
     public static final int OPEN_PUBLICATION_DETAIL = 3;
@@ -64,22 +62,8 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
-    private String mUsername;
-    private String mPhotoUrl, providerName;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
-    private CircleImageView circleImageView;
-    private LocationManager locationManager;
-    private boolean gotLocation;
-    private Timer timer;
-    private LatLng userLocation;
-    private TextView headerTxt;
-
-    // Firebase instance variables
-    private FirebaseAuth mFirebaseAuth;
-    private static FirebaseUser mFirebaseUser;
-
-
 
 
     @Override
@@ -105,26 +89,20 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
 //        View hView =  navigationView.inflateHeaderView(R.layout.nav_header_main);
 //        circleImageView imgvw = (CircleImageView)hView.findViewById(R.id.headerCircleImage);
 
-        // Initialize Firebase Auth
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         //set the header imageView
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View hView =  navigationView.getHeaderView(0);
-        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
-        headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
+        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
         circleImageView.setImageResource(R.drawable.foodonet_image);
         if (mFirebaseUser == null) {
-            // Not signed in, launch the Sign In activity
-            // TODO: 21/11/2016 removed the mandatory sign in here
-//            startActivity(new Intent(this, SignInActivity.class));
-//            finish();
-//            return;
+            // TODO: 24/11/2016 add logic?
         } else {
-            mUsername = mFirebaseUser.getDisplayName();
+            String mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
-                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+                String mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
                 Glide.with(this).load(mPhotoUrl).into(circleImageView);
                 headerTxt.setText(mUsername);
             }
@@ -166,10 +144,6 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
 
 //        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-
     }
 
     private void init(){
@@ -208,12 +182,11 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
             case R.id.action_settings:
                 FirebaseAuth.getInstance().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                /** remove user phone number from sharePreferences */
-                SharedPreferences.Editor editor = preferences.edit();
+                /** remove user phone number and foodonet user ID from sharedPreferences */
+                SharedPreferences.Editor editor = preferenceManager.edit();
                 editor.remove(User.PHONE_NUMBER);
+                editor.remove(User.IDENTITY_PROVIDER_USER_ID);
                 editor.apply();
-//                startActivity(new Intent(this, SignInActivity.class));
                 Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
                 return true;
             default:
@@ -245,33 +218,6 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
     }
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        gotLocation = true;
-        timer.cancel();
-        userLocation = new LatLng(location.getLatitude(), location.getLongitude());
-        SharedPreferences.Editor editor = preferenceManager.edit();
-        editor.putString(FIRST_USER_LATITUDE, userLocation.latitude+"");
-        editor.putString(FIRST_USER_LONGITUDE, userLocation.longitude+"");
-        editor.apply();
-
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
     }
 
     //view pager adapter...
@@ -314,58 +260,7 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
         }
     }
 
-    public static FirebaseUser getFireBaseUser(){
-        return mFirebaseUser;
-    }
 
-    public void startGps(){
-        gotLocation = false;
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        providerName = LocationManager.GPS_PROVIDER;
-        try {
-            locationManager.requestLocationUpdates(providerName, 1000, 100, (LocationListener) MainDrawerActivity.this);
-        }
-        catch(SecurityException e){
-            Log.e("Location", e.getMessage());
-        }
-        timer = new Timer("provider");
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                // if we do not have a location yet
-                if(!gotLocation) {
-                    try {
-                        // remove old location provider(gps)
-                        locationManager.removeUpdates((LocationListener) MainDrawerActivity.this);
-                        // change provider name to NETWORK
-                        providerName = LocationManager.NETWORK_PROVIDER;
-                        // start listening to location again on the main thread
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(MainDrawerActivity.this);
-                                    builder.setMessage("Your NETWORK or your GPS seems to be disabled, please turn it on")
-                                            .setPositiveButton("Ok", null);
-                                    AlertDialog dialog = builder.create();
-                                    dialog.show();
-                                }
-                                try {
-                                    locationManager.requestLocationUpdates(providerName, 1000, 100, (LocationListener) MainDrawerActivity.this);
-                                } catch (SecurityException e) {
-                                    Log.e("Location Timer", e.getMessage());
-                                }
-                            }
-                        });
-                    } catch (SecurityException e) {
-                        Log.e("Location", e.getMessage());
-                    }
-                }
-            }
-        };
-        // schedule the timer to run the task after 5 seconds from now
-        timer.schedule(task, new Date(System.currentTimeMillis() + 5000));
-    }
 }
 
 
