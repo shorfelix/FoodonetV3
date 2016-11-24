@@ -2,6 +2,9 @@ package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -12,6 +15,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -22,11 +26,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -35,13 +41,17 @@ import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
+
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
-    //test//
+
     // TODO: 12/11/2016 move two constants to different class
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
     public static final int OPEN_ADD_PUBLICATION = 1;
@@ -52,17 +62,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
-    private String mUsername;
-    private String mPhotoUrl;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
-    private CircleImageView circleImageView;
-
-    // Firebase instance variables
-    private FirebaseAuth mFirebaseAuth;
-    private static FirebaseUser mFirebaseUser;
-
-
 
 
     @Override
@@ -88,26 +89,22 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 //        View hView =  navigationView.inflateHeaderView(R.layout.nav_header_main);
 //        circleImageView imgvw = (CircleImageView)hView.findViewById(R.id.headerCircleImage);
 
-        // Initialize Firebase Auth
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
         //set the header imageView
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View hView =  navigationView.getHeaderView(0);
-        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
         circleImageView.setImageResource(R.drawable.foodonet_image);
         if (mFirebaseUser == null) {
-            // Not signed in, launch the Sign In activity
-            // TODO: 21/11/2016 removed the mandatory sign in here
-//            startActivity(new Intent(this, SignInActivity.class));
-//            finish();
-//            return;
+            // TODO: 24/11/2016 add logic?
         } else {
-            mUsername = mFirebaseUser.getDisplayName();
+            String mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
-                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-                Glide.with(this).load(mUsername).into(circleImageView);
+                String mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+                Glide.with(this).load(mPhotoUrl).into(circleImageView);
+                headerTxt.setText(mUsername);
             }
         }
 
@@ -185,12 +182,11 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             case R.id.action_settings:
                 FirebaseAuth.getInstance().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                /** remove user phone number from sharePreferences */
-                SharedPreferences.Editor editor = preferences.edit();
+                /** remove user phone number and foodonet user ID from sharedPreferences */
+                SharedPreferences.Editor editor = preferenceManager.edit();
                 editor.remove(User.PHONE_NUMBER);
+                editor.remove(User.IDENTITY_PROVIDER_USER_ID);
                 editor.apply();
-//                startActivity(new Intent(this, SignInActivity.class));
                 Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
                 return true;
             default:
@@ -264,7 +260,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         }
     }
 
-    public static FirebaseUser getFireBaseUser(){
-        return mFirebaseUser;
-    }
+
 }
+
+

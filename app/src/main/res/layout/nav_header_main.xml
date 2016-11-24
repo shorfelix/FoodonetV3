@@ -26,6 +26,6 @@
         android:layout_marginLeft="@dimen/margin_8"
         android:text="RooftopDevTeam"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:id="@+id/textDrawerText" />
+        android:id="@+id/headerNavTxt" />
 
 </LinearLayout>
