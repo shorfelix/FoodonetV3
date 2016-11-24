@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,6 +31,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
     private FragmentManager fragmentManager;
     private Intent intent;
     private CircleImageView circleImageView;
+    private TextView headerTxt;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -65,11 +67,15 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         //set header imageView
         View hView = navigationView.getHeaderView(0);
         circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
+
         if (mFirebaseUser!=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
+            headerTxt.setText(mFirebaseUser.getDisplayName());
         }else {
             circleImageView.setImageResource(R.drawable.foodonet_image);
         }
+
     }
     @Override
     public void onBackPressed() {
