@@ -26,6 +26,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
@@ -93,7 +94,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         //set the header imageView
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View hView =  navigationView.getHeaderView(0);
-        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
         circleImageView.setImageResource(R.drawable.foodonet_image);
         if (mFirebaseUser == null) {
             // TODO: 24/11/2016 add logic?
@@ -102,6 +104,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             if (mFirebaseUser.getPhotoUrl() != null) {
                 String mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
                 Glide.with(this).load(mPhotoUrl).into(circleImageView);
+                headerTxt.setText(mUsername);
             }
         }
 
