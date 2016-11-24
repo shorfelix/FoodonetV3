@@ -94,8 +94,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         //set the header imageView
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View hView =  navigationView.getHeaderView(0);
-        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
-        headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
+        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
         circleImageView.setImageResource(R.drawable.foodonet_image);
         if (mFirebaseUser == null) {
             // TODO: 24/11/2016 add logic?
