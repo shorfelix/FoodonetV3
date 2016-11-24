@@ -26,6 +26,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
@@ -72,6 +73,7 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
     private boolean gotLocation;
     private Timer timer;
     private LatLng userLocation;
+    private TextView headerTxt;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
@@ -111,6 +113,7 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View hView =  navigationView.getHeaderView(0);
         circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
         circleImageView.setImageResource(R.drawable.foodonet_image);
         if (mFirebaseUser == null) {
             // Not signed in, launch the Sign In activity
@@ -123,6 +126,7 @@ public class MainDrawerActivity extends AppCompatActivity implements LocationLis
             if (mFirebaseUser.getPhotoUrl() != null) {
                 mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
                 Glide.with(this).load(mPhotoUrl).into(circleImageView);
+                headerTxt.setText(mUsername);
             }
         }
 
