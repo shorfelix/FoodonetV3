@@ -88,7 +88,8 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             this.publication = publication;
             // TODO: add image logic, add distance logic, number of users who joined, currently hard coded
             textPublicationTitle.setText(publication.getTitle());
-            String addressDistance = String.format(Locale.US,"%1$s %2$s",CommonMethods.getRoundedStringFromNumber(15.7f),context.getResources().getString(R.string.km));
+            double distance = CommonMethods.distance(32.073381,34.7917109,publication.getLat(),publication.getLng());
+            String addressDistance = String.format(Locale.US,"%1$s %2$s",CommonMethods.getRoundedStringFromNumber(distance),context.getResources().getString(R.string.km));
             textPublicationAddressDistance.setText(addressDistance);
             //add photo here
             if(publication.getPhotoURL().equals("")){

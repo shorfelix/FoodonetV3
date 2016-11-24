@@ -186,11 +186,11 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
                 FirebaseAuth.getInstance().signOut();
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                /** remove user phone number from sharePreferences */
+                /** remove user phone number and foodonet user ID from sharedPreferences */
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.remove(User.PHONE_NUMBER);
+                editor.remove(User.IDENTITY_PROVIDER_USER_ID);
                 editor.apply();
-//                startActivity(new Intent(this, SignInActivity.class));
                 Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
                 return true;
             default:
