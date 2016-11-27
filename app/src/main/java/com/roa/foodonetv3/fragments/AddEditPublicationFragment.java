@@ -30,9 +30,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
-import com.roa.foodonetv3.services.AddPublicationService;
+import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.IOException;
@@ -273,9 +274,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, latlng.latitude, latlng.longitude,
                     String.valueOf(startingDate/1000), String.valueOf(endingDate/1000),
                     contactInfo, true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "");
-            Intent i = new Intent(getContext(), AddPublicationService.class);
-            i.putExtra(Publication.PUBLICATION_KEY, publication.getPublicationJson().toString());
-            i.putExtra(Publication.PUBLICATION_UNIQUE_ID_KEY, publication.getId());
+            // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
+            Intent i = new Intent(getContext(), FoodonetService.class);
+            i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_PUBLICATION);
+            i.putExtra(FoodonetService.JSON_TO_SEND,publication.getPublicationJson().toString());
             getContext().startService(i);
             getActivity().finish();
         }

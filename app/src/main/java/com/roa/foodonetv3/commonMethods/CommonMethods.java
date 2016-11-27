@@ -152,6 +152,10 @@ public class CommonMethods {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(User.IDENTITY_PROVIDER_USER_ID,userID).apply();
     }
 
+    public static String getMyUserPhone(Context context){
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER,null);
+    }
+
     public static long getNewLocalPublicationID() {
         /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
         //todo add a check for available negative id, currently hard coded
