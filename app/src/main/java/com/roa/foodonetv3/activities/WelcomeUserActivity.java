@@ -14,6 +14,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserInfo;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.User;
@@ -58,22 +59,27 @@ public class WelcomeUserActivity extends AppCompatActivity {
                 String phoneNumber = userPhoneNumber.getText().toString();
                 if(isLegalNumber(phoneNumber)) {
                     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WelcomeUserActivity.this);
-                    /** save user phone number to sharePreferences */
+                    /** save user phone number to sharedPreferences */
                     sharedPreferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
 
                     /** sign in the user to foodonet server and get his new (or old) id and save it to the shared preferences through the service */
                     String uuid = sharedPreferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
                     String providerId = "";
+                    String userEmail = "";
                     for (UserInfo userInfo : mFirebaseUser.getProviderData()) {
+                        String mail = userInfo.getEmail();
                         String tempProviderId = userInfo.getProviderId();
                         if(tempProviderId.equals("google.com")){
                             providerId = "google";
+                            userEmail = userInfo.getEmail();
                         }
                         if (tempProviderId.equals("facebook.com")) {
                             providerId = "facebook";
+                            userEmail = userInfo.getEmail();
                         }
+                        Toast.makeText(WelcomeUserActivity.this, mail, Toast.LENGTH_SHORT).show();
                     }
-                    User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,mFirebaseUser.getEmail(),mFirebaseUser.getDisplayName(),true,uuid);
+                    User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,mFirebaseUser.getDisplayName(),true,uuid);
 
                     Intent i = new Intent(WelcomeUserActivity.this, AddUserToServerService.class);
                     i.putExtra(User.USER_KEY,user.getUserJson().toString());
