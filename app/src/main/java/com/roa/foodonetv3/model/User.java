@@ -85,6 +85,9 @@ public class User {
     }
 
     public String getIdentityProviderEmail() {
+        if(identityProviderEmail==null){
+            return "";
+        }
         return identityProviderEmail;
     }
 

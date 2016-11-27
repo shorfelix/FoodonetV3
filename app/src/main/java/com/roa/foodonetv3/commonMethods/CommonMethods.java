@@ -1,5 +1,6 @@
 package com.roa.foodonetv3.commonMethods;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -46,16 +47,30 @@ public class CommonMethods {
         Intent intent;
         switch (id){
             case R.id.nav_my_shares:
-                intent = new Intent(context, PublicationActivity.class);
-                intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
-                context.startActivity(intent);
+                if(context instanceof MainDrawerActivity){
+                    intent = new Intent(context, PublicationActivity.class);
+                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                    context.startActivity(intent);
+                }else {
+                    intent = new Intent(context, PublicationActivity.class);
+                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                    context.startActivity(intent);
+                    ((Activity) context).finish();
+
+                }
                 break;
             case R.id.nav_all_events:
 
                 break;
             case R.id.nav_map_view:
                 intent = new Intent(context, MapActivity.class);
-                context.startActivity(intent);
+                if(context instanceof MainDrawerActivity){
+                    context.startActivity(intent);
+                }else {
+                    context.startActivity(intent);
+                    ((Activity) context).finish();
+
+                }
                 break;
             case R.id.nav_notifications:
 
@@ -66,7 +81,13 @@ public class CommonMethods {
             case R.id.nav_settings:
                 // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
                 intent = new Intent(context,SignInActivity.class);
-                context.startActivity(intent);
+                if(context instanceof MainDrawerActivity){
+                    context.startActivity(intent);
+                }else {
+                    context.startActivity(intent);
+                    ((Activity) context).finish();
+
+                }
                 break;
             case R.id.nav_contact_us:
 
@@ -88,7 +109,7 @@ public class CommonMethods {
         String typeOfTime;
         if(timeDiff < 0){
             return "N/A";
-        } else if(timeDiff < 60){
+        } else if(timeDiff < 120){
             /** returns time in minutes */
             typeOfTime = context.getResources().getString(R.string.minutes);
         } else if(timeDiff /60 < 48 ){
@@ -144,6 +165,36 @@ public class CommonMethods {
     public static String getRoundedStringFromNumber(double num){
         DecimalFormat df = new DecimalFormat("####0.00");
         return df.format(num);
+    }
+
+    /*
+     * Calculate distance between two points in latitude and longitude taking
+     * into account height difference. If you are not interested in height
+     * difference pass 0.0. Uses Haversine method as its base.
+     *
+     * lat1, lng1 Start point lat2, lng2 End point el1 Start altitude in meters
+     * el2 End altitude in meters
+     * @returns Distance in Meters
+     */
+    public static double distance(double lat1, double lng1, double lat2,
+                                  double lng2){
+//            , double el1, double el2) {
+
+        final int R = 6371; // Radius of the earth
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c;
+        return distance;
+//        double height = el1 - el2;
+//
+//        distance = Math.pow(distance, 2) + Math.pow(height, 2);
+//
+//        return Math.sqrt(distance);
     }
 
     public static File createImageFile(Context context) throws IOException {
