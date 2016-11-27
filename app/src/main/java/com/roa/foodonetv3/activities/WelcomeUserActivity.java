@@ -16,8 +16,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.User;
-import com.roa.foodonetv3.services.AddUserToServerService;
+import com.roa.foodonetv3.services.FoodonetService;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class WelcomeUserActivity extends AppCompatActivity {
@@ -75,13 +77,15 @@ public class WelcomeUserActivity extends AppCompatActivity {
                     }
                     User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,mFirebaseUser.getEmail(),mFirebaseUser.getDisplayName(),true,uuid);
 
-                    Intent i = new Intent(WelcomeUserActivity.this, AddUserToServerService.class);
-                    i.putExtra(User.USER_KEY,user.getUserJson().toString());
+                    Intent i = new Intent(WelcomeUserActivity.this, FoodonetService.class);
+                    i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_USER);
+                    i.putExtra(FoodonetService.JSON_TO_SEND,user.getUserJson().toString());
                     WelcomeUserActivity.this.startService(i);
 
                     String message = "user: "+user.getUserJson().toString();
                     Log.d(TAG,message);
 
+                    // TODO: 27/11/2016 move the start activity to the response of the add user service
                     Intent a = new Intent(WelcomeUserActivity.this, MainDrawerActivity.class);
                     a.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(a);
