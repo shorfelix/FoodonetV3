@@ -2,6 +2,7 @@ package com.roa.foodonetv3.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,9 +14,11 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
+import com.roa.foodonetv3.activities.SplashScreenActivity;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.squareup.picasso.Picasso;
@@ -33,12 +36,15 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
     private Context context;
     private ArrayList<Publication> publications = new ArrayList<>();
     private TransferUtility transferUtility;
+    private LatLng userLatLng;
+    private static final double LOCATION_NOT_FOUND = -9999;
 
     public PublicationsRecyclerAdapter(Context context) {
         this.context = context;
         transferUtility = CommonMethods.getTransferUtility(context);
 //        setHasStableIds(true);
-
+        userLatLng = new LatLng(Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LATITUDE,String.valueOf(LOCATION_NOT_FOUND))),
+                Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LONGITUDE,String.valueOf(LOCATION_NOT_FOUND))));
     }
 
     public void updatePublications(ArrayList<Publication> publications){
@@ -88,8 +94,13 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             this.publication = publication;
             // TODO: add image logic, add distance logic, number of users who joined, currently hard coded
             textPublicationTitle.setText(publication.getTitle());
-            String addressDistance = String.format(Locale.US,"%1$s %2$s",CommonMethods.getRoundedStringFromNumber(15.7f),context.getResources().getString(R.string.km));
-            textPublicationAddressDistance.setText(addressDistance);
+            if(userLatLng.latitude != LOCATION_NOT_FOUND && userLatLng.longitude != LOCATION_NOT_FOUND){
+                double distance = CommonMethods.distance(userLatLng.latitude,userLatLng.longitude,publication.getLat(),publication.getLng());
+                String addressDistance = String.format(Locale.US,"%1$s %2$s",CommonMethods.getRoundedStringFromNumber(distance),context.getResources().getString(R.string.km));
+                textPublicationAddressDistance.setText(addressDistance);
+            } else{
+                textPublicationAddressDistance.setText("");
+            }
             //add photo here
             if(publication.getPhotoURL().equals("")){
                 /** no image saved, display default image */

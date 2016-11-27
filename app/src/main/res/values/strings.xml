@@ -52,6 +52,7 @@
     <string name="report_found_nothing_there">found nothing there</string>
 
     <string name="signed_out_successfully">Signed out successfully</string>
+    <string name="toast_needs_location_permission">needs location permission</string>
 
 
 </resources>
