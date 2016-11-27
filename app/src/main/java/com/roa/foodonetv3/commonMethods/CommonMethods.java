@@ -1,5 +1,6 @@
 package com.roa.foodonetv3.commonMethods;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -46,16 +47,30 @@ public class CommonMethods {
         Intent intent;
         switch (id){
             case R.id.nav_my_shares:
-                intent = new Intent(context, PublicationActivity.class);
-                intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
-                context.startActivity(intent);
+                if(context instanceof MainDrawerActivity){
+                    intent = new Intent(context, PublicationActivity.class);
+                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                    context.startActivity(intent);
+                }else {
+                    intent = new Intent(context, PublicationActivity.class);
+                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                    context.startActivity(intent);
+                    ((Activity) context).finish();
+
+                }
                 break;
             case R.id.nav_all_events:
 
                 break;
             case R.id.nav_map_view:
                 intent = new Intent(context, MapActivity.class);
-                context.startActivity(intent);
+                if(context instanceof MainDrawerActivity){
+                    context.startActivity(intent);
+                }else {
+                    context.startActivity(intent);
+                    ((Activity) context).finish();
+
+                }
                 break;
             case R.id.nav_notifications:
 
@@ -66,7 +81,13 @@ public class CommonMethods {
             case R.id.nav_settings:
                 // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
                 intent = new Intent(context,SignInActivity.class);
-                context.startActivity(intent);
+                if(context instanceof MainDrawerActivity){
+                    context.startActivity(intent);
+                }else {
+                    context.startActivity(intent);
+                    ((Activity) context).finish();
+
+                }
                 break;
             case R.id.nav_contact_us:
 
@@ -129,6 +150,10 @@ public class CommonMethods {
     public static void setMyUserID(Context context,int userID){
         /** saves the userID to shared preferences */
         PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(User.IDENTITY_PROVIDER_USER_ID,userID).apply();
+    }
+
+    public static String getMyUserPhone(Context context){
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER,null);
     }
 
     public static long getNewLocalPublicationID() {
