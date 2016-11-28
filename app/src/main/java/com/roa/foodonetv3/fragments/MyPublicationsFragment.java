@@ -14,16 +14,19 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.services.GetPublicationsService;
+import com.roa.foodonetv3.services.FoodonetService;
 
 import java.util.ArrayList;
 
 public class MyPublicationsFragment extends Fragment {
     private PublicationsRecyclerAdapter adapter;
+    private GetPublicationsReceiver receiver;
 
     public MyPublicationsFragment() {
         // Required empty public constructor
@@ -34,7 +37,7 @@ public class MyPublicationsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         /** set the broadcast receiver for getting all publications from the server */
         GetPublicationsReceiver receiver = new GetPublicationsReceiver();
-        IntentFilter filter = new IntentFilter(GetPublicationsService.ACTION_SERVICE_GET_PUBLICATIONS);
+        IntentFilter filter =  new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
     }
 
@@ -55,16 +58,35 @@ public class MyPublicationsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        /** set the broadcast receiver for getting all publications from the server */
+        receiver = new GetPublicationsReceiver();
+        IntentFilter filter =  new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
         // TODO: 23/11/2016 testing, should be loaded from db and checked from server as well
-        StartServiceMethods.startGetPublicationsService(getContext(),StartServiceMethods.ACTION_GET_USER_PUBLICATIONS);
+        Intent intent = new Intent(getContext(),FoodonetService.class);
+        intent.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_GET_USER_PUBLICATIONS);
+        getContext().startService(intent);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
     }
 
     public class GetPublicationsReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
-            ArrayList<Publication> publications = intent.getParcelableArrayListExtra(GetPublicationsService.QUERY_PUBLICATIONS);
-            adapter.updatePublications(publications);
+            if(intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1)==StartServiceMethods.ACTION_GET_USER_PUBLICATIONS){
+                if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+                    // TODO: 27/11/2016 add logic if fails
+                    Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                } else{
+                    ArrayList<Publication> publications = intent.getParcelableArrayListExtra(Publication.PUBLICATION_KEY);
+                    adapter.updatePublications(publications);
+                }
+            }
         }
     }
 }

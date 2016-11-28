@@ -26,6 +26,10 @@ import com.roa.foodonetv3.activities.WelcomeUserActivity;
 import com.roa.foodonetv3.fragments.MyPublicationsFragment;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -152,6 +156,10 @@ public class CommonMethods {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(User.IDENTITY_PROVIDER_USER_ID,userID).apply();
     }
 
+    public static String getMyUserPhone(Context context){
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER,null);
+    }
+
     public static long getNewLocalPublicationID() {
         /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
         //todo add a check for available negative id, currently hard coded
@@ -169,16 +177,11 @@ public class CommonMethods {
 
     /*
      * Calculate distance between two points in latitude and longitude taking
-     * into account height difference. If you are not interested in height
-     * difference pass 0.0. Uses Haversine method as its base.
-     *
-     * lat1, lng1 Start point lat2, lng2 End point el1 Start altitude in meters
-     * el2 End altitude in meters
-     * @returns Distance in Meters
+     * into account height difference.
+     * Uses Haversine method as its base. Distance in Meters
      */
     public static double distance(double lat1, double lng1, double lat2,
                                   double lng2){
-//            , double el1, double el2) {
 
         final int R = 6371; // Radius of the earth
 
@@ -190,11 +193,6 @@ public class CommonMethods {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = R * c;
         return distance;
-//        double height = el1 - el2;
-//
-//        distance = Math.pow(distance, 2) + Math.pow(height, 2);
-//
-//        return Math.sqrt(distance);
     }
 
     public static File createImageFile(Context context) throws IOException {
@@ -220,7 +218,6 @@ public class CommonMethods {
         Log.d(TAG,"newFile = "+newFile.getPath());
         return newFile;
     }
-
 
     public static String getFileNameFromPath(String path){
         /** returns the file name without the path */
