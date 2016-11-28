@@ -10,6 +10,7 @@
     <string name="foodonet_publications">/publications</string>
     <string name="foodonet_reports_version">/publication_reports?publication_version=</string>
     <string name="foodonet_publication_reports">/publication_reports.json</string>
+    <string name="foodonet_registered_user_for_publication">/registered_user_for_publications.json</string>
     <string name=".json">.json</string>
     <string name="foodonet_user">/users</string>
 
