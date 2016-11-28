@@ -25,10 +25,9 @@ import javax.net.ssl.HttpsURLConnection;
 public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
     public static final String ADDRESS_ARGS = "addressArgs";
-    public static final String JSON_TO_SEND = "jsonToWrite";
+    public static final String JSON_TO_SEND = "jsonToSend";
     public static final String SERVICE_ERROR = "serviceError";
     public static final String BROADCAST_FOODONET_SERVER_FINISH = "broadcastFoodonetServerFinish";
-
 
     public FoodonetService() {
         super("FoodonetService");
@@ -50,6 +49,8 @@ public class FoodonetService extends IntentService {
             try {
                 url = new URL(urlAddress);
                 connection = (HttpsURLConnection) url.openConnection();
+                connection.setConnectTimeout(5000);
+                // TODO: 28/11/2016 add logic for timeout
                 int httpType = StartServiceMethods.getHTTPType(actionType);
                 switch (httpType){
                     case StartServiceMethods.HTTP_GET:
@@ -61,7 +62,8 @@ public class FoodonetService extends IntentService {
                         connection.setDoOutput(true);
                         OutputStream os = connection.getOutputStream();
                         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"utf-8"));
-                        writer.write(intent.getStringExtra(JSON_TO_SEND));
+                        String jsonToSend = intent.getStringExtra(JSON_TO_SEND);
+                        writer.write(jsonToSend);
                         writer.flush();
                         writer.close();
                         os.close();
@@ -75,14 +77,14 @@ public class FoodonetService extends IntentService {
                 }
                 if(connection.getResponseCode()!=HttpsURLConnection.HTTP_OK){
                     serviceError = true;
+                } else{
+                    reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String line;
+                    while((line = reader.readLine())!= null){
+                        builder.append(line);
+                    }
+                    finishedIntent = addResponseToIntent(actionType,builder.toString(),finishedIntent);
                 }
-                reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String line;
-                while((line = reader.readLine())!= null){
-                    builder.append(line);
-                }
-//                Log.d("SERVER RESPONSE", builder.toString());
-                finishedIntent = addResponseToIntent(actionType,builder.toString(),finishedIntent);
             } catch (IOException e) {
                 serviceError = true;
                 Log.e(TAG,e.getMessage());
@@ -106,15 +108,15 @@ public class FoodonetService extends IntentService {
     }
 
     private Intent addResponseToIntent(int actionType, String responseRoot, Intent intent){
-        switch (actionType){
-            case StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
-            case StartServiceMethods.ACTION_GET_USER_PUBLICATIONS:
-                ArrayList<Publication> publications = new ArrayList<>();
-                try {
-                int userID = CommonMethods.getMyUserID(this);
-                JSONArray rootGetPublications;
+        try {
+            switch (actionType) {
+                case StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
+                case StartServiceMethods.ACTION_GET_USER_PUBLICATIONS:
+                    ArrayList<Publication> publications = new ArrayList<>();
+                    int userID = CommonMethods.getMyUserID(this);
+                    JSONArray rootGetPublications;
                     rootGetPublications = new JSONArray(responseRoot);
-                    /** declerations */
+                    /** declarations */
                     long id;
                     int version;
                     String title;
@@ -136,8 +138,8 @@ public class FoodonetService extends IntentService {
                     for (int i = 0; i < rootGetPublications.length(); i++) {
                         JSONObject publication = rootGetPublications.getJSONObject(i);
                         int publisherID = publication.getInt("publisher_id");
-                        if(publisherID != userID && actionType == StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER
-                                || publisherID == userID && actionType == StartServiceMethods.ACTION_GET_USER_PUBLICATIONS){
+                        if (publisherID != userID && actionType == StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER
+                                || publisherID == userID && actionType == StartServiceMethods.ACTION_GET_USER_PUBLICATIONS) {
                             /** depending on the action intended, either get all publications except the ones created by the user, or get only the publications created by the user */
                             id = publication.getLong("id");
                             version = publication.getInt("version");
@@ -159,27 +161,23 @@ public class FoodonetService extends IntentService {
                             price = publication.getDouble("price");
                             priceDescription = "price_description";
                             publications.add(new Publication(id, version, title, subtitle, address, typeOfCollecting, lat, lng, startingDate, endingDate, contactInfo, isOnAir,
-                                    activeDeviceDevUUID,photoURL,publisherID,audience,identityProviderUserName,price,priceDescription));
+                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription));
                         }
                     }
-                } catch (JSONException e) {
-                    Log.e(TAG,e.getMessage());
-                }
-                intent.putParcelableArrayListExtra(Publication.PUBLICATION_KEY,publications);
-                break;
+                    intent.putParcelableArrayListExtra(Publication.PUBLICATION_KEY, publications);
+                    break;
 
-            case StartServiceMethods.ACTION_ADD_PUBLICATION:
-                // TODO: 27/11/2016 add logic to save the publication id to db
-                break;
+                case StartServiceMethods.ACTION_ADD_PUBLICATION:
+                    // TODO: 27/11/2016 add logic to save the publication id to db
+                    break;
 
-            case StartServiceMethods.ACTION_EDIT_PUBLICATION: // not tested
-                // TODO: 27/11/2016 check versions and the like
-                break;
+                case StartServiceMethods.ACTION_EDIT_PUBLICATION: // not tested
+                    // TODO: 27/11/2016 check versions and the like
+                    break;
 
-            case StartServiceMethods.ACTION_GET_REPORTS:
-                ArrayList<ReportFromServer> reports = new ArrayList<>();
-                JSONArray rootGetReports;
-                try {
+                case StartServiceMethods.ACTION_GET_REPORTS:
+                    ArrayList<ReportFromServer> reports = new ArrayList<>();
+                    JSONArray rootGetReports;
                     rootGetReports = new JSONArray(responseRoot);
                     /** declarations */
                     long reportId;
@@ -214,28 +212,28 @@ public class FoodonetService extends IntentService {
 
                         reports.add(new ReportFromServer(reportId, publicationID, publicationVersion, reportType, active_device_dev_uuid,
                                 createdDate, updateDate, dateOfReport, reportUserName, reportContactInfo, reportUserId, rating));
-                    }
-                } catch (JSONException e) {
-                    Log.e(TAG,e.getMessage());
-                }
-                intent.putParcelableArrayListExtra(ReportFromServer.REPORT_KEY,reports);
-                break;
+                        }
+                    intent.putParcelableArrayListExtra(ReportFromServer.REPORT_KEY, reports);
+                    break;
 
-            case StartServiceMethods.ACTION_ADD_REPORT: // not tested
-                // TODO: 27/11/2016 add logic
-                break;
+                case StartServiceMethods.ACTION_ADD_REPORT: // not tested
+                    // TODO: 27/11/2016 add logic
+                    break;
 
-            case StartServiceMethods.ACTION_ADD_USER:
-                JSONObject rootAddUser;
-                try {
+                case StartServiceMethods.ACTION_ADD_USER:
+                    JSONObject rootAddUser;
                     rootAddUser = new JSONObject(responseRoot);
-                    int id = rootAddUser.getInt("id");
-                    CommonMethods.setMyUserID(this,id);
-                    Log.d("Add user response","id: "+id);
-                } catch (JSONException e) {
-                    Log.e(TAG,e.getMessage());
-                }
-                break;
+                    int newUserID = rootAddUser.getInt("id");
+                    CommonMethods.setMyUserID(this, newUserID);
+                    Log.d("Add user response", "id: " + newUserID);
+                    break;
+
+                case StartServiceMethods.ACTION_REGISTER_TO_PUBLICATION:
+                    // TODO: 27/11/2016 update
+                    break;
+            }
+        } catch (JSONException e){
+            Log.e(TAG,e.getMessage());
         }
         return intent;
     }
