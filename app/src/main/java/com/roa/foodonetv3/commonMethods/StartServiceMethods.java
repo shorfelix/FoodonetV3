@@ -10,7 +10,9 @@ import java.util.Locale;
 public class StartServiceMethods {
     private static final String TAG = "StartServiceMethods";
     public static final String ACTION_TYPE = "action_type";
-    public static final int ACTION_GET_PUBLICATIONS_EXCEPT_USER = 1;    /** ACTION_TYPE */
+
+    /** ACTION_TYPE */
+    public static final int ACTION_GET_PUBLICATIONS_EXCEPT_USER = 1;
     public static final int ACTION_GET_USER_PUBLICATIONS = 2;
     public static final int ACTION_ADD_PUBLICATION = 3;
     public static final int ACTION_EDIT_PUBLICATION = 4;
@@ -19,6 +21,7 @@ public class StartServiceMethods {
     public static final int ACTION_ADD_USER = 20;
     public static final int ACTION_REGISTER_TO_PUBLICATION = 30;
 
+    /** HTTP_TYPE */
     public static final int HTTP_GET = 1;
     public static final int HTTP_POST = 2;
     public static final int HTTP_PUT = 3;

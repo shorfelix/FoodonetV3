@@ -134,12 +134,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             case R.id.buttonTestAdd:
                 /** button for uploading the publication to the server, if an image was taken,
                  *  start uploading to the s3 server as well, currently no listener for s3 finished upload*/
-                uploadPublicationToServer();
                 if(!mCurrentPhotoPath.equals("")){
                     beginS3Upload("file:"+mCurrentPhotoPath);
                 } else{
                     Toast.makeText(getContext(), "no photo path", Toast.LENGTH_SHORT).show();
                 }
+                uploadPublicationToServer();
                 break;
             case R.id.imageTakePictureAddPublication:
                 /** starts the image taking intent through the default app*/
