@@ -1,10 +1,12 @@
 package com.roa.foodonetv3.activities;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
@@ -40,6 +42,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
     private CircleImageView circleImageView;
     private SharedPreferences preferences;
     private GetUserReceiver receiver;
+    private ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,48 +58,59 @@ public class WelcomeUserActivity extends AppCompatActivity {
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        userName = mFirebaseUser.getDisplayName();
+        if (mFirebaseUser != null) {
+            userName = mFirebaseUser.getDisplayName();
+            //load the photo from fireBase
+            Uri userPhotoUrl = mFirebaseUser.getPhotoUrl();
+            if(userPhotoUrl!= null){
+                Glide.with(this).load(userPhotoUrl).into(circleImageView);
+            } else{
+                Glide.with(this).load(R.drawable.foodonet_image).into(circleImageView);
+            }
+            if(userName!= null){
+                userNameTxt.setText(userName);
+            } else{
+                // TODO: 28/11/2016 add logic
+            }
+            finishRegisterationButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                String phoneNumber = userPhoneNumber.getText().toString();
+                if(isLegalNumber(phoneNumber)) {
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WelcomeUserActivity.this);
+                    /** save user phone number to sharedPreferences */
+                    sharedPreferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
 
-        //load the photo from fireBase
-        Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
-        userNameTxt.setText(userName);
-
-        finishRegisterationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            String phoneNumber = userPhoneNumber.getText().toString();
-            if(isLegalNumber(phoneNumber)) {
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WelcomeUserActivity.this);
-                /** save user phone number to sharedPreferences */
-                sharedPreferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
-
-                /** sign in the user to foodonet server and get his new (or old) id and save it to the shared preferences through the service */
-                String uuid = sharedPreferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
-                String providerId = "";
-                String userEmail = mFirebaseUser.getEmail();
-                for (UserInfo userInfo : mFirebaseUser.getProviderData()) {
-//                        String mail = userInfo.getEmail();
-                    String tempProviderId = userInfo.getProviderId();
-                    if(tempProviderId.equals("google.com")){
-                        providerId = "google";
+                    /** sign in the user to foodonet server and get his new (or old) id and save it to the shared preferences through the service */
+                    String uuid = sharedPreferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
+                    String providerId = "";
+                    String userEmail = mFirebaseUser.getEmail();
+                    for (UserInfo userInfo : mFirebaseUser.getProviderData()) {
+    //                        String mail = userInfo.getEmail();
+                        String tempProviderId = userInfo.getProviderId();
+                        if(tempProviderId.equals("google.com")){
+                            providerId = "google";
+                        }
+                        if (tempProviderId.equals("facebook.com")) {
+                            providerId = "facebook";
+                        }
+                        Toast.makeText(WelcomeUserActivity.this, userEmail, Toast.LENGTH_SHORT).show();
                     }
-                    if (tempProviderId.equals("facebook.com")) {
-                        providerId = "facebook";
-                    }
-                    Toast.makeText(WelcomeUserActivity.this, userEmail, Toast.LENGTH_SHORT).show();
+                    User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,mFirebaseUser.getDisplayName(),true,uuid);
+
+                    Intent i = new Intent(WelcomeUserActivity.this, FoodonetService.class);
+                    i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_USER);
+                    i.putExtra(FoodonetService.JSON_TO_SEND,user.getUserJson().toString());
+                    WelcomeUserActivity.this.startService(i);
+                    dialog = new ProgressDialog(WelcomeUserActivity.this);
+                    dialog.show();
+
+                    String message = "user: "+user.getUserJson().toString();
+                    Log.d(TAG,message);
                 }
-                User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,mFirebaseUser.getDisplayName(),true,uuid);
-
-                Intent i = new Intent(WelcomeUserActivity.this, FoodonetService.class);
-                i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_USER);
-                i.putExtra(FoodonetService.JSON_TO_SEND,user.getUserJson().toString());
-                WelcomeUserActivity.this.startService(i);
-
-                String message = "user: "+user.getUserJson().toString();
-                Log.d(TAG,message);
-            }
-            }
-        });
+                }
+            });
+        }
     }
 
     @Override
@@ -111,6 +125,9 @@ public class WelcomeUserActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        if(dialog!=null){
+            dialog.dismiss();
+        }
     }
 
     public Boolean isLegalNumber(String number){
@@ -143,6 +160,9 @@ public class WelcomeUserActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1)==StartServiceMethods.ACTION_ADD_USER){
+                if(dialog!=null){
+                    dialog.dismiss();
+                }
                 if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
                     // TODO: 27/11/2016 add logic if fails
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();

@@ -47,7 +47,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     private CircleImageView imagePublisherUser;
     private Publication publication;
     private ReportsRecyclerAdapter adapter;
-    private GetReportsReceiver receiver;
+    private GetFoodonetResponseReceiver receiver;
 
 
     public PublicationDetailFragment() {
@@ -58,7 +58,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
-        receiver = new GetReportsReceiver();
+        receiver = new GetFoodonetResponseReceiver();
         IntentFilter filter = new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
     }
@@ -107,6 +107,8 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         String[] args = {String.valueOf(publication.getId()),String.valueOf(publication.getVersion())};
         intent.putExtra(FoodonetService.ADDRESS_ARGS,args);
         getContext().startService(intent);
+        /** show that the list is being updated */
+//        Snackbar.make(imageActionPublicationJoin, R.string.updating,Snackbar.LENGTH_LONG).show();
         initViews();
     }
 
@@ -230,18 +232,39 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         }
     }
 
-    public class GetReportsReceiver extends BroadcastReceiver {
+    public class GetFoodonetResponseReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             /** receiver for reports got from the service */
-            if(intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1)==StartServiceMethods.ACTION_GET_REPORTS){
-                if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
-                    // TODO: 27/11/2016 add logic if fails
-                    Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-                } else{
-                    ArrayList<ReportFromServer> reports = intent.getParcelableArrayListExtra(ReportFromServer.REPORT_KEY);
-                    adapter.updateReports(reports);
-                }
+            int action = intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1);
+            switch (action){
+                case StartServiceMethods.ACTION_GET_REPORTS:
+                    if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+                        // TODO: 27/11/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        ArrayList<ReportFromServer> reports = intent.getParcelableArrayListExtra(ReportFromServer.REPORT_KEY);
+                        adapter.updateReports(reports);
+                    }
+                    break;
+                case StartServiceMethods.ACTION_REGISTER_TO_PUBLICATION:
+                    if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+                        // TODO: 27/11/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        /** registered successfully */
+                        Snackbar.make(imageActionPublicationJoin,getResources().getString(R.string.successfully_registered),Snackbar.LENGTH_LONG).show();
+                    }
+                    break;
+                case StartServiceMethods.ACTION_ADD_REPORT:
+                    if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+                        // TODO: 27/11/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        /** registered successfully */
+                        Snackbar.make(imageActionPublicationJoin,getResources().getString(R.string.report_added),Snackbar.LENGTH_LONG).show();
+                    }
+                    break;
             }
         }
     }

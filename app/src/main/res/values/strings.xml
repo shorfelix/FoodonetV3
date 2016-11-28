@@ -53,5 +53,8 @@
 
     <string name="signed_out_successfully">Signed out successfully</string>
     <string name="toast_needs_location_permission">needs location permission</string>
+    <string name="updating">Updating</string>
+    <string name="successfully_registered">Successfully registered</string>
+    <string name="report_added">Report added</string>
 
 </resources>
