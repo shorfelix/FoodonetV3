@@ -72,10 +72,8 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                  user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     Toast.makeText(SignInActivity.this, "success2", Toast.LENGTH_SHORT).show();
-
                     startActivity(new Intent(SignInActivity.this, WelcomeUserActivity.class));
                     finish();
                 } else {
@@ -144,8 +142,10 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
             if (result.isSuccess()) {
                 // Google Sign In was successful, authenticate with Firebase
+
                 GoogleSignInAccount account = result.getSignInAccount();
                 firebaseAuthWithGoogle(account);
             } else {
@@ -154,7 +154,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
             }
         }else {
             // Facebook Sign In was successful, authenticate with Firebase
-            Toast.makeText(SignInActivity.this, "result", Toast.LENGTH_SHORT).show();
+            Toast.makeText(SignInActivity.this, "from facebook", Toast.LENGTH_SHORT).show();
             mCallbackManager.onActivityResult(requestCode, resultCode,data);
 
 
@@ -162,7 +162,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
     }
     @Override
     public void onSuccess(LoginResult loginResult) {
-        Toast.makeText(SignInActivity.this, "success", Toast.LENGTH_SHORT).show();
+        Toast.makeText(SignInActivity.this, "on success", Toast.LENGTH_SHORT).show();
         handleFacebookAccessToken(loginResult.getAccessToken());
     }
 
