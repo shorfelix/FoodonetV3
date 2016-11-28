@@ -29,6 +29,7 @@ import com.roa.foodonetv3.adapters.ReportsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Publication;
+import com.roa.foodonetv3.model.RegistrationPublication;
 import com.roa.foodonetv3.model.ReportFromServer;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
@@ -178,11 +179,22 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
             switch (v.getId()){
                 case R.id.imageActionPublicationJoin:
                     // TODO: 13/11/2016 add join logic
-                    Snackbar.make(imageActionPublicationJoin,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
+//                    Snackbar.make(imageActionPublicationJoin,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
+                    // TODO: 27/11/2016 test for registering to publication
+                    RegistrationPublication registrationPublication = new RegistrationPublication(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
+                            CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),user.getDisplayName(),CommonMethods.getMyUserPhone(getContext()),
+                            CommonMethods.getMyUserID(getContext()));
+                    String registration = registrationPublication.getJsonForRegistration().toString();
+                    String[] registrationArgs = {String.valueOf(publication.getId())};
+                    i = new Intent(getContext(),FoodonetService.class);
+                    i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_REGISTER_TO_PUBLICATION);
+                    i.putExtra(FoodonetService.ADDRESS_ARGS,registrationArgs);
+                    i.putExtra(FoodonetService.JSON_TO_SEND,registration);
+                    getContext().startService(i);
                     break;
                 case R.id.imageActionPublicationSMS:
                     // TODO: 14/11/2016 not working! test for adding a report, hard coded
-                    Snackbar.make(imageActionPublicationReport,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
+//                    Snackbar.make(imageActionPublicationReport,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
                     ReportFromServer reportFromServer = new ReportFromServer(-1,publication.getId(),publication.getVersion(),3,CommonMethods.getDeviceUUID(getContext()),
                             "","",String.valueOf(CommonMethods.getCurrentTimeSeconds()),user.getDisplayName(),
                             CommonMethods.getMyUserPhone(getContext()),CommonMethods.getMyUserID(getContext()),4);
@@ -190,8 +202,8 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                     Log.d(TAG,"report json:"+reportJson);
                     i = new Intent(getContext(),FoodonetService.class);
                     i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_REPORT);
-                    String[] args = {String.valueOf(publication.getId())};
-                    i.putExtra(FoodonetService.ADDRESS_ARGS,args);
+                    String[] reportArgs = {String.valueOf(publication.getId())};
+                    i.putExtra(FoodonetService.ADDRESS_ARGS,reportArgs);
                     i.putExtra(FoodonetService.JSON_TO_SEND,reportJson);
                     getContext().startService(i);
                     break;
