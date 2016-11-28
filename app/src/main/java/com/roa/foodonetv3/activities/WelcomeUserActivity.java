@@ -83,8 +83,8 @@ public class WelcomeUserActivity extends AppCompatActivity {
                     if (tempProviderId.equals("facebook.com")) {
                         providerId = "facebook";
                     }
-                    Toast.makeText(WelcomeUserActivity.this, userEmail, Toast.LENGTH_SHORT).show();
                 }
+                Toast.makeText(WelcomeUserActivity.this, userEmail, Toast.LENGTH_SHORT).show();
                 User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,mFirebaseUser.getDisplayName(),true,uuid);
 
                 Intent i = new Intent(WelcomeUserActivity.this, FoodonetService.class);
