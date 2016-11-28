@@ -17,6 +17,7 @@ public class StartServiceMethods {
     public static final int ACTION_GET_REPORTS = 10;
     public static final int ACTION_ADD_REPORT = 11;
     public static final int ACTION_ADD_USER = 20;
+    public static final int ACTION_REGISTER_TO_PUBLICATION = 30;
 
     public static final int HTTP_GET = 1;
     public static final int HTTP_POST = 2;
@@ -29,6 +30,7 @@ public class StartServiceMethods {
      * edit publication - add args[0] = (String)publication id
      * get reports - add args[0] = (String) publication id, args[1] = (String) publication version
      * add report - add args[0] = (String) publication id
+     * register for publication - add args[0] = (String) publication id
      * actions in post - add String JSON_TO_SEND to intent */
 
     public static String getUrlAddress(Context context, int actionType, String[] args) {
@@ -65,6 +67,11 @@ public class StartServiceMethods {
             case ACTION_ADD_USER:
                 builder.append(context.getResources().getString(R.string.foodonet_user));
                 break;
+            case ACTION_REGISTER_TO_PUBLICATION:
+                builder.append(context.getResources().getString(R.string.foodonet_publications));
+                builder.append(String.format(Locale.US,"/%1$s",args[0]));
+                builder.append(context.getResources().getString(R.string.foodonet_registered_user_for_publication));
+                break;
         }
         return builder.toString();
     }
@@ -84,6 +91,8 @@ public class StartServiceMethods {
             case ACTION_ADD_REPORT: // not tested
                 return HTTP_POST;
             case ACTION_ADD_USER:
+                return HTTP_POST;
+            case ACTION_REGISTER_TO_PUBLICATION:
                 return HTTP_POST;
         }
         return -1;
