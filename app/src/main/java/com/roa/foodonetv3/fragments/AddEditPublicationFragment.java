@@ -2,7 +2,6 @@ package com.roa.foodonetv3.fragments;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -28,7 +27,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.activities.MainDrawerActivity;
+import com.roa.foodonetv3.activities.SplashForCamera;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Publication;
@@ -142,8 +141,25 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                 uploadPublicationToServer();
                 break;
             case R.id.imageTakePictureAddPublication:
-                /** starts the image taking intent through the default app*/
-                dispatchTakePictureIntent();
+                /** start the popup activity*/
+                getContext().startActivity(new Intent(getContext(), SplashForCamera.class));
+                /**wait for the popup activity before start the camera */
+                Thread thread = new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        synchronized (getContext()){
+                            try {
+                                getContext().wait(SplashForCamera.TIMER);
+                                /** starts the image taking intent through the default app*/
+                                dispatchTakePictureIntent();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                };
+                thread.start();
                 break;
             case R.id.textLocationAddPublication:
                 /** start the google places autocomplete widget */
