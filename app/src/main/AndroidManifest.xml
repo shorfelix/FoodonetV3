@@ -61,10 +61,11 @@
             android:configChanges="orientation"
             android:label="@string/title_activity_map"
             android:screenOrientation="portrait" />
-
-        <service
-            android:name="com.amazonaws.mobileconnectors.s3.transferutility.TransferService"
-            android:enabled="true" />
+        <activity android:name=".activities.SplashForCamera"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Dialog.Alert">
+        </activity>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -76,21 +77,19 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <service
+            android:name="com.amazonaws.mobileconnectors.s3.transferutility.TransferService"
+            android:enabled="true" />
+        <service
+            android:name=".services.FoodonetService"
+            android:exported="false" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
-
-        <service
-            android:name=".services.FoodonetService"
-            android:exported="false" />
-
-        <activity android:name=".activities.SplashForCamera"
-            android:theme="@style/Theme.AppCompat.Dialog.Alert">
-
-        </activity>
     </application>
 
 </manifest>

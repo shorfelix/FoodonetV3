@@ -150,7 +150,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                         super.run();
                         synchronized (getContext()){
                             try {
-                                getContext().wait(3000);
+                                getContext().wait(SplashForCamera.TIMER);
                                 /** starts the image taking intent through the default app*/
                                 dispatchTakePictureIntent();
                             } catch (InterruptedException e) {

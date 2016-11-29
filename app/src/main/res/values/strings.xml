@@ -57,5 +57,6 @@
     <string name="successfully_registered">Successfully registered</string>
     <string name="report_added">Report added</string>
     <string name="search_title">Search</string>
+    <string name="rotate_the_phone">Rotate the phone</string>
 
 </resources>

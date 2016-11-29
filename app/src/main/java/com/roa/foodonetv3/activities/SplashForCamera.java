@@ -8,6 +8,8 @@ import android.util.DisplayMetrics;
 import com.roa.foodonetv3.R;
 
 public class SplashForCamera extends AppCompatActivity {
+    private static final String TAG = "SplashForCamera";
+    public static final int TIMER = 3000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +29,6 @@ public class SplashForCamera extends AppCompatActivity {
             public void run() {
                 finish();
             }
-        }, 3000);
+        }, TIMER);
     }
 }
