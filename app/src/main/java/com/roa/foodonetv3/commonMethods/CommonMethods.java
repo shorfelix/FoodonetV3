@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Environment;
@@ -11,6 +14,8 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
+
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
@@ -41,24 +46,27 @@ import java.util.Locale;
 public class CommonMethods {
     private static final String TAG = "CommonMethods";
 
-    /** We only need one instance of the clients and credentials provider */
+    /**
+     * We only need one instance of the clients and credentials provider
+     */
     private static AmazonS3Client sS3Client;
     private static CognitoCachingCredentialsProvider sCredProvider;
     private static TransferUtility sTransferUtility;
 
-    public static void navigationItemSelectedAction(Context context, int id){
+    public static void navigationItemSelectedAction(Context context, int id) {
         /** handle the navigation actions from the drawer*/
         Intent intent;
-        switch (id){
+        switch (id) {
             case R.id.nav_my_shares:
-                if(context instanceof MainDrawerActivity){
+                if (context instanceof MainDrawerActivity) {
                     intent = new Intent(context, PublicationActivity.class);
-                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
                     context.startActivity(intent);
-                }else {
+                } else {
                     intent = new Intent(context, PublicationActivity.class);
-                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
                     context.startActivity(intent);
+                    ifGpsIsEnable(context);
                     ((Activity) context).finish();
 
                 }
@@ -68,9 +76,9 @@ public class CommonMethods {
                 break;
             case R.id.nav_map_view:
                 intent = new Intent(context, MapActivity.class);
-                if(context instanceof MainDrawerActivity){
+                if (context instanceof MainDrawerActivity) {
                     context.startActivity(intent);
-                }else {
+                } else {
                     context.startActivity(intent);
                     ((Activity) context).finish();
 
@@ -84,10 +92,10 @@ public class CommonMethods {
                 break;
             case R.id.nav_settings:
                 // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
-                intent = new Intent(context,SignInActivity.class);
-                if(context instanceof MainDrawerActivity){
+                intent = new Intent(context, SignInActivity.class);
+                if (context instanceof MainDrawerActivity) {
                     context.startActivity(intent);
-                }else {
+                } else {
                     context.startActivity(intent);
                     ((Activity) context).finish();
 
@@ -102,35 +110,35 @@ public class CommonMethods {
         }
     }
 
-    public static double getCurrentTimeSeconds(){
+    public static double getCurrentTimeSeconds() {
         /** returns current epoch time in seconds(NOT MILLIS!) */
-        return System.currentTimeMillis()/1000;
+        return System.currentTimeMillis() / 1000;
     }
 
-    public static String getTimeDifference(Context context, Double earlierTime, Double laterTime){
+    public static String getTimeDifference(Context context, Double earlierTime, Double laterTime) {
         /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the length */
-        long timeDiff =(long) (laterTime - earlierTime)/60; // minutes as start
+        long timeDiff = (long) (laterTime - earlierTime) / 60; // minutes as start
         String typeOfTime;
-        if(timeDiff < 0){
+        if (timeDiff < 0) {
             return "N/A";
-        } else if(timeDiff < 120){
+        } else if (timeDiff < 120) {
             /** returns time in minutes */
             typeOfTime = context.getResources().getString(R.string.minutes);
-        } else if(timeDiff /60 < 48 ){
+        } else if (timeDiff / 60 < 48) {
             /** returns time in hours */
             typeOfTime = context.getResources().getString(R.string.hours);
-            timeDiff /=60;
-        } else{
+            timeDiff /= 60;
+        } else {
             /** returns time in days */
             typeOfTime = context.getResources().getString(R.string.days);
-            timeDiff /=60/24;
+            timeDiff /= 60 / 24;
         }
-        return String.format(Locale.US,"%1$d %2$s",timeDiff,typeOfTime);
+        return String.format(Locale.US, "%1$d %2$s", timeDiff, typeOfTime);
     }
 
-    public static String getReportStringFromType(Context context,int typeOfReport){
+    public static String getReportStringFromType(Context context, int typeOfReport) {
         /** get the message according to the server specified report type */
-        switch (typeOfReport){
+        switch (typeOfReport) {
             case 1:
                 return context.getResources().getString(R.string.report_has_more_to_offer);
             case 3:
@@ -141,23 +149,23 @@ public class CommonMethods {
         return null;
     }
 
-    public static String getDeviceUUID(Context context){
+    public static String getDeviceUUID(Context context) {
         /** returns a UUID */
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.ACTIVE_DEVICE_DEV_UUID,null);
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.ACTIVE_DEVICE_DEV_UUID, null);
     }
 
-    public static int getMyUserID(Context context){
+    public static int getMyUserID(Context context) {
         /** returns the userID from shared preferences */
-        return PreferenceManager.getDefaultSharedPreferences(context).getInt(User.IDENTITY_PROVIDER_USER_ID,-1);
+        return PreferenceManager.getDefaultSharedPreferences(context).getInt(User.IDENTITY_PROVIDER_USER_ID, -1);
     }
 
-    public static void setMyUserID(Context context,int userID){
+    public static void setMyUserID(Context context, int userID) {
         /** saves the userID to shared preferences */
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(User.IDENTITY_PROVIDER_USER_ID,userID).apply();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(User.IDENTITY_PROVIDER_USER_ID, userID).apply();
     }
 
-    public static String getMyUserPhone(Context context){
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER,null);
+    public static String getMyUserPhone(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER, null);
     }
 
     public static long getNewLocalPublicationID() {
@@ -166,11 +174,12 @@ public class CommonMethods {
         return -1;
     }
 
-    public static String getRoundedStringFromNumber(float num){
+    public static String getRoundedStringFromNumber(float num) {
         DecimalFormat df = new DecimalFormat("####0.00");
         return df.format(num);
     }
-    public static String getRoundedStringFromNumber(double num){
+
+    public static String getRoundedStringFromNumber(double num) {
         DecimalFormat df = new DecimalFormat("####0.00");
         return df.format(num);
     }
@@ -181,7 +190,7 @@ public class CommonMethods {
      * Uses Haversine method as its base. Distance in Meters
      */
     public static double distance(double lat1, double lng1, double lat2,
-                                  double lng2){
+                                  double lng2) {
 
         final int R = 6371; // Radius of the earth
 
@@ -205,6 +214,7 @@ public class CommonMethods {
                 ".jpg",         /* suffix */
                 storageDir      /* directory */);
     }
+
     public static File createImageFile(Context context, long publicationID) throws IOException {
         /** Creates a local image file name for downloaded images from s3 server of a specific publication */
         String imageFileName = "PublicationID." + publicationID;
@@ -214,28 +224,28 @@ public class CommonMethods {
 //                ".jpg",         /* suffix */
 //                storageDir      /* directory */);
 
-        File newFile = new File(storageDir.getPath()+"/"+imageFileName+".jpg");
-        Log.d(TAG,"newFile = "+newFile.getPath());
+        File newFile = new File(storageDir.getPath() + "/" + imageFileName + ".jpg");
+        Log.d(TAG, "newFile = " + newFile.getPath());
         return newFile;
     }
 
-    public static String getFileNameFromPath(String path){
+    public static String getFileNameFromPath(String path) {
         /** returns the file name without the path */
-        String [] segments = path.split("/");
-        return segments[segments.length-1];
+        String[] segments = path.split("/");
+        return segments[segments.length - 1];
     }
 
-    public static String getPublicationIDFromFile(String path){
+    public static String getPublicationIDFromFile(String path) {
         /** returns the file name without the path */
-        String [] segments = path.split(".");
+        String[] segments = path.split(".");
         if (segments.length > 1) {
             return segments[segments.length - 2];
-        }else {
+        } else {
             return "n";
         }
     }
 
-    public static String getPhotoPathByID(Context context,long publicationID){
+    public static String getPhotoPathByID(Context context, long publicationID) {
         /** Creates a local image file name for downloaded images from s3 server of a specific publication */
         String imageFileName = "PublicationID." + publicationID;
         String storageDir = (context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
@@ -243,47 +253,47 @@ public class CommonMethods {
 //                imageFileName,  /* prefix */
 //                ".jpg",         /* suffix */
 //                storageDir      /* directory */);
-        String newFile = storageDir+"/"+imageFileName+".jpg";
-        Log.d(TAG,"newFile = "+newFile);
+        String newFile = storageDir + "/" + imageFileName + ".jpg";
+        Log.d(TAG, "newFile = " + newFile);
         return newFile;
     }
 
-    public static boolean editOverwriteImage(Context context,String mCurrentPhotoPath){
+    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath) {
         /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
          * then, it will overwrite the local original one.
          * returns true if successful*/
 
         /** ratio - 16:9 */
-        final float ratio = 16/9f;
+        final float ratio = 16 / 9f;
         final int WANTED_HEIGHT = 720;
-        final int WANTED_WIDTH = (int)(WANTED_HEIGHT*ratio);
+        final int WANTED_WIDTH = (int) (WANTED_HEIGHT * ratio);
         Bitmap sourceBitmap;
         try {
-            sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:"+mCurrentPhotoPath));
+            sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
             Bitmap cutBitmap;
 
             /** cut the image to display as a 16:9 image */
-            if (sourceBitmap.getHeight()*ratio < sourceBitmap.getWidth()){
+            if (sourceBitmap.getHeight() * ratio < sourceBitmap.getWidth()) {
                 /** full height of the image, cut the width*/
                 cutBitmap = Bitmap.createBitmap(
                         sourceBitmap,
-                        (int)((sourceBitmap.getWidth() - (sourceBitmap.getHeight()*ratio))/2),
+                        (int) ((sourceBitmap.getWidth() - (sourceBitmap.getHeight() * ratio)) / 2),
                         0,
-                        (int)(sourceBitmap.getHeight()*ratio),
+                        (int) (sourceBitmap.getHeight() * ratio),
                         sourceBitmap.getHeight()
                 );
-            }else{
+            } else {
                 /** full width of the image, cut the height*/
                 cutBitmap = Bitmap.createBitmap(
                         sourceBitmap,
                         0,
-                        (int)((sourceBitmap.getHeight() - (sourceBitmap.getWidth()/ratio))/2),
+                        (int) ((sourceBitmap.getHeight() - (sourceBitmap.getWidth() / ratio)) / 2),
                         sourceBitmap.getWidth(),
-                        (int)(sourceBitmap.getWidth()/ratio)
+                        (int) (sourceBitmap.getWidth() / ratio)
                 );
             }
             /** scale the image down*/
-            Bitmap scaledBitmap = Bitmap.createScaledBitmap(cutBitmap,WANTED_WIDTH,WANTED_HEIGHT,false);
+            Bitmap scaledBitmap = Bitmap.createScaledBitmap(cutBitmap, WANTED_WIDTH, WANTED_HEIGHT, false);
 
             /** compress the image and overwrite the original one*/
             FileOutputStream out = null;
@@ -292,18 +302,18 @@ public class CommonMethods {
                 scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
                 return true;
             } catch (Exception e) {
-                Log.e(TAG,e.getMessage());
+                Log.e(TAG, e.getMessage());
             } finally {
                 try {
                     if (out != null) {
                         out.close();
                     }
                 } catch (IOException e) {
-                    Log.e(TAG,e.getMessage());
+                    Log.e(TAG, e.getMessage());
                 }
             }
         } catch (IOException e) {
-            Log.e(TAG,e.getMessage());
+            Log.e(TAG, e.getMessage());
         }
         return false;
 
@@ -356,4 +366,36 @@ public class CommonMethods {
 
         return sTransferUtility;
     }
+
+
+    public static boolean ifInternetIsEnable(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null) { // connected to the internet
+            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+                // connected to wifi
+                Toast.makeText(context, activeNetwork.getTypeName(), Toast.LENGTH_SHORT).show();
+                return true;
+            } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
+                // connected to the mobile provider's data plan
+                Toast.makeText(context, activeNetwork.getTypeName(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        } else {
+            // not connected to the internet
+            return false;
+        }
+        return false;
+    }
+
+    public static boolean ifGpsIsEnable(Context context){
+        final LocationManager manager = (LocationManager) context.getSystemService( Context.LOCATION_SERVICE );
+
+        if (manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+            return true;
+        }else {
+            return false;
+        }
+    }
+
 }
