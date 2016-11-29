@@ -85,7 +85,12 @@
 
         <service
             android:name=".services.FoodonetService"
-            android:exported="false"></service>
+            android:exported="false" />
+
+        <activity android:name=".SplashForCamera"
+            android:theme="@style/Theme.AppCompat.Dialog.Alert">
+
+        </activity>
     </application>
 
 </manifest>
