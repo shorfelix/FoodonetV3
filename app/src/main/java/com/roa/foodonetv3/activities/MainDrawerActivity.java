@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -165,12 +166,15 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.main, menu);
+////        MenuItem searchItem = menu.findItem(R.id.search);
+////        SearchView searchView = (SearchView) searchItem.getActionView();
+////        searchView.setOnQueryTextListener();
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -189,6 +193,8 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
                 editor.apply();
                 Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
                 return true;
+            case R.id.search:
+
             default:
                 return super.onOptionsItemSelected(item);
         }
