@@ -12,6 +12,7 @@
     android:paddingStart="@dimen/activity_horizontal_margin"
     android:paddingEnd="@dimen/activity_horizontal_margin">
 
+
     <TextView
         android:text="@string/rotate_the_phone"
         android:layout_width="wrap_content"

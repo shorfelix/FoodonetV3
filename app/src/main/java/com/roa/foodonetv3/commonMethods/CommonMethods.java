@@ -38,8 +38,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -314,7 +316,7 @@ public class CommonMethods {
                     Log.e(TAG, e.getMessage());
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             Log.e(TAG, e.getMessage());
         }
         return false;
@@ -397,6 +399,27 @@ public class CommonMethods {
             return true;
         }else {
             return false;
+        }
+    }
+
+    public static void copyFile(Context context, File sourceFile, File destFile) throws IOException {
+        if (!sourceFile.exists()) {
+            Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FileChannel source = null;
+        FileChannel destination = null;
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        if (destination != null && source != null) {
+            destination.transferFrom(source, 0, source.size());
+        }
+        if (source != null) {
+            source.close();
+        }
+        if (destination != null) {
+            destination.close();
         }
     }
 
