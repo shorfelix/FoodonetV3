@@ -17,6 +17,12 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="HeaderTitle">
+        <item name="android:textSize">@dimen/text_size_36</item>
+        <!--<item name="android:textStyle">bold</item>-->
+        <item name="android:textColor">#FF000000</item>
+    </style>
+
     <style name="ItemTitleTextView">
         <item name="android:textSize">@dimen/text_size_16</item>
         <item name="android:textStyle">bold</item>
@@ -44,4 +50,9 @@
         <item name="android:textColor">#FF1030FF</item>
     </style>
 
+    <style name="AboutUs">
+        <item name="android:textSize">@dimen/text_size_22</item>
+    </style>
+
+    <dimen name="text_size_26">26sp</dimen>
 </resources>

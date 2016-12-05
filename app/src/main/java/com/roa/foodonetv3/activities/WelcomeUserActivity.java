@@ -77,12 +77,11 @@ public class WelcomeUserActivity extends AppCompatActivity {
                 public void onClick(View v) {
                 String phoneNumber = userPhoneNumber.getText().toString();
                 if(isLegalNumber(phoneNumber)) {
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WelcomeUserActivity.this);
                     /** save user phone number to sharedPreferences */
-                    sharedPreferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
+                    preferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
 
                     /** sign in the user to foodonet server and get his new (or old) id and save it to the shared preferences through the service */
-                    String uuid = sharedPreferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
+                    String uuid = preferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
                     String providerId = "";
                     String userEmail = mFirebaseUser.getEmail();
                     for (UserInfo userInfo : mFirebaseUser.getProviderData()) {

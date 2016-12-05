@@ -23,8 +23,10 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.AboutUsActivity;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.activities.MapActivity;
+import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.activities.WelcomeUserActivity;
@@ -58,14 +60,11 @@ public class CommonMethods {
         Intent intent;
         switch (id) {
             case R.id.nav_my_shares:
-                if (context instanceof MainDrawerActivity) {
-                    intent = new Intent(context, PublicationActivity.class);
-                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
-                    context.startActivity(intent);
-                } else {
-                    intent = new Intent(context, PublicationActivity.class);
-                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
-                    context.startActivity(intent);
+                intent = new Intent(context, PublicationActivity.class);
+                intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                context.startActivity(intent);
+                if (!(context instanceof MainDrawerActivity)) {
+                    // TODO: 04/12/2016 roi, what's the point of running the method here?
                     ifGpsIsEnable(context);
                     ((Activity) context).finish();
 
@@ -91,21 +90,24 @@ public class CommonMethods {
 
                 break;
             case R.id.nav_settings:
-                // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
-                intent = new Intent(context, SignInActivity.class);
-                if (context instanceof MainDrawerActivity) {
-                    context.startActivity(intent);
-                } else {
-                    context.startActivity(intent);
-                    ((Activity) context).finish();
-
-                }
+//                // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
+//                intent = new Intent(context, SignInActivity.class);
+//                if (context instanceof MainDrawerActivity) {
+//                    context.startActivity(intent);
+//                } else {
+//                    context.startActivity(intent);
+//                    ((Activity) context).finish();
+//
+//                }
+                intent = new Intent(context, PrefsActivity.class);
+                context.startActivity(intent);
                 break;
             case R.id.nav_contact_us:
 
                 break;
             case R.id.nav_about:
-
+                intent = new Intent(context, AboutUsActivity.class);
+                context.startActivity(intent);
                 break;
         }
     }

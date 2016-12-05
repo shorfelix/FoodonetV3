@@ -14,6 +14,7 @@ public class SplashForCamera extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_splash_for_camera);
 
         /** how to set the size of the activity*/

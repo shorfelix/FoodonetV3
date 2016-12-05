@@ -183,18 +183,20 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id){
-            case R.id.action_settings:
-                FirebaseAuth.getInstance().signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                /** remove user phone number and foodonet user ID from sharedPreferences */
-                SharedPreferences.Editor editor = preferenceManager.edit();
-                editor.remove(User.PHONE_NUMBER);
-                editor.remove(User.IDENTITY_PROVIDER_USER_ID);
-                editor.apply();
-                Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
+//            case R.id.action_settings:
+//                FirebaseAuth.getInstance().signOut();
+//                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+//                /** remove user phone number and foodonet user ID from sharedPreferences */
+//                SharedPreferences.Editor editor = preferenceManager.edit();
+//                editor.remove(User.PHONE_NUMBER);
+//                editor.remove(User.IDENTITY_PROVIDER_USER_ID);
+//                editor.apply();
+//                Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
+//                return true;
+            case R.id.map:
+                CommonMethods.navigationItemSelectedAction(this,R.id.nav_map_view);
                 return true;
             case R.id.search:
-
             default:
                 return super.onOptionsItemSelected(item);
         }
