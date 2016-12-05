@@ -29,6 +29,7 @@
     <string name="group">Group</string>
     <string name="joined">Joined</string>
     <string name="free">Free</string>
+    <string name="map">Map</string>
 
     <string name="km">km</string>
     <string name="minutes">minutes</string>
@@ -58,5 +59,13 @@
     <string name="report_added">Report added</string>
     <string name="search_title">Search</string>
     <string name="rotate_the_phone">Rotate the phone</string>
+
+    <string name="about_us_info">Foodonet is a social initiative aiming to reduce food waste.\nFoodonet develops a mobile platform that allows people to easily donate spare food to one another.\nFoodonet is connecting food producers directly to customers with no mediators and cutting food costs</string>
+    <string name="prefs_profile_settings">Profile Settings</string>
+    <string name="prefs_notifications">Notifications</string>
+    <string name="add_image">Add image</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="prefs_sign_out">prefs_sign_out</string>
 
 </resources>
