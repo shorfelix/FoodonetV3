@@ -3,19 +3,14 @@ package com.roa.foodonetv3.commonMethods;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,25 +18,14 @@ import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.roa.foodonetv3.ContactUsDialog;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.AboutUsActivity;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.activities.MapActivity;
 import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
-import com.roa.foodonetv3.activities.SignInActivity;
-import com.roa.foodonetv3.activities.WelcomeUserActivity;
-import com.roa.foodonetv3.fragments.MyPublicationsFragment;
-import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -111,7 +95,8 @@ public class CommonMethods {
                 context.startActivity(intent);
                 break;
             case R.id.nav_contact_us:
-
+                ContactUsDialog dialog = new ContactUsDialog(context);
+                dialog.show();
                 break;
             case R.id.nav_about:
                 intent = new Intent(context, AboutUsActivity.class);
