@@ -18,7 +18,12 @@
     <dimen name="text_size_20">20sp</dimen>
     <dimen name="text_size_16">16sp</dimen>
     <dimen name="text_size_12">12sp</dimen>
+    <dimen name="text_size_36">36sp</dimen>
+
+
     <dimen name="image_size_50">50dp</dimen>
+    <dimen name="margin_24">24dp</dimen>
+    <dimen name="text_size_22">22sp</dimen>
 
 
 </resources>
