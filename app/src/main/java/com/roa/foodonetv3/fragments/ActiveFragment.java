@@ -1,21 +1,29 @@
 package com.roa.foodonetv3.fragments;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Publication;
@@ -23,7 +31,7 @@ import com.roa.foodonetv3.services.FoodonetService;
 
 import java.util.ArrayList;
 
-public class ActiveFragment extends Fragment{
+public class ActiveFragment extends Fragment {
     private static final String TAG = "ActiveFragment";
 
     private PublicationsRecyclerAdapter adapter;
@@ -31,6 +39,12 @@ public class ActiveFragment extends Fragment{
 
     public ActiveFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -45,9 +59,10 @@ public class ActiveFragment extends Fragment{
         activePubRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new PublicationsRecyclerAdapter(getContext());
         activePubRecycler.setAdapter(adapter);
-
         return v;
     }
+
+
 
     @Override
     public void onResume() {
@@ -60,12 +75,45 @@ public class ActiveFragment extends Fragment{
         Intent intent = new Intent(getContext(), FoodonetService.class);
         intent.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
         getContext().startService(intent);
+        /** show that the list is being updated */
+        if(getView()!= null){
+            Snackbar.make(getView(), R.string.updating,Snackbar.LENGTH_LONG).show();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+//        searchView.set
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
+        inflater.inflate(R.menu.main, menu);
+        MenuItem item = menu.findItem(R.id.search);
+        SearchView searchView = new SearchView(((MainDrawerActivity) getContext()).getSupportActionBar().getThemedContext());
+        MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW | MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
+        MenuItemCompat.setActionView(item, searchView);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                adapter.filter(query);
+                return false;
+            }
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                adapter.filter(newText);
+                return false;
+            }
+        });
     }
 
     public class GetPublicationsReceiver extends BroadcastReceiver{

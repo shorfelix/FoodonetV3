@@ -35,6 +35,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
 
     private Context context;
     private ArrayList<Publication> publications = new ArrayList<>();
+    private ArrayList<Publication> allPublications = new ArrayList<>();
     private TransferUtility transferUtility;
     private LatLng userLatLng;
     private static final double LOCATION_NOT_FOUND = -9999;
@@ -49,6 +50,22 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
 
     public void updatePublications(ArrayList<Publication> publications){
         this.publications = publications;
+        allPublications.addAll(publications);
+        notifyDataSetChanged();
+    }
+
+    public void filter(String text) {
+        publications.clear();
+        if(text.isEmpty()){
+            publications.addAll(allPublications);
+        } else{
+            text = text.toLowerCase();
+            for(Publication publication: allPublications){
+                if(publication.getTitle().toLowerCase().contains(text) || publication.getAddress().toLowerCase().contains(text)){
+                    publications.add(publication);
+                }
+            }
+        }
         notifyDataSetChanged();
     }
 

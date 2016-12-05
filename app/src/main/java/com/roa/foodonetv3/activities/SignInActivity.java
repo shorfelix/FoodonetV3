@@ -156,8 +156,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
             // Facebook Sign In was successful, authenticate with Firebase
             Toast.makeText(SignInActivity.this, "from facebook", Toast.LENGTH_SHORT).show();
             mCallbackManager.onActivityResult(requestCode, resultCode,data);
-
-
         }
     }
     @Override

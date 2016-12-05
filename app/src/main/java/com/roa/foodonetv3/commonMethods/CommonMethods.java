@@ -8,11 +8,9 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,20 +18,14 @@ import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.roa.foodonetv3.ContactUsDialog;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.AboutUsActivity;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.activities.MapActivity;
+import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
-import com.roa.foodonetv3.activities.SignInActivity;
-import com.roa.foodonetv3.activities.WelcomeUserActivity;
-import com.roa.foodonetv3.fragments.MyPublicationsFragment;
-import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -60,14 +52,11 @@ public class CommonMethods {
         Intent intent;
         switch (id) {
             case R.id.nav_my_shares:
-                if (context instanceof MainDrawerActivity) {
-                    intent = new Intent(context, PublicationActivity.class);
-                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
-                    context.startActivity(intent);
-                } else {
-                    intent = new Intent(context, PublicationActivity.class);
-                    intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
-                    context.startActivity(intent);
+                intent = new Intent(context, PublicationActivity.class);
+                intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                context.startActivity(intent);
+                if (!(context instanceof MainDrawerActivity)) {
+                    // TODO: 04/12/2016 roi, what's the point of running the method here?
                     ifGpsIsEnable(context);
                     ((Activity) context).finish();
 
@@ -93,21 +82,25 @@ public class CommonMethods {
 
                 break;
             case R.id.nav_settings:
-                // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
-                intent = new Intent(context, SignInActivity.class);
-                if (context instanceof MainDrawerActivity) {
-                    context.startActivity(intent);
-                } else {
-                    context.startActivity(intent);
-                    ((Activity) context).finish();
-
-                }
+//                // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
+//                intent = new Intent(context, SignInActivity.class);
+//                if (context instanceof MainDrawerActivity) {
+//                    context.startActivity(intent);
+//                } else {
+//                    context.startActivity(intent);
+//                    ((Activity) context).finish();
+//
+//                }
+                intent = new Intent(context, PrefsActivity.class);
+                context.startActivity(intent);
                 break;
             case R.id.nav_contact_us:
-
+                ContactUsDialog dialog = new ContactUsDialog(context);
+                dialog.show();
                 break;
             case R.id.nav_about:
-
+                intent = new Intent(context, AboutUsActivity.class);
+                context.startActivity(intent);
                 break;
         }
     }
@@ -231,6 +224,27 @@ public class CommonMethods {
         return newFile;
     }
 
+    public static void copyFile(Context context, File sourceFile, File destFile) throws IOException {
+        if (!sourceFile.exists()) {
+            Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FileChannel source = null;
+        FileChannel destination = null;
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        if (destination != null && source != null) {
+            destination.transferFrom(source, 0, source.size());
+        }
+        if (source != null) {
+            source.close();
+        }
+        if (destination != null) {
+            destination.close();
+        }
+    }
+
     public static String getFileNameFromPath(String path) {
         /** returns the file name without the path */
         String[] segments = path.split("/");
@@ -260,65 +274,73 @@ public class CommonMethods {
         return newFile;
     }
 
-    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath) {
+    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath, Bitmap sourceImage) {
         /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
          * then, it will overwrite the local original one.
          * returns true if successful*/
+        return compressImage(context,sourceImage,mCurrentPhotoPath);
+    }
+    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath){
+        /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
+         * then, it will overwrite the local original one.
+         * returns true if successful*/
+        try {
+            Bitmap sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
+            return compressImage(context,sourceBitmap,mCurrentPhotoPath);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+        }
+        return false;
+    }
 
+    private static boolean compressImage(Context context, Bitmap sourceBitmap, String mCurrentPhotoPath){
         /** ratio - 16:9 */
         final float ratio = 16 / 9f;
         final int WANTED_HEIGHT = 720;
         final int WANTED_WIDTH = (int) (WANTED_HEIGHT * ratio);
-        Bitmap sourceBitmap;
+        Bitmap cutBitmap;
+
+        /** cut the image to display as a 16:9 image */
+        if (sourceBitmap.getHeight() * ratio < sourceBitmap.getWidth()) {
+            /** full height of the image, cut the width*/
+            cutBitmap = Bitmap.createBitmap(
+                    sourceBitmap,
+                    (int) ((sourceBitmap.getWidth() - (sourceBitmap.getHeight() * ratio)) / 2),
+                    0,
+                    (int) (sourceBitmap.getHeight() * ratio),
+                    sourceBitmap.getHeight()
+            );
+        } else {
+            /** full width of the image, cut the height*/
+            cutBitmap = Bitmap.createBitmap(
+                    sourceBitmap,
+                    0,
+                    (int) ((sourceBitmap.getHeight() - (sourceBitmap.getWidth() / ratio)) / 2),
+                    sourceBitmap.getWidth(),
+                    (int) (sourceBitmap.getWidth() / ratio)
+            );
+        }
+        /** scale the image down*/
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(cutBitmap, WANTED_WIDTH, WANTED_HEIGHT, false);
+
+        /** compress the image and overwrite the original one*/
+        FileOutputStream out = null;
         try {
-            sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
-            Bitmap cutBitmap;
-
-            /** cut the image to display as a 16:9 image */
-            if (sourceBitmap.getHeight() * ratio < sourceBitmap.getWidth()) {
-                /** full height of the image, cut the width*/
-                cutBitmap = Bitmap.createBitmap(
-                        sourceBitmap,
-                        (int) ((sourceBitmap.getWidth() - (sourceBitmap.getHeight() * ratio)) / 2),
-                        0,
-                        (int) (sourceBitmap.getHeight() * ratio),
-                        sourceBitmap.getHeight()
-                );
-            } else {
-                /** full width of the image, cut the height*/
-                cutBitmap = Bitmap.createBitmap(
-                        sourceBitmap,
-                        0,
-                        (int) ((sourceBitmap.getHeight() - (sourceBitmap.getWidth() / ratio)) / 2),
-                        sourceBitmap.getWidth(),
-                        (int) (sourceBitmap.getWidth() / ratio)
-                );
-            }
-            /** scale the image down*/
-            Bitmap scaledBitmap = Bitmap.createScaledBitmap(cutBitmap, WANTED_WIDTH, WANTED_HEIGHT, false);
-
-            /** compress the image and overwrite the original one*/
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(mCurrentPhotoPath);
-                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                return true;
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-            } finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-            }
-        } catch (IOException | NullPointerException e) {
+            out = new FileOutputStream(mCurrentPhotoPath);
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            return true;
+        } catch (Exception e) {
             Log.e(TAG, e.getMessage());
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
         return false;
-
     }
 
 
@@ -400,25 +422,5 @@ public class CommonMethods {
         }
     }
 
-    public static void copyFile(Context context, File sourceFile, File destFile) throws IOException {
-        if (!sourceFile.exists()) {
-            Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        FileChannel source = null;
-        FileChannel destination = null;
-        source = new FileInputStream(sourceFile).getChannel();
-        destination = new FileOutputStream(destFile).getChannel();
-        if (destination != null && source != null) {
-            destination.transferFrom(source, 0, source.size());
-        }
-        if (source != null) {
-            source.close();
-        }
-        if (destination != null) {
-            destination.close();
-        }
-    }
 
 }
