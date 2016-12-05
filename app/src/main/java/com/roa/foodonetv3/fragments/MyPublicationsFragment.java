@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -66,6 +67,10 @@ public class MyPublicationsFragment extends Fragment {
         Intent intent = new Intent(getContext(),FoodonetService.class);
         intent.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_GET_USER_PUBLICATIONS);
         getContext().startService(intent);
+        /** show that the list is being updated */
+        if(getView()!= null){
+            Snackbar.make(getView(), R.string.updating,Snackbar.LENGTH_LONG).show();
+        }
     }
 
     @Override
