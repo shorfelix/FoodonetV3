@@ -1,6 +1,8 @@
 package com.roa.foodonetv3.fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -34,16 +37,18 @@ import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
+
 import java.io.File;
 import java.io.IOException;
 
-public class AddEditPublicationFragment extends Fragment implements View.OnClickListener{
+public class AddEditPublicationFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "AddEditPublicationFrag";
     private static final int INTENT_TAKE_PICTURE = 1;
+    private static final int INTENT_PICK_PICTURE = 3;
     private static final int REQUEST_PLACE_PICKER = 10;
     public static final int TYPE_NEW_PUBLICATION = 1;
     public static final int TYPE_EDIT_PUBLICATION = 2;
-    private EditText editTextTitleAddPublication,editTextPriceAddPublication,editTextShareWithAddPublication,editTextDetailsAddPublication;
+    private EditText editTextTitleAddPublication, editTextPriceAddPublication, editTextShareWithAddPublication, editTextDetailsAddPublication;
     private TextView textLocationAddPublication;
     private long endingDate;
     private String mCurrentPhotoPath;
@@ -53,7 +58,9 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private boolean isEdit;
 
 
-    /**The TransferUtility is the primary class for managing transfer to S3*/
+    /**
+     * The TransferUtility is the primary class for managing transfer to S3
+     */
     private TransferUtility transferUtility;
 
     public AddEditPublicationFragment() {
@@ -69,15 +76,15 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         mCurrentPhotoPath = "";
 
         isEdit = getArguments().getInt(TAG, TYPE_NEW_PUBLICATION) != TYPE_NEW_PUBLICATION;
-        if(isEdit){
+        if (isEdit) {
             /** if there's a publication in the intent - it is an edit of an existing publication */
-             if(savedInstanceState == null){
+            if (savedInstanceState == null) {
                 /** also check if there's a savedInstanceState, if there isn't - load the publication, if there is - load from savedInstanceState */
                 publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
-                 latlng = new LatLng(publication.getLat(),publication.getLng());
-             } else{
+                latlng = new LatLng(publication.getLat(), publication.getLng());
+            } else {
                 // TODO: 19/11/2016 add savedInstanceState reader
-             }
+            }
         }
     }
 
@@ -104,20 +111,20 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     @Override
     public void onResume() {
         super.onResume();
-        if(mCurrentPhotoPath == null){
+        if (mCurrentPhotoPath == null) {
             /** check if there is no path yet, if not, load the default image */
             // TODO: 13/11/2016 fix image size error
             Picasso.with(getContext()).load(R.drawable.foodonet_image)
-    //                .resize(imagePictureAddPublication.getWidth(),imagePictureAddPublication.getHeight())
-    //                .centerCrop()
+                    //                .resize(imagePictureAddPublication.getWidth(),imagePictureAddPublication.getHeight())
+                    //                .centerCrop()
                     .into(imagePictureAddPublication);
         }
-        if(isEdit){
+        if (isEdit) {
             loadPublicationIntoViews();
         }
     }
 
-    public void loadPublicationIntoViews(){
+    public void loadPublicationIntoViews() {
         // TODO: 19/11/2016 test
         editTextTitleAddPublication.setText(publication.getTitle());
         textLocationAddPublication.setText(publication.getAddress());
@@ -129,37 +136,52 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.buttonTestAdd:
                 /** button for uploading the publication to the server, if an image was taken,
                  *  start uploading to the s3 server as well, currently no listener for s3 finished upload*/
                 uploadPublicationToServer();
-                if(!mCurrentPhotoPath.equals("")){
-                    beginS3Upload("file:"+mCurrentPhotoPath);
-                } else{
+                if (!mCurrentPhotoPath.equals("")) {
+                    beginS3Upload("file:" + mCurrentPhotoPath);
+                } else {
                     Toast.makeText(getContext(), "no photo path", Toast.LENGTH_SHORT).show();
                 }
                 break;
             case R.id.imageTakePictureAddPublication:
-                /** start the popup activity*/
-                getContext().startActivity(new Intent(getContext(), SplashForCamera.class));
-                /**wait for the popup activity before start the camera */
-                Thread thread = new Thread(){
-                    @Override
-                    public void run() {
-                        super.run();
-                        synchronized (getContext()){
-                            try {
-                                getContext().wait(3000);
-                                /** starts the image taking intent through the default app*/
-                                dispatchTakePictureIntent();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+                AlertDialog.Builder dialog = new AlertDialog.Builder(getContext())
+                        .setTitle("Take picture")
+                        .setPositiveButton("Camera", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                /** start the popup activity*/
+                                getContext().startActivity(new Intent(getContext(), SplashForCamera.class));
+                                /**wait for the popup activity before start the camera */
+                                Thread thread = new Thread() {
+                                    @Override
+                                    public void run() {
+                                        super.run();
+                                        synchronized (getContext()) {
+                                            try {
+                                                getContext().wait(3000);
+                                                /** starts the image taking intent through the default app*/
+                                                dispatchTakePictureIntent();
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                };
+                                thread.start();
                             }
-                        }
-                    }
-                };
-                thread.start();
+                        })
+                        .setNegativeButton("Gallery", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dispatchPickPictureIntent();
+                            }
+                        });
+                dialog.show();
+
                 break;
             case R.id.textLocationAddPublication:
                 /** start the google places autocomplete widget */
@@ -200,10 +222,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             try {
                 photoFile = CommonMethods.createImageFile(getContext());
                 mCurrentPhotoPath = photoFile.getPath();
-                Log.d(TAG,"photo path: " + mCurrentPhotoPath);
+                Log.d(TAG, "photo path: " + mCurrentPhotoPath);
             } catch (IOException ex) {
                 // Error occurred while creating the File
-                Log.e(TAG,ex.getMessage());
+                Log.e(TAG, ex.getMessage());
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -216,21 +238,82 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         }
     }
 
+    private void dispatchPickPictureIntent() {
+        Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        getIntent.setType("image/*");
+
+        Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        pickIntent.setType("image/*");
+
+        Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{pickIntent});
+
+        File photoFile = null;
+        try {
+            photoFile = CommonMethods.createImageFile(getContext());
+            mCurrentPhotoPath = photoFile.getPath();
+            Log.d(TAG, "photo path: " + mCurrentPhotoPath);
+        } catch (IOException ex) {
+            // Error occurred while creating the File
+            Log.e(TAG, ex.getMessage());
+        }
+        // Continue only if the File was successfully created
+        if (photoFile != null) {
+            Uri photoURI = FileProvider.getUriForFile(getContext(),
+                    "com.roa.foodonetv3.fileprovider",
+                    photoFile);
+//            chooserIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+            startActivityForResult(chooserIntent, INTENT_PICK_PICTURE);
+        }
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode){
+            switch (requestCode) {
+
                 case INTENT_TAKE_PICTURE:
                     /** an image was successfully taken, since we have the path already,
                      *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
                      *  returns true if successful*/
-                    if(CommonMethods.editOverwriteImage(getContext(),mCurrentPhotoPath)){
+//                    File mCurrentFile = new File(mCurrentPhotoPath);
+//                    File galleryFile = new File(data.getData().getPath());
+//                    if (mCurrentFile.isFile()) {
+//                        try {
+//                            CommonMethods.copyFile(getContext(),galleryFile ,mCurrentFile);
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+                    if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath)) {
                         /** let picasso handle the caching and scaling to the imageView */
                         Picasso.with(getContext())
-                                .load("file:"+mCurrentPhotoPath)
-                                .resize(imagePictureAddPublication.getWidth(),imagePictureAddPublication.getHeight())
+                                .load("file:" + mCurrentPhotoPath)
+                                .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
+                                .centerCrop()
+                                .into(imagePictureAddPublication);
+                        //                    imagePictureAddPublication.setImageBitmap(scaledBitmap);
+                    }
+                    break;
+                case INTENT_PICK_PICTURE:
+                    /** an image was successfully taken, since we have the path already,
+                     *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
+                     *  returns true if successful*/
+                    File mCurrentFile = new File(mCurrentPhotoPath);
+                    File galleryFile = new File(data.getData().getPath());
+                    if (mCurrentFile.isFile()) {
+                        try {
+                            CommonMethods.copyFile(getContext(), galleryFile, mCurrentFile);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath)) {
+                        /** let picasso handle the caching and scaling to the imageView */
+                        Picasso.with(getContext())
+                                .load("file:" + mCurrentPhotoPath)
+                                .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
                                 .centerCrop()
                                 .into(imagePictureAddPublication);
                         //                    imagePictureAddPublication.setImageBitmap(scaledBitmap);
@@ -238,12 +321,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                     break;
                 case REQUEST_PLACE_PICKER:
                     /** a place was successfully received from the place autocomplete sdk, including the address, and latlng */
-                    final Place place = PlacePicker.getPlace(getContext(),data);
+                    final Place place = PlacePicker.getPlace(getContext(), data);
                     final CharSequence address = place.getAddress();
                     latlng = place.getLatLng();
                     textLocationAddPublication.setText(address);
-                    Toast.makeText(getContext(), "latlng: "+place.getLatLng().toString(), Toast.LENGTH_SHORT).show();
-                        break;
+                    Toast.makeText(getContext(), "latlng: " + place.getLatLng().toString(), Toast.LENGTH_SHORT).show();
+                    break;
             }
         }
     }
@@ -252,7 +335,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     public void uploadPublicationToServer() {
         /** upload the publication to the foodonet server */
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String contactInfo = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(User.PHONE_NUMBER,"");
+        String contactInfo = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(User.PHONE_NUMBER, "");
         String title = editTextTitleAddPublication.getText().toString();
         String location = textLocationAddPublication.getText().toString();
         String priceS = editTextPriceAddPublication.getText().toString();
@@ -260,17 +343,17 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         String details = editTextDetailsAddPublication.getText().toString();
         /** currently starting time is now */
         long startingDate = System.currentTimeMillis();
-        if(endingDate == 0){
+        if (endingDate == 0) {
             /** default ending date is 2 days after creation */
             endingDate = startingDate + 172800000;
         }
         long localPublicationID;
-        if(!isEdit){
+        if (!isEdit) {
             localPublicationID = CommonMethods.getNewLocalPublicationID();
-        } else{
+        } else {
             localPublicationID = publication.getId();
         }
-        if(title.equals("") || location.equals("") || shareWith.equals("") || latlng == null){
+        if (title.equals("") || location.equals("") || shareWith.equals("") || latlng == null) {
             Toast.makeText(getContext(), R.string.post_please_enter_all_fields, Toast.LENGTH_SHORT).show();
         } else {
             double price;
@@ -288,12 +371,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
             // TODO: 08/11/2016 repair starting time and ending time. also currently some fields are hard coded for testing
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, latlng.latitude, latlng.longitude,
-                    String.valueOf(startingDate/1000), String.valueOf(endingDate/1000),
+                    String.valueOf(startingDate / 1000), String.valueOf(endingDate / 1000),
                     contactInfo, true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "");
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
             Intent i = new Intent(getContext(), FoodonetService.class);
-            i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_PUBLICATION);
-            i.putExtra(FoodonetService.JSON_TO_SEND,publication.getPublicationJson().toString());
+            i.putExtra(StartServiceMethods.ACTION_TYPE, StartServiceMethods.ACTION_ADD_PUBLICATION);
+            i.putExtra(FoodonetService.JSON_TO_SEND, publication.getPublicationJson().toString());
             getContext().startService(i);
             getActivity().finish();
         }
@@ -311,7 +394,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         }
         String[] split = filePath.split(":");
         File file = new File(split[1]);
-        transferUtility.upload(getResources().getString(R.string.amazon_bucket), file.getName(),file);
+        transferUtility.upload(getResources().getString(R.string.amazon_bucket), file.getName(), file);
         // TODO: 09/11/2016 add logic to completion or failure of upload image
         /*
          * Note that usually we set the transfer listener after initializing the
