@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- preview server -->
     <string name="foodonet_server">https://prv-fd-server.herokuapp.com</string>
+    <!-- final server -->
+    <!--<string name="foodonet_server">https://fd-server.herokuapp.com</string>-->
+
+
     <string name="amazon_base_url_for_images">https://s3.amazonaws.com/foodcollectordev</string>
     <string name="amazon_url_for_user_avatar">https://s3.amazonaws.com/foodonetusersdev</string>
     <string name="amazon_sub_path_publication_images">foodcollectordev</string>

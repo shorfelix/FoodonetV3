@@ -9,10 +9,13 @@ import android.view.Window;
 import com.roa.foodonetv3.R;
 
 public class SplashForCamera extends AppCompatActivity {
+    private static final String TAG = "SplashForCamera";
+    public static final int TIMER = 3000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_splash_for_camera);
         /** how to set the size of the activity*/
@@ -28,6 +31,6 @@ public class SplashForCamera extends AppCompatActivity {
             public void run() {
                 finish();
             }
-        }, 3000);
+        }, TIMER);
     }
 }
