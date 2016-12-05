@@ -5,6 +5,8 @@
         <EditTextPreference
             android:title="User Name"
             android:key="prefs_user_name"/>
+        <Preference android:title="@string/sign_out"
+            android:key="@string/prefs_sign_out" />
 
     </PreferenceCategory>
 
@@ -12,4 +14,5 @@
         android:title="@string/prefs_notifications">
 
     </PreferenceCategory>
+
 </PreferenceScreen>

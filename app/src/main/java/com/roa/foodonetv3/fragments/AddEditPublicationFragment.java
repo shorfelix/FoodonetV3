@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -149,8 +150,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                 break;
             case R.id.imageTakePictureAddPublication:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(getContext())
-                        .setTitle("Take picture")
-                        .setPositiveButton("Camera", new DialogInterface.OnClickListener() {
+                        .setTitle(R.string.add_image)
+                        .setPositiveButton(R.string.camera, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 /** start the popup activity*/
@@ -162,7 +163,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                                         super.run();
                                         synchronized (getContext()) {
                                             try {
-                                                getContext().wait(3000);
+                                                getContext().wait(SplashForCamera.TIMER);
                                                 /** starts the image taking intent through the default app*/
                                                 dispatchTakePictureIntent();
                                             } catch (InterruptedException e) {
@@ -174,7 +175,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                                 thread.start();
                             }
                         })
-                        .setNegativeButton("Gallery", new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.gallery, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dispatchPickPictureIntent();
@@ -253,17 +254,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             photoFile = CommonMethods.createImageFile(getContext());
             mCurrentPhotoPath = photoFile.getPath();
             Log.d(TAG, "photo path: " + mCurrentPhotoPath);
+            startActivityForResult(chooserIntent, INTENT_PICK_PICTURE);
         } catch (IOException ex) {
             // Error occurred while creating the File
             Log.e(TAG, ex.getMessage());
-        }
-        // Continue only if the File was successfully created
-        if (photoFile != null) {
-            Uri photoURI = FileProvider.getUriForFile(getContext(),
-                    "com.roa.foodonetv3.fileprovider",
-                    photoFile);
-//            chooserIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-            startActivityForResult(chooserIntent, INTENT_PICK_PICTURE);
         }
     }
 
@@ -277,15 +271,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                     /** an image was successfully taken, since we have the path already,
                      *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
                      *  returns true if successful*/
-//                    File mCurrentFile = new File(mCurrentPhotoPath);
-//                    File galleryFile = new File(data.getData().getPath());
-//                    if (mCurrentFile.isFile()) {
-//                        try {
-//                            CommonMethods.copyFile(getContext(),galleryFile ,mCurrentFile);
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
                     if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath)) {
                         /** let picasso handle the caching and scaling to the imageView */
                         Picasso.with(getContext())
@@ -293,30 +278,26 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                                 .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
                                 .centerCrop()
                                 .into(imagePictureAddPublication);
-                        //                    imagePictureAddPublication.setImageBitmap(scaledBitmap);
                     }
                     break;
                 case INTENT_PICK_PICTURE:
-                    /** an image was successfully taken, since we have the path already,
+                    /** an image was successfully picked, since we have the path already,
                      *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
                      *  returns true if successful*/
-                    File mCurrentFile = new File(mCurrentPhotoPath);
-                    File galleryFile = new File(data.getData().getPath());
-                    if (mCurrentFile.isFile()) {
-                        try {
-                            CommonMethods.copyFile(getContext(), galleryFile, mCurrentFile);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                    Uri uri = data.getData();
+
+                    try {
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
+                        if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath,bitmap)) {
+                            /** let picasso handle the caching and scaling to the imageView */
+                            Picasso.with(getContext())
+                                    .load("file:" + mCurrentPhotoPath)
+                                    .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
+                                    .centerCrop()
+                                    .into(imagePictureAddPublication);
                         }
-                    }
-                    if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath)) {
-                        /** let picasso handle the caching and scaling to the imageView */
-                        Picasso.with(getContext())
-                                .load("file:" + mCurrentPhotoPath)
-                                .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
-                                .centerCrop()
-                                .into(imagePictureAddPublication);
-                        //                    imagePictureAddPublication.setImageBitmap(scaledBitmap);
+                    } catch (IOException e) {
+                        Log.e(TAG,e.getMessage());
                     }
                     break;
                 case REQUEST_PLACE_PICKER:
@@ -342,10 +323,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         String shareWith = editTextShareWithAddPublication.getText().toString();
         String details = editTextDetailsAddPublication.getText().toString();
         /** currently starting time is now */
-        long startingDate = System.currentTimeMillis();
+        long startingDate = System.currentTimeMillis()/1000;
         if (endingDate == 0) {
             /** default ending date is 2 days after creation */
-            endingDate = startingDate + 172800000;
+            endingDate = startingDate + 172800;
         }
         long localPublicationID;
         if (!isEdit) {
@@ -371,7 +352,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
             // TODO: 08/11/2016 repair starting time and ending time. also currently some fields are hard coded for testing
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, latlng.latitude, latlng.longitude,
-                    String.valueOf(startingDate / 1000), String.valueOf(endingDate / 1000),
+                    String.valueOf(startingDate), String.valueOf(endingDate),
                     contactInfo, true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "");
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
             Intent i = new Intent(getContext(), FoodonetService.class);

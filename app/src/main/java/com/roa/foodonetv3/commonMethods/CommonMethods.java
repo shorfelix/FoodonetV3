@@ -3,6 +3,7 @@ package com.roa.foodonetv3.commonMethods;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -13,6 +14,8 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,6 +23,9 @@ import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -233,6 +239,27 @@ public class CommonMethods {
         return newFile;
     }
 
+    public static void copyFile(Context context, File sourceFile, File destFile) throws IOException {
+        if (!sourceFile.exists()) {
+            Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        FileChannel source = null;
+        FileChannel destination = null;
+        source = new FileInputStream(sourceFile).getChannel();
+        destination = new FileOutputStream(destFile).getChannel();
+        if (destination != null && source != null) {
+            destination.transferFrom(source, 0, source.size());
+        }
+        if (source != null) {
+            source.close();
+        }
+        if (destination != null) {
+            destination.close();
+        }
+    }
+
     public static String getFileNameFromPath(String path) {
         /** returns the file name without the path */
         String[] segments = path.split("/");
@@ -262,65 +289,73 @@ public class CommonMethods {
         return newFile;
     }
 
-    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath) {
+    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath, Bitmap sourceImage) {
         /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
          * then, it will overwrite the local original one.
          * returns true if successful*/
+        return compressImage(context,sourceImage,mCurrentPhotoPath);
+    }
+    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath){
+        /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
+         * then, it will overwrite the local original one.
+         * returns true if successful*/
+        try {
+            Bitmap sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
+            return compressImage(context,sourceBitmap,mCurrentPhotoPath);
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+        }
+        return false;
+    }
 
+    private static boolean compressImage(Context context, Bitmap sourceBitmap, String mCurrentPhotoPath){
         /** ratio - 16:9 */
         final float ratio = 16 / 9f;
         final int WANTED_HEIGHT = 720;
         final int WANTED_WIDTH = (int) (WANTED_HEIGHT * ratio);
-        Bitmap sourceBitmap;
+        Bitmap cutBitmap;
+
+        /** cut the image to display as a 16:9 image */
+        if (sourceBitmap.getHeight() * ratio < sourceBitmap.getWidth()) {
+            /** full height of the image, cut the width*/
+            cutBitmap = Bitmap.createBitmap(
+                    sourceBitmap,
+                    (int) ((sourceBitmap.getWidth() - (sourceBitmap.getHeight() * ratio)) / 2),
+                    0,
+                    (int) (sourceBitmap.getHeight() * ratio),
+                    sourceBitmap.getHeight()
+            );
+        } else {
+            /** full width of the image, cut the height*/
+            cutBitmap = Bitmap.createBitmap(
+                    sourceBitmap,
+                    0,
+                    (int) ((sourceBitmap.getHeight() - (sourceBitmap.getWidth() / ratio)) / 2),
+                    sourceBitmap.getWidth(),
+                    (int) (sourceBitmap.getWidth() / ratio)
+            );
+        }
+        /** scale the image down*/
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(cutBitmap, WANTED_WIDTH, WANTED_HEIGHT, false);
+
+        /** compress the image and overwrite the original one*/
+        FileOutputStream out = null;
         try {
-            sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
-            Bitmap cutBitmap;
-
-            /** cut the image to display as a 16:9 image */
-            if (sourceBitmap.getHeight() * ratio < sourceBitmap.getWidth()) {
-                /** full height of the image, cut the width*/
-                cutBitmap = Bitmap.createBitmap(
-                        sourceBitmap,
-                        (int) ((sourceBitmap.getWidth() - (sourceBitmap.getHeight() * ratio)) / 2),
-                        0,
-                        (int) (sourceBitmap.getHeight() * ratio),
-                        sourceBitmap.getHeight()
-                );
-            } else {
-                /** full width of the image, cut the height*/
-                cutBitmap = Bitmap.createBitmap(
-                        sourceBitmap,
-                        0,
-                        (int) ((sourceBitmap.getHeight() - (sourceBitmap.getWidth() / ratio)) / 2),
-                        sourceBitmap.getWidth(),
-                        (int) (sourceBitmap.getWidth() / ratio)
-                );
-            }
-            /** scale the image down*/
-            Bitmap scaledBitmap = Bitmap.createScaledBitmap(cutBitmap, WANTED_WIDTH, WANTED_HEIGHT, false);
-
-            /** compress the image and overwrite the original one*/
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(mCurrentPhotoPath);
-                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                return true;
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-            } finally {
-                try {
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-            }
-        } catch (IOException | NullPointerException e) {
+            out = new FileOutputStream(mCurrentPhotoPath);
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            return true;
+        } catch (Exception e) {
             Log.e(TAG, e.getMessage());
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
         return false;
-
     }
 
 
@@ -402,25 +437,5 @@ public class CommonMethods {
         }
     }
 
-    public static void copyFile(Context context, File sourceFile, File destFile) throws IOException {
-        if (!sourceFile.exists()) {
-            Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        FileChannel source = null;
-        FileChannel destination = null;
-        source = new FileInputStream(sourceFile).getChannel();
-        destination = new FileOutputStream(destFile).getChannel();
-        if (destination != null && source != null) {
-            destination.transferFrom(source, 0, source.size());
-        }
-        if (source != null) {
-            source.close();
-        }
-        if (destination != null) {
-            destination.close();
-        }
-    }
 
 }
