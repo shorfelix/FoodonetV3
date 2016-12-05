@@ -20,6 +20,7 @@ public class StartServiceMethods {
     public static final int ACTION_ADD_REPORT = 11;
     public static final int ACTION_ADD_USER = 20;
     public static final int ACTION_REGISTER_TO_PUBLICATION = 30;
+    public static final int ACTION_POST_FEEDBACK = 40;
 
     /** HTTP_TYPE */
     public static final int HTTP_GET = 1;
@@ -75,6 +76,9 @@ public class StartServiceMethods {
                 builder.append(String.format(Locale.US,"/%1$s",args[0]));
                 builder.append(context.getResources().getString(R.string.foodonet_registered_user_for_publication));
                 break;
+            case ACTION_POST_FEEDBACK:
+                builder.append(context.getResources().getString(R.string.foodonet_feedback));
+                break;
         }
         return builder.toString();
     }
@@ -96,6 +100,8 @@ public class StartServiceMethods {
             case ACTION_ADD_USER:
                 return HTTP_POST;
             case ACTION_REGISTER_TO_PUBLICATION:
+                return HTTP_POST;
+            case ACTION_POST_FEEDBACK:
                 return HTTP_POST;
         }
         return -1;

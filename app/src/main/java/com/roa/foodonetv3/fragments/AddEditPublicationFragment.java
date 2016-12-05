@@ -1,5 +1,6 @@
 package com.roa.foodonetv3.fragments;
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -132,7 +133,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         editTextShareWithAddPublication.setText("currently not working");
         editTextDetailsAddPublication.setText(publication.getSubtitle());
         editTextPriceAddPublication.setText(String.valueOf(publication.getPrice()));
-
     }
 
     @Override
@@ -288,7 +288,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
                     try {
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
-                        if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath,bitmap)) {
+                        if (CommonMethods.editOverwriteImage(mCurrentPhotoPath,bitmap)) {
                             /** let picasso handle the caching and scaling to the imageView */
                             Picasso.with(getContext())
                                     .load("file:" + mCurrentPhotoPath)

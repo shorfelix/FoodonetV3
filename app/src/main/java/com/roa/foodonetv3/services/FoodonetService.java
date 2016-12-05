@@ -231,6 +231,11 @@ public class FoodonetService extends IntentService {
                 case StartServiceMethods.ACTION_REGISTER_TO_PUBLICATION:
                     // TODO: 27/11/2016 update
                     break;
+
+                case StartServiceMethods.ACTION_POST_FEEDBACK:
+                    // TODO: 05/12/2016 add logic according to what we receive
+                    Log.d("TESTTTTTTTTTTTTTT", responseRoot);
+                    break;
             }
         } catch (JSONException e){
             Log.e(TAG,e.getMessage());

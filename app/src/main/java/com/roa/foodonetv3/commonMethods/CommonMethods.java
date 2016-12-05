@@ -239,27 +239,6 @@ public class CommonMethods {
         return newFile;
     }
 
-    public static void copyFile(Context context, File sourceFile, File destFile) throws IOException {
-        if (!sourceFile.exists()) {
-            Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        FileChannel source = null;
-        FileChannel destination = null;
-        source = new FileInputStream(sourceFile).getChannel();
-        destination = new FileOutputStream(destFile).getChannel();
-        if (destination != null && source != null) {
-            destination.transferFrom(source, 0, source.size());
-        }
-        if (source != null) {
-            source.close();
-        }
-        if (destination != null) {
-            destination.close();
-        }
-    }
-
     public static String getFileNameFromPath(String path) {
         /** returns the file name without the path */
         String[] segments = path.split("/");
@@ -289,11 +268,11 @@ public class CommonMethods {
         return newFile;
     }
 
-    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath, Bitmap sourceImage) {
+    public static boolean editOverwriteImage(String mCurrentPhotoPath, Bitmap sourceImage) {
         /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
          * then, it will overwrite the local original one.
          * returns true if successful*/
-        return compressImage(context,sourceImage,mCurrentPhotoPath);
+        return compressImage(sourceImage,mCurrentPhotoPath);
     }
     public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath){
         /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
@@ -301,14 +280,14 @@ public class CommonMethods {
          * returns true if successful*/
         try {
             Bitmap sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
-            return compressImage(context,sourceBitmap,mCurrentPhotoPath);
+            return compressImage(sourceBitmap,mCurrentPhotoPath);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
         }
         return false;
     }
 
-    private static boolean compressImage(Context context, Bitmap sourceBitmap, String mCurrentPhotoPath){
+    private static boolean compressImage(Bitmap sourceBitmap, String mCurrentPhotoPath){
         /** ratio - 16:9 */
         final float ratio = 16 / 9f;
         final int WANTED_HEIGHT = 720;
