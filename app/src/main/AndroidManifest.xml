@@ -92,7 +92,8 @@
             android:value="@string/facebook_app_id" />
 
         <activity android:name=".activities.AboutUsActivity" />
-        <activity android:name=".activities.PrefsActivity"></activity>
+        <activity android:name=".activities.PrefsActivity" />
+        <activity android:name=".activities.PlacesActivity"></activity>
     </application>
 
 </manifest>
