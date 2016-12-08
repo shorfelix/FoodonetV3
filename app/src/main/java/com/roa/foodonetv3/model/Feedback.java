@@ -39,7 +39,7 @@ public class Feedback implements Parcelable{
         }
     };
 
-    private JSONObject getFeedbackJson(){
+    public JSONObject getFeedbackJson(){
         JSONObject feedbackRoot = new JSONObject();
         JSONObject feedback = new JSONObject();
         try {

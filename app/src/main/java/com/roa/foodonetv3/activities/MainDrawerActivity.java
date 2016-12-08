@@ -2,21 +2,15 @@ package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -25,7 +19,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
@@ -33,7 +26,6 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -43,22 +35,12 @@ import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
 
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
-
-    // TODO: 12/11/2016 move two constants to different class
-    public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
-    public static final int OPEN_ADD_PUBLICATION = 1;
-    public static final int OPEN_EDIT_PUBLICATION = 2;
-    public static final int OPEN_PUBLICATION_DETAIL = 3;
-    public static final int OPEN_MY_PUBLICATIONS = 4;
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
@@ -131,7 +113,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
                 } else{
                     /** a user is logged in, continue to open the activity and fragment of the add publication */
                     i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
-                    i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,OPEN_ADD_PUBLICATION);
+                    i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_ADD_PUBLICATION);
                 }
                 startActivity(i);
             }

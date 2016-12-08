@@ -19,6 +19,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.roa.foodonetv3.ContactUsDialog;
+import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.AboutUsActivity;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
@@ -28,10 +29,8 @@ import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.model.User;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -53,17 +52,21 @@ public class CommonMethods {
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
-                intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_MY_PUBLICATIONS);
                 context.startActivity(intent);
                 if (!(context instanceof MainDrawerActivity)) {
                     // TODO: 04/12/2016 roi, what's the point of running the method here?
                     ifGpsIsEnable(context);
                     ((Activity) context).finish();
-
                 }
                 break;
             case R.id.nav_all_events:
-
+                if (!(context instanceof MainDrawerActivity)) {
+                    intent = new Intent(context, MainDrawerActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    context.startActivity(intent);
+                    break;
+                }
                 break;
             case R.id.nav_map_view:
                 intent = new Intent(context, MapActivity.class);
@@ -79,7 +82,14 @@ public class CommonMethods {
 
                 break;
             case R.id.nav_groups:
-
+                intent = new Intent(context, GroupsActivity.class);
+                if(context instanceof GroupsActivity){
+                    // TODO: 06/12/2016 test
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    context.startActivity(intent);
+                } else{
+                    context.startActivity(intent);
+                }
                 break;
             case R.id.nav_settings:
 //                // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available

@@ -20,7 +20,9 @@ public class StartServiceMethods {
     public static final int ACTION_ADD_REPORT = 11;
     public static final int ACTION_ADD_USER = 20;
     public static final int ACTION_REGISTER_TO_PUBLICATION = 30;
-    public static final int ACTION_POST_FEEDBACK = 40;
+    public static final int ACTION_ADD_GROUP = 40;
+    public static final int ACTION_GET_GROUPS = 41;
+    public static final int ACTION_POST_FEEDBACK = 50;
 
     /** HTTP_TYPE */
     public static final int HTTP_GET = 1;
@@ -31,11 +33,12 @@ public class StartServiceMethods {
 
     /** SEND INTENTS: (putExtra)
      * all actions - add String ACTION_TYPE to intent
-     * edit publication - add args[0] = (String)publication id
+     * actions in post - add JSON_TO_SEND = (String) json data to intent
+     * edit publication - add args[0] = (String) publication id
      * get reports - add args[0] = (String) publication id, args[1] = (String) publication version
      * add report - add args[0] = (String) publication id
      * register for publication - add args[0] = (String) publication id
-     * actions in post - add String JSON_TO_SEND to intent */
+     * get groups - add args[0] = (String) user id */
 
     public static String getUrlAddress(Context context, int actionType, String[] args) {
         /** prepares the url address according to the action intended */
@@ -69,12 +72,20 @@ public class StartServiceMethods {
                 builder.append(context.getResources().getString(R.string.foodonet_publication_reports));
                 break;
             case ACTION_ADD_USER:
-                builder.append(context.getResources().getString(R.string.foodonet_user));
+                builder.append(context.getResources().getString(R.string.foodonet_users));
                 break;
             case ACTION_REGISTER_TO_PUBLICATION:
                 builder.append(context.getResources().getString(R.string.foodonet_publications));
                 builder.append(String.format(Locale.US,"/%1$s",args[0]));
                 builder.append(context.getResources().getString(R.string.foodonet_registered_user_for_publication));
+                break;
+            case ACTION_ADD_GROUP:
+                builder.append(context.getResources().getString(R.string.foodonet_groups));
+                break;
+            case ACTION_GET_GROUPS:
+                builder.append(context.getResources().getString(R.string.foodonet_users));
+                builder.append(String.format(Locale.US,"/%1$s",args[0]));
+                builder.append(context.getResources().getString(R.string.foodonet_groups));
                 break;
             case ACTION_POST_FEEDBACK:
                 builder.append(context.getResources().getString(R.string.foodonet_feedback));
@@ -101,6 +112,10 @@ public class StartServiceMethods {
                 return HTTP_POST;
             case ACTION_REGISTER_TO_PUBLICATION:
                 return HTTP_POST;
+            case ACTION_ADD_GROUP:
+                return HTTP_POST;
+            case ACTION_GET_GROUPS:
+                return HTTP_GET;
             case ACTION_POST_FEEDBACK:
                 return HTTP_POST;
         }

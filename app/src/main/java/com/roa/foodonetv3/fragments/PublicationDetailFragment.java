@@ -30,7 +30,7 @@ import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.RegistrationPublication;
-import com.roa.foodonetv3.model.ReportFromServer;
+import com.roa.foodonetv3.model.PublicationReport;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
 
@@ -59,8 +59,6 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         super.onCreate(savedInstanceState);
         publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
         receiver = new GetFoodonetResponseReceiver();
-        IntentFilter filter = new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
     }
 
     @Override
@@ -102,6 +100,8 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     public void onResume() {
         // TODO: 21/11/2016 load from server every resume?
         super.onResume();
+        IntentFilter filter = new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
         Intent intent = new Intent(getContext(),FoodonetService.class);
         intent.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_GET_REPORTS);
         String[] args = {String.valueOf(publication.getId()),String.valueOf(publication.getVersion())};
@@ -197,10 +197,10 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 case R.id.imageActionPublicationSMS:
                     // TODO: 14/11/2016 not working! test for adding a report, hard coded
 //                    Snackbar.make(imageActionPublicationReport,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
-                    ReportFromServer reportFromServer = new ReportFromServer(-1,publication.getId(),publication.getVersion(),3,CommonMethods.getDeviceUUID(getContext()),
+                    PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(),3,CommonMethods.getDeviceUUID(getContext()),
                             "","",String.valueOf(CommonMethods.getCurrentTimeSeconds()),user.getDisplayName(),
                             CommonMethods.getMyUserPhone(getContext()),CommonMethods.getMyUserID(getContext()),4);
-                    String reportJson = reportFromServer.getAddReportJson().toString();
+                    String reportJson = publicationReport.getAddReportJson().toString();
                     Log.d(TAG,"report json:"+reportJson);
                     i = new Intent(getContext(),FoodonetService.class);
                     i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_REPORT);
@@ -232,7 +232,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         }
     }
 
-    public class GetFoodonetResponseReceiver extends BroadcastReceiver {
+    private class GetFoodonetResponseReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             /** receiver for reports got from the service */
@@ -243,7 +243,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                         // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        ArrayList<ReportFromServer> reports = intent.getParcelableArrayListExtra(ReportFromServer.REPORT_KEY);
+                        ArrayList<PublicationReport> reports = intent.getParcelableArrayListExtra(PublicationReport.REPORT_KEY);
                         adapter.updateReports(reports);
                     }
                     break;

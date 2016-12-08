@@ -6,8 +6,10 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.model.Group;
+import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.model.ReportFromServer;
+import com.roa.foodonetv3.model.PublicationReport;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -109,11 +111,11 @@ public class FoodonetService extends IntentService {
 
     private Intent addResponseToIntent(int actionType, String responseRoot, Intent intent){
         try {
+            int userID = CommonMethods.getMyUserID(this);
             switch (actionType) {
                 case StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
                 case StartServiceMethods.ACTION_GET_USER_PUBLICATIONS:
                     ArrayList<Publication> publications = new ArrayList<>();
-                    int userID = CommonMethods.getMyUserID(this);
                     JSONArray rootGetPublications;
                     rootGetPublications = new JSONArray(responseRoot);
                     /** declarations */
@@ -176,7 +178,7 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case StartServiceMethods.ACTION_GET_REPORTS:
-                    ArrayList<ReportFromServer> reports = new ArrayList<>();
+                    ArrayList<PublicationReport> reports = new ArrayList<>();
                     JSONArray rootGetReports;
                     rootGetReports = new JSONArray(responseRoot);
                     /** declarations */
@@ -210,10 +212,10 @@ public class FoodonetService extends IntentService {
                         reportUserId = report.getInt("reporter_user_id");
                         rating = report.getInt("rating");
 
-                        reports.add(new ReportFromServer(reportId, publicationID, publicationVersion, reportType, active_device_dev_uuid,
+                        reports.add(new PublicationReport(reportId, publicationID, publicationVersion, reportType, active_device_dev_uuid,
                                 createdDate, updateDate, dateOfReport, reportUserName, reportContactInfo, reportUserId, rating));
                         }
-                    intent.putParcelableArrayListExtra(ReportFromServer.REPORT_KEY, reports);
+                    intent.putParcelableArrayListExtra(PublicationReport.REPORT_KEY, reports);
                     break;
 
                 case StartServiceMethods.ACTION_ADD_REPORT: // not tested
@@ -230,6 +232,41 @@ public class FoodonetService extends IntentService {
 
                 case StartServiceMethods.ACTION_REGISTER_TO_PUBLICATION:
                     // TODO: 27/11/2016 update
+                    break;
+
+                case StartServiceMethods.ACTION_ADD_GROUP:
+                    // TODO: 06/12/2016 add logic according to what we receive
+                    Log.d("TESTTTTTTTTTTTTTTT",responseRoot);
+                    break;
+
+                case StartServiceMethods.ACTION_GET_GROUPS:
+                    JSONArray groupArray = new JSONArray(responseRoot);
+                    /** declarations */
+                    ArrayList<Group> groups = new ArrayList<>();
+                    int groupID;
+                    String groupName;
+                    int memberID;
+                    String phoneNumber;
+                    String memberName;
+                    boolean isAdmin;
+                    for (int i = 0; i < groupArray.length(); i++) {
+                        JSONObject group = groupArray.getJSONObject(i);
+                        userID = group.getInt(Group.USER_ID);
+                        groupID = group.getInt(Group.GROUP_ID);
+                        groupName = group.getString(Group.NAME);
+                        ArrayList<GroupMember> members = new ArrayList<>();
+                        JSONArray membersArray = group.getJSONArray(GroupMember.KEY);
+                        for (int j = 0; j < membersArray.length(); j++) {
+                            JSONObject member = membersArray.getJSONObject(j);
+                            memberID = member.getInt(GroupMember.USER_ID);
+                            phoneNumber = member.getString(GroupMember.PHONE_NUMBER);
+                            memberName = member.getString(GroupMember.NAME);
+                            isAdmin = member.getBoolean(GroupMember.IS_ADMIN);
+                            members.add(new GroupMember(groupID,memberID,phoneNumber,memberName,isAdmin));
+                        }
+                        groups.add(new Group(groupName,userID,members,groupID));
+                    }
+                    intent.putParcelableArrayListExtra(Group.KEY,groups);
                     break;
 
                 case StartServiceMethods.ACTION_POST_FEEDBACK:

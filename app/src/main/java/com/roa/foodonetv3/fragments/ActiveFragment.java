@@ -44,6 +44,7 @@ public class ActiveFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        receiver = new GetPublicationsReceiver();
         setHasOptionsMenu(true);
     }
 
@@ -68,7 +69,6 @@ public class ActiveFragment extends Fragment {
     public void onResume() {
         super.onResume();
         /** set the broadcast receiver for getting all publications from the server */
-        receiver = new GetPublicationsReceiver();
         IntentFilter filter =  new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
         /** temp request publications update from the server on fragment resume */

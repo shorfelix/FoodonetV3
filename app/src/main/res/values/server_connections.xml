@@ -16,9 +16,10 @@
     <string name="foodonet_reports_version">/publication_reports?publication_version=</string>
     <string name="foodonet_publication_reports">/publication_reports.json</string>
     <string name="foodonet_feedback">/feedbacks</string>
+    <string name="foodonet_groups">/groups</string>
     <string name="foodonet_registered_user_for_publication">/registered_user_for_publications.json</string>
+    <string name="foodonet_users">/users</string>
     <string name=".json">.json</string>
-    <string name="foodonet_user">/users</string>
 
     <string name="amazon_bucket">foodonet</string>
     <string name="amazon_pool_id">eu-west-1:007b7059-b8d5-4067-b57d-ddadcf36f2d5</string>
