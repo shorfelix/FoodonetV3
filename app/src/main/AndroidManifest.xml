@@ -93,6 +93,8 @@
 
         <activity android:name=".activities.AboutUsActivity" />
         <activity android:name=".activities.PrefsActivity" />
+        <activity android:name=".activities.PlacesActivity"></activity>
+        <activity android:name=".activities.PrefsActivity" />
         <activity
             android:name=".activities.GroupsActivity"
             android:label="@string/title_activity_groups"

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.PlacesActivity;
 import com.roa.foodonetv3.activities.SplashForCamera;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
@@ -42,6 +44,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class AddEditPublicationFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "AddEditPublicationFrag";
@@ -58,6 +61,9 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private LatLng latlng;
     private Publication publication;
     private boolean isEdit;
+    private static int savePrefCount = 0;
+    private SharedPreferences preferences;
+
 
 
     /**
@@ -104,6 +110,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         editTextPriceAddPublication = (EditText) v.findViewById(R.id.editTextPriceAddPublication);
         v.findViewById(R.id.imageTakePictureAddPublication).setOnClickListener(this);
         imagePictureAddPublication = (ImageView) v.findViewById(R.id.imagePictureAddPublication);
+        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         /** temporary button to add a test publication to the server */
         v.findViewById(R.id.buttonTestAdd).setOnClickListener(this);
@@ -185,30 +192,31 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
                 break;
             case R.id.textLocationAddPublication:
+                startActivityForResult(new Intent(getContext(), PlacesActivity.class), REQUEST_PLACE_PICKER);
                 /** start the google places autocomplete widget */
-                try {
-                    PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
-                    Intent intent = intentBuilder.build(getActivity());
-//                    Intent intent =
-//                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-//                                    .build(getActivity());
-                    // Start the Intent by requesting a result, identified by a request code.
-                    startActivityForResult(intent, REQUEST_PLACE_PICKER);
-
-                    // Hide the pick option in the UI to prevent users from starting the picker
-                    // multiple times.
-//                    showPickAction(false);
-
-                } catch (GooglePlayServicesRepairableException e) {
-                    GooglePlayServicesUtil
-                            .getErrorDialog(e.getConnectionStatusCode(), getActivity(), 0);
-                } catch (GooglePlayServicesNotAvailableException e) {
-                    Toast.makeText(getActivity(), "Google Play Services is not available.",
-                            Toast.LENGTH_LONG)
-                            .show();
-                }
-
-                // END_INCLUDE(intent)
+//                try {
+//                    PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+//                    Intent intent = intentBuilder.build(getActivity());
+////                    Intent intent =
+////                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+////                                    .build(getActivity());
+//                    // Start the Intent by requesting a result, identified by a request code.
+//                    startActivityForResult(intent, REQUEST_PLACE_PICKER);
+//
+//                    // Hide the pick option in the UI to prevent users from starting the picker
+//                    // multiple times.
+////                    showPickAction(false);
+//
+//                } catch (GooglePlayServicesRepairableException e) {
+//                    GooglePlayServicesUtil
+//                            .getErrorDialog(e.getConnectionStatusCode(), getActivity(), 0);
+//                } catch (GooglePlayServicesNotAvailableException e) {
+//                    Toast.makeText(getActivity(), "Google Play Services is not available.",
+//                            Toast.LENGTH_LONG)
+//                            .show();
+//                }
+//
+//                // END_INCLUDE(intent)
                 break;
         }
     }
@@ -300,16 +308,88 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                         Log.e(TAG,e.getMessage());
                     }
                     break;
+//                case REQUEST_PLACE_PICKER:
+//                    /** a place was successfully received from the place autocomplete sdk, including the address, and latlng */
+//                    final Place place = PlacePicker.getPlace(getContext(), data);
+//                    final CharSequence address = place.getAddress();
+//                    latlng = place.getLatLng();
+//                    textLocationAddPublication.setText(address);
+//                    savePlaces(place, latlng);
+//                    Toast.makeText(getContext(), "latlng: " + place.getLatLng().toString(), Toast.LENGTH_SHORT).show();
+//                    break;
                 case REQUEST_PLACE_PICKER:
-                    /** a place was successfully received from the place autocomplete sdk, including the address, and latlng */
-                    final Place place = PlacePicker.getPlace(getContext(), data);
-                    final CharSequence address = place.getAddress();
-                    latlng = place.getLatLng();
-                    textLocationAddPublication.setText(address);
-                    Toast.makeText(getContext(), "latlng: " + place.getLatLng().toString(), Toast.LENGTH_SHORT).show();
+                    Place place = null;
+                    String address = "";
+                    if (data.getParcelableExtra("place")!= null){
+                        place = data.getParcelableExtra("place");
+                        address = place.getAddress().toString();
+                        latlng = place.getLatLng();
+                        textLocationAddPublication.setText(address);
+
+                    }else {
+                        address = data.getStringExtra("address");
+                        latlng = new LatLng(data.getFloatExtra("lat",0), data.getFloatExtra("long",0));
+                        textLocationAddPublication.setText(address);
+                    }
+                    int count =0;
+                    while (count<=4){
+                        if (address.equals(preferences.getString("place_name"+count,"error"))){
+                            return;
+                        }else {
+                            count++;
+                        }
+                    }
+                    savePlaces(address,latlng);
                     break;
             }
         }
+    }
+//    @Override
+//    public void onPlaceClicked(int position) {
+//        if (position==0){
+//            /** start the google places autocomplete widget */
+//            try {
+//                PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
+//                Intent intent = intentBuilder.build(getActivity());
+////                    Intent intent =
+////                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+////                                    .build(getActivity());
+//                // Start the Intent by requesting a result, identified by a request code.
+//                startActivityForResult(intent, REQUEST_PLACE_PICKER);
+//
+//                // Hide the pick option in the UI to prevent users from starting the picker
+//                // multiple times.
+////                    showPickAction(false);
+//
+//            } catch (GooglePlayServicesRepairableException e) {
+//                GooglePlayServicesUtil
+//                        .getErrorDialog(e.getConnectionStatusCode(), getActivity(), 0);
+//            } catch (GooglePlayServicesNotAvailableException e) {
+//                Toast.makeText(getActivity(), "Google Play Services is not available.",
+//                        Toast.LENGTH_LONG)
+//                        .show();
+//            }
+//        }else {
+//            position = position--;
+//            String address = preferences.getString("place_name"+position,"error");
+//            textLocationAddPublication.setText(address);
+//            LatLng latLng = new LatLng(preferences.getFloat("lat"+position,0), preferences.getFloat("long"+savePrefCount,0));
+//            this.latlng = latLng;
+//        }
+//    }
+
+    public void savePlaces(String address, LatLng latLng){
+//        String address = place.getAddress().toString();
+        SharedPreferences.Editor editor = preferences.edit();
+                editor.putFloat("lat"+savePrefCount, (float) latLng.latitude);
+                editor.putFloat("long"+savePrefCount, (float) latLng.longitude);
+                editor.putString("place_name"+savePrefCount, address);
+                editor.apply();
+                if (savePrefCount<4) {
+                    savePrefCount++;
+                }else {
+                    savePrefCount=0;
+                }
     }
 
 
@@ -386,4 +466,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
          */
         // observer.setTransferListener(new UploadListener());
     }
+
+
 }
