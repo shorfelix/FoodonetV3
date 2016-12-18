@@ -1,6 +1,5 @@
 package com.roa.foodonetv3.fragments;
 
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,7 +24,7 @@ import android.widget.Toast;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
-import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.FoodonetService;
 
@@ -35,7 +34,7 @@ public class ActiveFragment extends Fragment {
     private static final String TAG = "ActiveFragment";
 
     private PublicationsRecyclerAdapter adapter;
-    private GetPublicationsReceiver receiver;
+    private FoodonetReceiver receiver;
 
     public ActiveFragment() {
         // Required empty public constructor
@@ -44,7 +43,7 @@ public class ActiveFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        receiver = new GetPublicationsReceiver();
+        receiver = new FoodonetReceiver();
         setHasOptionsMenu(true);
     }
 
@@ -69,11 +68,11 @@ public class ActiveFragment extends Fragment {
     public void onResume() {
         super.onResume();
         /** set the broadcast receiver for getting all publications from the server */
-        IntentFilter filter =  new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
+        IntentFilter filter =  new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
         /** temp request publications update from the server on fragment resume */
         Intent intent = new Intent(getContext(), FoodonetService.class);
-        intent.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
         getContext().startService(intent);
         /** show that the list is being updated */
         if(getView()!= null){
@@ -116,12 +115,12 @@ public class ActiveFragment extends Fragment {
         });
     }
 
-    public class GetPublicationsReceiver extends BroadcastReceiver{
+    public class FoodonetReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
             /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
-            if(intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1)==StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER){
-                if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+            if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER){
+                if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                     // TODO: 27/11/2016 add logic if fails
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                 } else{

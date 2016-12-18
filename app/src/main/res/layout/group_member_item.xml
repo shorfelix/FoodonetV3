@@ -17,7 +17,7 @@
 
     <TextView
         android:text="Member name"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/imageMember"
@@ -25,7 +25,6 @@
         android:id="@+id/textMemberName"
         android:layout_marginLeft="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
-        android:layout_marginBottom="@dimen/margin_8"
         android:layout_marginRight="@dimen/margin_16"
         android:layout_marginEnd="@dimen/margin_16"
         style="@style/FooMedium"/>
@@ -41,6 +40,17 @@
         android:layout_marginStart="@dimen/margin_16"
         android:background="#FF909090"
         android:layout_alignParentBottom="true"/>
+
+    <ImageView
+        android:layout_width="@dimen/image_size_50"
+        android:layout_height="@dimen/image_size_50"
+        app:srcCompat="@drawable/minus"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginRight="@dimen/margin_16"
+        android:id="@+id/imageRemoveMember" />
 
 
 </RelativeLayout>

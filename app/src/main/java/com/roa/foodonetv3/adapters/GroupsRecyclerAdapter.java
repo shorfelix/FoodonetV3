@@ -1,13 +1,17 @@
 package com.roa.foodonetv3.adapters;
 
 import android.content.Context;
+import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.GroupsActivity;
+import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.model.Group;
 
 import java.util.ArrayList;
@@ -17,12 +21,15 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
     private static final String TAG = "GroupsRecyclerAdapter";
 
     private Context context;
-    private ArrayList<Group> groups = new ArrayList<>();
-    private ArrayList<Group> filteredGroups = new ArrayList<>();
+    private ArrayList<Group> groups;
+    private ArrayList<Group> filteredGroups;
+    private OnReplaceFragListener listener;
 
     public GroupsRecyclerAdapter(Context context) {
         this.context = context;
         groups = new ArrayList<>();
+        filteredGroups = new ArrayList<>();
+        listener = (OnReplaceFragListener) context;
     }
 
     public void updateGroups(ArrayList<Group> groups){
@@ -56,24 +63,26 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
 
     @Override
     public void onBindViewHolder(GroupHolder holder, int position) {
-        holder.bindGroup(groups.get(position));
+        holder.bindGroup(filteredGroups.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return groups.size();
+        return filteredGroups.size();
     }
 
-    class GroupHolder extends RecyclerView.ViewHolder{
+    class GroupHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView textGroupName, textGroupMembers, textAdmin;
         private Group group;
-        private boolean isAdmin = false;
+        private boolean isAdmin = true; // test!!!!
 
         GroupHolder(View itemView) {
             super(itemView);
             textAdmin = (TextView) itemView.findViewById(R.id.textAdmin);
             textGroupName = (TextView) itemView.findViewById(R.id.textGroupName);
             textGroupMembers = (TextView) itemView.findViewById(R.id.textGroupMembers);
+
+            itemView.setOnClickListener(this);
         }
 
         void bindGroup(Group group){
@@ -91,6 +100,23 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
                 textAdmin.setVisibility(View.INVISIBLE);
             }
 
+        }
+
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()){
+                default:
+                    String fragToOpen;
+                    if(isAdmin){
+                        fragToOpen = GroupsActivity.ADMIN_GROUP_TAG;
+                    } else{
+                        fragToOpen = GroupsActivity.OPEN_GROUP_TAG;
+                    }
+                    ArrayList<Parcelable> arrayList = new ArrayList<>();
+                    arrayList.add(group);
+                    listener.replaceFrags(fragToOpen,arrayList);
+                    break;
+            }
         }
     }
 }

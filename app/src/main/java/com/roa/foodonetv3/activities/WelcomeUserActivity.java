@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,10 +20,9 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.UserInfo;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
 
@@ -41,7 +39,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
     private String userName = "";
     private CircleImageView circleImageView;
     private SharedPreferences preferences;
-    private GetUserReceiver receiver;
+    private FoodonetReceiver receiver;
     private ProgressDialog dialog;
 
     @Override
@@ -98,8 +96,8 @@ public class WelcomeUserActivity extends AppCompatActivity {
                     User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,mFirebaseUser.getDisplayName(),true,uuid);
 
                     Intent i = new Intent(WelcomeUserActivity.this, FoodonetService.class);
-                    i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_USER);
-                    i.putExtra(FoodonetService.JSON_TO_SEND,user.getUserJson().toString());
+                    i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_USER);
+                    i.putExtra(ReceiverConstants.JSON_TO_SEND,user.getUserJson().toString());
                     WelcomeUserActivity.this.startService(i);
                     dialog = new ProgressDialog(WelcomeUserActivity.this);
                     dialog.show();
@@ -115,8 +113,8 @@ public class WelcomeUserActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        receiver = new GetUserReceiver();
-        IntentFilter filter = new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
+        receiver = new FoodonetReceiver();
+        IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
     }
 
@@ -155,14 +153,14 @@ public class WelcomeUserActivity extends AppCompatActivity {
         return true;
     }
 
-    public class GetUserReceiver extends BroadcastReceiver{
+    public class FoodonetReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1)==StartServiceMethods.ACTION_ADD_USER){
+            if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_ADD_USER){
                 if(dialog!=null){
                     dialog.dismiss();
                 }
-                if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+                if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                     // TODO: 27/11/2016 add logic if fails
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                 } else{

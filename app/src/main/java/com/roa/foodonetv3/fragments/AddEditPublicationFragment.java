@@ -1,6 +1,5 @@
 package com.roa.foodonetv3.fragments;
 
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -24,11 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,7 +31,7 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PlacesActivity;
 import com.roa.foodonetv3.activities.SplashForCamera;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
-import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
@@ -44,13 +39,11 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class AddEditPublicationFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "AddEditPublicationFrag";
     private static final int INTENT_TAKE_PICTURE = 1;
     private static final int INTENT_PICK_PICTURE = 3;
-    private static final int REQUEST_PLACE_PICKER = 10;
     public static final int TYPE_NEW_PUBLICATION = 1;
     public static final int TYPE_EDIT_PUBLICATION = 2;
     private EditText editTextTitleAddPublication, editTextPriceAddPublication, editTextShareWithAddPublication, editTextDetailsAddPublication;
@@ -192,7 +185,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
                 break;
             case R.id.textLocationAddPublication:
-                startActivityForResult(new Intent(getContext(), PlacesActivity.class), REQUEST_PLACE_PICKER);
+                startActivityForResult(new Intent(getContext(), PlacesActivity.class), PlacesActivity.REQUEST_PLACE_PICKER);
                 /** start the google places autocomplete widget */
 //                try {
 //                    PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
@@ -317,7 +310,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 //                    savePlaces(place, latlng);
 //                    Toast.makeText(getContext(), "latlng: " + place.getLatLng().toString(), Toast.LENGTH_SHORT).show();
 //                    break;
-                case REQUEST_PLACE_PICKER:
+                case PlacesActivity.REQUEST_PLACE_PICKER:
                     Place place = null;
                     String address = "";
                     if (data.getParcelableExtra("place")!= null){
@@ -436,8 +429,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                     contactInfo, true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "");
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
             Intent i = new Intent(getContext(), FoodonetService.class);
-            i.putExtra(StartServiceMethods.ACTION_TYPE, StartServiceMethods.ACTION_ADD_PUBLICATION);
-            i.putExtra(FoodonetService.JSON_TO_SEND, publication.getPublicationJson().toString());
+            i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_PUBLICATION);
+            i.putExtra(ReceiverConstants.JSON_TO_SEND, publication.getPublicationJson().toString());
             getContext().startService(i);
             getActivity().finish();
         }

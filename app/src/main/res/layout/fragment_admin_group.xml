@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="com.roa.foodonetv3.fragments.NewGroupFragment">
+    tools:context="com.roa.foodonetv3.fragments.AdminGroupFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -32,12 +32,10 @@
             android:background="#FF909090"
             android:id="@+id/view" />
 
-        <EditText
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/editGroupName"
-            android:hint="@string/group_name"
-            android:maxLength="12"
+            android:id="@+id/textGroupName"
             style="@style/FooLarge"
             android:layout_toEndOf="@id/imageView3"
             android:layout_toRightOf="@id/imageView3"

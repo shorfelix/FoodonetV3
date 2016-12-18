@@ -2,11 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.roa.foodonetv3">
 
-    <!--
-         The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
-         Google Maps Android API v2, but you must specify either coarse or fine
-         location permissions for the 'MyLocation' functionality.
-    -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -59,13 +54,28 @@
         <activity
             android:name=".activities.MapActivity"
             android:configChanges="orientation"
-            android:label="@string/title_activity_map"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:label="@string/title_activity_map" />
         <activity
             android:name=".activities.SplashForCamera"
             android:configChanges="orientation"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Dialog.Alert" />
+        <activity android:name=".activities.AboutUsActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activities.PrefsActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".activities.PlacesActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".activities.GroupsActivity"
+            android:label="@string/title_activity_groups"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -91,14 +101,6 @@
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
-        <activity android:name=".activities.AboutUsActivity" />
-        <activity android:name=".activities.PrefsActivity" />
-        <activity android:name=".activities.PlacesActivity"></activity>
-        <activity android:name=".activities.PrefsActivity" />
-        <activity
-            android:name=".activities.GroupsActivity"
-            android:label="@string/title_activity_groups"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

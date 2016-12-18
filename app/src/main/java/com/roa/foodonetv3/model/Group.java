@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,12 +14,14 @@ public class Group implements Parcelable {
     private static final String TAG = "Group";
 
     public static final String KEY = "group";
+    public static final String GROUP_MEMBERS = "group_members";
 
     public static final String GROUP = "group";
-    public static final String NAME = "name";
+    public static final String ADD_GROUP_NAME = "name";
     public static final String USER_ID = "user_id";
     public static final String MEMBERS = "members";
     public static final String GROUP_ID = "group_id";
+    public static final String GET_GROUP_NAME = "group_name";
 
     private String groupName;
     private int userID, groupID;
@@ -49,11 +52,15 @@ public class Group implements Parcelable {
         }
     };
 
+    public void addToMembers(GroupMember member){
+        members.add(member);
+    }
+
     public JSONObject getAddGroupJson(){
         JSONObject groupRoot = new JSONObject();
         JSONObject group = new JSONObject();
         try {
-            group.put(NAME,getGroupName());
+            group.put(ADD_GROUP_NAME,getGroupName());
             group.put(USER_ID,getUserID());
 
             groupRoot.put(GROUP,group);
@@ -61,6 +68,29 @@ public class Group implements Parcelable {
             Log.e(TAG,e.getMessage());
         }
         return groupRoot;
+    }
+
+    public JSONObject getAddGroupMembersJson(){
+        ArrayList<GroupMember> members = getMembers();
+        JSONObject groupMembersRoot = new JSONObject();
+        JSONArray groupMembersArray = new JSONArray();
+        GroupMember member;
+        try {
+            for (int i = 0; i < members.size(); i++) {
+                member = members.get(i);
+                JSONObject groupMember = new JSONObject();
+                groupMember.put(GroupMember.NAME,member.getName());
+                groupMember.put(GroupMember.USER_ID,0); // 0 means it's not the admin
+                groupMember.put(GroupMember.PHONE_NUMBER,member.getPhoneNumber());
+                groupMember.put(GroupMember.NAME,member.getName());
+                groupMember.put(GroupMember.IS_ADMIN,false); // false means it's not the admin
+                groupMembersArray.put(groupMember);
+            }
+            groupMembersRoot.put(GROUP_MEMBERS,groupMembersArray);
+        } catch (JSONException e) {
+            Log.e(TAG,e.getMessage());
+        }
+        return groupMembersRoot;
     }
 
     public String getGroupName() {

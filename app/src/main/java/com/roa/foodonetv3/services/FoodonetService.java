@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.GroupMember;
@@ -26,10 +27,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
-    public static final String ADDRESS_ARGS = "addressArgs";
-    public static final String JSON_TO_SEND = "jsonToSend";
-    public static final String SERVICE_ERROR = "serviceError";
-    public static final String BROADCAST_FOODONET_SERVER_FINISH = "broadcastFoodonetServerFinish";
+    private static final int TIMEOUT_TIME = 5000;
 
     public FoodonetService() {
         super("FoodonetService");
@@ -39,11 +37,11 @@ public class FoodonetService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         /** a universal service for all foodonet server communications */
         if (intent != null) {
-            Intent finishedIntent = new Intent(BROADCAST_FOODONET_SERVER_FINISH);
+            Intent finishedIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
             boolean serviceError = false;
-            int actionType = intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1);
-            String[] args = intent.getStringArrayExtra(ADDRESS_ARGS);
-            String urlAddress = StartServiceMethods.getUrlAddress(this,actionType,args);
+            int actionType = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
+            String[] args = intent.getStringArrayExtra(ReceiverConstants.ADDRESS_ARGS);
+            String urlAddress = StartServiceMethods.getUrlAddress(this,actionType, args);
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             URL url;
@@ -51,7 +49,7 @@ public class FoodonetService extends IntentService {
             try {
                 url = new URL(urlAddress);
                 connection = (HttpsURLConnection) url.openConnection();
-                connection.setConnectTimeout(5000);
+                connection.setConnectTimeout(TIMEOUT_TIME);
                 // TODO: 28/11/2016 add logic for timeout
                 int httpType = StartServiceMethods.getHTTPType(actionType);
                 switch (httpType){
@@ -64,7 +62,7 @@ public class FoodonetService extends IntentService {
                         connection.setDoOutput(true);
                         OutputStream os = connection.getOutputStream();
                         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"utf-8"));
-                        String jsonToSend = intent.getStringExtra(JSON_TO_SEND);
+                        String jsonToSend = intent.getStringExtra(ReceiverConstants.JSON_TO_SEND);
                         writer.write(jsonToSend);
                         writer.flush();
                         writer.close();
@@ -103,8 +101,8 @@ public class FoodonetService extends IntentService {
                     }
                 }
             }
-            finishedIntent.putExtra(StartServiceMethods.ACTION_TYPE,actionType);
-            finishedIntent.putExtra(SERVICE_ERROR,serviceError);
+            finishedIntent.putExtra(ReceiverConstants.ACTION_TYPE,actionType);
+            finishedIntent.putExtra(ReceiverConstants.SERVICE_ERROR,serviceError);
             LocalBroadcastManager.getInstance(this).sendBroadcast(finishedIntent);
         }
     }
@@ -113,8 +111,8 @@ public class FoodonetService extends IntentService {
         try {
             int userID = CommonMethods.getMyUserID(this);
             switch (actionType) {
-                case StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
-                case StartServiceMethods.ACTION_GET_USER_PUBLICATIONS:
+                case ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
+                case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
                     ArrayList<Publication> publications = new ArrayList<>();
                     JSONArray rootGetPublications;
                     rootGetPublications = new JSONArray(responseRoot);
@@ -140,8 +138,8 @@ public class FoodonetService extends IntentService {
                     for (int i = 0; i < rootGetPublications.length(); i++) {
                         JSONObject publication = rootGetPublications.getJSONObject(i);
                         int publisherID = publication.getInt("publisher_id");
-                        if (publisherID != userID && actionType == StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER
-                                || publisherID == userID && actionType == StartServiceMethods.ACTION_GET_USER_PUBLICATIONS) {
+                        if (publisherID != userID && actionType == ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER
+                                || publisherID == userID && actionType == ReceiverConstants.ACTION_GET_USER_PUBLICATIONS) {
                             /** depending on the action intended, either get all publications except the ones created by the user, or get only the publications created by the user */
                             id = publication.getLong("id");
                             version = publication.getInt("version");
@@ -169,15 +167,15 @@ public class FoodonetService extends IntentService {
                     intent.putParcelableArrayListExtra(Publication.PUBLICATION_KEY, publications);
                     break;
 
-                case StartServiceMethods.ACTION_ADD_PUBLICATION:
+                case ReceiverConstants.ACTION_ADD_PUBLICATION:
                     // TODO: 27/11/2016 add logic to save the publication id to db
                     break;
 
-                case StartServiceMethods.ACTION_EDIT_PUBLICATION: // not tested
+                case ReceiverConstants.ACTION_EDIT_PUBLICATION: // not tested
                     // TODO: 27/11/2016 check versions and the like
                     break;
 
-                case StartServiceMethods.ACTION_GET_REPORTS:
+                case ReceiverConstants.ACTION_GET_REPORTS:
                     ArrayList<PublicationReport> reports = new ArrayList<>();
                     JSONArray rootGetReports;
                     rootGetReports = new JSONArray(responseRoot);
@@ -218,11 +216,11 @@ public class FoodonetService extends IntentService {
                     intent.putParcelableArrayListExtra(PublicationReport.REPORT_KEY, reports);
                     break;
 
-                case StartServiceMethods.ACTION_ADD_REPORT: // not tested
+                case ReceiverConstants.ACTION_ADD_REPORT: // not tested
                     // TODO: 27/11/2016 add logic
                     break;
 
-                case StartServiceMethods.ACTION_ADD_USER:
+                case ReceiverConstants.ACTION_ADD_USER:
                     JSONObject rootAddUser;
                     rootAddUser = new JSONObject(responseRoot);
                     int newUserID = rootAddUser.getInt("id");
@@ -230,16 +228,17 @@ public class FoodonetService extends IntentService {
                     Log.d("Add user response", "id: " + newUserID);
                     break;
 
-                case StartServiceMethods.ACTION_REGISTER_TO_PUBLICATION:
+                case ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION:
                     // TODO: 27/11/2016 update
                     break;
 
-                case StartServiceMethods.ACTION_ADD_GROUP:
+                case ReceiverConstants.ACTION_ADD_GROUP:
                     // TODO: 06/12/2016 add logic according to what we receive
+                    // currently not getting here...
                     Log.d("TESTTTTTTTTTTTTTTT",responseRoot);
                     break;
 
-                case StartServiceMethods.ACTION_GET_GROUPS:
+                case ReceiverConstants.ACTION_GET_GROUPS:
                     JSONArray groupArray = new JSONArray(responseRoot);
                     /** declarations */
                     ArrayList<Group> groups = new ArrayList<>();
@@ -253,9 +252,9 @@ public class FoodonetService extends IntentService {
                         JSONObject group = groupArray.getJSONObject(i);
                         userID = group.getInt(Group.USER_ID);
                         groupID = group.getInt(Group.GROUP_ID);
-                        groupName = group.getString(Group.NAME);
+                        groupName = group.getString(Group.GET_GROUP_NAME);
                         ArrayList<GroupMember> members = new ArrayList<>();
-                        JSONArray membersArray = group.getJSONArray(GroupMember.KEY);
+                        JSONArray membersArray = group.getJSONArray(Group.MEMBERS);
                         for (int j = 0; j < membersArray.length(); j++) {
                             JSONObject member = membersArray.getJSONObject(j);
                             memberID = member.getInt(GroupMember.USER_ID);
@@ -269,7 +268,11 @@ public class FoodonetService extends IntentService {
                     intent.putParcelableArrayListExtra(Group.KEY,groups);
                     break;
 
-                case StartServiceMethods.ACTION_POST_FEEDBACK:
+                case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
+                    Log.d("TEST!!!!!!!",responseRoot);
+                    break;
+
+                case ReceiverConstants.ACTION_POST_FEEDBACK:
                     // TODO: 05/12/2016 add logic according to what we receive
                     Log.d("TESTTTTTTTTTTTTTT", responseRoot);
                     break;
