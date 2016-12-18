@@ -23,7 +23,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.FoodonetService;
 
@@ -43,7 +43,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
     private String providerName, hashMapKey;
     private LatLng userLocation;
     private HashMap<String, Publication> hashMap;
-    private GetPublicationsReceiver receiver;
+    private FoodonetReceiver receiver;
 
 
     @Override
@@ -72,8 +72,8 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
     @Override
     public void onResume() {
         super.onResume();
-        receiver = new GetPublicationsReceiver();
-        IntentFilter filter = new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
+        receiver = new FoodonetReceiver();
+        IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
     }
 
@@ -137,7 +137,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         // temp
         Intent intent = new Intent(this,FoodonetService.class);
-        intent.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
         startService(intent);
     }
 
@@ -156,12 +156,12 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
 
     }
 
-    private class GetPublicationsReceiver extends BroadcastReceiver {
+    private class FoodonetReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1)==StartServiceMethods.ACTION_GET_PUBLICATIONS_EXCEPT_USER){
-                if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+            if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER){
+                if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                     // TODO: 27/11/2016 add logic if fails
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                 } else{

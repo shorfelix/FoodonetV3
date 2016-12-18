@@ -27,7 +27,15 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
+    // TODO: 12/11/2016 move two constants to different class
     private static final String TAG = "PublicationActivity";
+
+    public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
+    public static final int OPEN_ADD_PUBLICATION = 1;
+    public static final int OPEN_EDIT_PUBLICATION = 2;
+    public static final int OPEN_PUBLICATION_DETAIL = 3;
+    public static final int OPEN_MY_PUBLICATIONS = 4;
+
     private FragmentManager fragmentManager;
     private Intent intent;
     private CircleImageView circleImageView;
@@ -55,7 +63,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         navigationView.setNavigationItemSelectedListener(this);
 
         intent = getIntent();
-        int openFragType = intent.getIntExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_ADD_PUBLICATION);
+        int openFragType = intent.getIntExtra(ACTION_OPEN_PUBLICATION, OPEN_ADD_PUBLICATION);
         fragmentManager = getSupportFragmentManager();
         if(savedInstanceState==null){
             openNewPublicationFrag(openFragType);
@@ -101,15 +109,14 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         Publication publication;
         Bundle bundle;
         switch (type){
-            case MainDrawerActivity.OPEN_ADD_PUBLICATION:
+            case OPEN_ADD_PUBLICATION:
                 AddEditPublicationFragment addPublicationFragment = new AddEditPublicationFragment();
                 bundle = new Bundle();
                 bundle.putInt(AddEditPublicationFragment.TAG,AddEditPublicationFragment.TYPE_NEW_PUBLICATION);
                 addPublicationFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, addPublicationFragment, "addEditPublicationFrag").commit();
-//                fragmentManager.beginTransaction().add(R.id.container_publication, new AddEditPublicationFragment(), "addEditPublicationFrag").commit();
                 break;
-            case MainDrawerActivity.OPEN_EDIT_PUBLICATION:
+            case OPEN_EDIT_PUBLICATION:
                 publication = getIntent().getParcelableExtra(Publication.PUBLICATION_KEY);
                 AddEditPublicationFragment editPublicationFragment = new AddEditPublicationFragment();
                 bundle = new Bundle();
@@ -118,7 +125,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 editPublicationFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, editPublicationFragment, "addEditPublicationFrag").commit();
                 break;
-            case MainDrawerActivity.OPEN_PUBLICATION_DETAIL:
+            case OPEN_PUBLICATION_DETAIL:
                 publication = getIntent().getParcelableExtra(Publication.PUBLICATION_KEY);
                 PublicationDetailFragment publicationDetailFragment = new PublicationDetailFragment();
                 bundle = new Bundle();
@@ -126,7 +133,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 publicationDetailFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, publicationDetailFragment, "publicationDetailFrag").commit();
                 break;
-            case MainDrawerActivity.OPEN_MY_PUBLICATIONS:
+            case OPEN_MY_PUBLICATIONS:
                 fragmentManager.beginTransaction().add(R.id.container_publication, new MyPublicationsFragment(), "my_publications").commit();
                 break;
         }
