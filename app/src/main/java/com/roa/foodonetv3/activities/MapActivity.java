@@ -23,9 +23,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.fragments.ActiveFragment;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.services.GetPublicationsService;
+import com.roa.foodonetv3.services.FoodonetService;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +43,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
     private String providerName, hashMapKey;
     private LatLng userLocation;
     private HashMap<String, Publication> hashMap;
+    private FoodonetReceiver receiver;
 
 
     @Override
@@ -50,9 +51,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        GetPublicationsReceiver receiver = new GetPublicationsReceiver();
-        IntentFilter filter = new IntentFilter(GetPublicationsService.ACTION_SERVICE_GET_PUBLICATIONS);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
+
         startGps();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         hashMap = new HashMap<>();
@@ -73,8 +72,16 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
     @Override
     public void onResume() {
         super.onResume();
+        receiver = new FoodonetReceiver();
+        IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+    }
 
     /**
      * Manipulates the map once available.
@@ -129,9 +136,9 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         timer.cancel();
         userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         // temp
-        Intent i = new Intent(this, GetPublicationsService.class);
-        i.putExtra(GetPublicationsService.QUERY_ARGS,getResources().getString(R.string.foodonet_publications));
-        startService(i);
+        Intent intent = new Intent(this,FoodonetService.class);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
+        startService(intent);
     }
 
     @Override
@@ -149,17 +156,24 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
 
     }
 
-    private class GetPublicationsReceiver extends BroadcastReceiver {
+    private class FoodonetReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            publications = intent.getParcelableArrayListExtra(GetPublicationsService.QUERY_PUBLICATIONS);
+            if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER){
+                if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                    // TODO: 27/11/2016 add logic if fails
+                    Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                } else{
+                    publications = intent.getParcelableArrayListExtra(Publication.PUBLICATION_KEY);
 
-            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.map);
-            if(mapFragment!=null) {
-                mapFragment.getMapAsync(MapActivity.this);
+                    // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+                    SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                            .findFragmentById(R.id.map);
+                    if(mapFragment!=null) {
+                        mapFragment.getMapAsync(MapActivity.this);
+                    }
+                }
             }
         }
     }

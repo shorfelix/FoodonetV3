@@ -16,15 +16,6 @@
         android:layout_marginBottom="32dp"
         android:id="@+id/withoutRegisterationTxt" />
 
-    <ImageView
-        app:srcCompat="@drawable/common_google_signin_btn_icon_dark_normal"
-        android:layout_below="@+id/textView3"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
-        android:id="@+id/userImageView"
-        android:layout_width="80dp"
-        android:layout_height="80dp" />
-
     <Button
         android:text="התחילו לשתף"
         android:layout_height="wrap_content"
@@ -37,23 +28,13 @@
     <EditText
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:inputType="phone"
         android:ems="10"
         android:layout_above="@+id/finishRegisterationButton"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="11dp"
-        android:id="@+id/editText"
-        android:hint="טלפון" />
-
-    <TextView
-        android:text="שלב אחרון להתחלה"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/userImageView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:id="@+id/textView4"
-        android:textSize="20sp" />
+        android:id="@+id/userPhoneNumberTxt"
+        android:hint="טלפון"
+        android:inputType="number" />
 
     <TextView
         android:text="ברוכים הבאים ל-Foodonet"
@@ -74,6 +55,25 @@
         android:layout_marginTop="54dp"
         android:id="@+id/userNameTxt"
         android:textSize="20sp" />
+
+    <TextView
+        android:text="שלב אחרון להתחלה"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView4"
+        android:textSize="20sp"
+        android:layout_below="@+id/circleImage"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="25dp" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/circleImage"
+        app:srcCompat="@drawable/common_google_signin_btn_icon_dark_focused"
+        android:layout_marginTop="14dp"
+        android:layout_height="120dp"
+        android:layout_width="120dp"
+        android:layout_below="@+id/userNameTxt"
+        android:layout_centerHorizontal="true" />
 
 
 </RelativeLayout>

@@ -1,11 +1,13 @@
 package com.roa.foodonetv3.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class ReportFromServer {
+public class PublicationReport implements Parcelable {
 
     public static final String REPORT_KEY = "publication_report";
     private static final String REPORT_PUBLICATION_ID = "publication_id";
@@ -23,9 +25,9 @@ public class ReportFromServer {
     private String active_device_dev_uuid, createdDate, updateDate, dateOfReport, reportUserName,
     reportContactInfo;
 
-    public ReportFromServer(long reportId, long publicationId, int publicationVersion, int reportType, String active_device_dev_uuid,
-                            String createdDate, String updateDate, String dateOfReport, String reportUserName,
-                            String reportContactInfo, int reportUserId, int rating) {
+    public PublicationReport(long reportId, long publicationId, int publicationVersion, int reportType, String active_device_dev_uuid,
+                             String createdDate, String updateDate, String dateOfReport, String reportUserName,
+                             String reportContactInfo, int reportUserId, int rating) {
         this.active_device_dev_uuid = active_device_dev_uuid;
         this.createdDate = createdDate;
         this.dateOfReport = dateOfReport;
@@ -39,6 +41,33 @@ public class ReportFromServer {
         this.reportUserName = reportUserName;
         this.updateDate = updateDate;
     }
+
+    protected PublicationReport(Parcel in) {
+        reportId = in.readLong();
+        publicationId = in.readLong();
+        publicationVersion = in.readInt();
+        reportType = in.readInt();
+        reportUserId = in.readInt();
+        rating = in.readInt();
+        active_device_dev_uuid = in.readString();
+        createdDate = in.readString();
+        updateDate = in.readString();
+        dateOfReport = in.readString();
+        reportUserName = in.readString();
+        reportContactInfo = in.readString();
+    }
+
+    public static final Creator<PublicationReport> CREATOR = new Creator<PublicationReport>() {
+        @Override
+        public PublicationReport createFromParcel(Parcel in) {
+            return new PublicationReport(in);
+        }
+
+        @Override
+        public PublicationReport[] newArray(int size) {
+            return new PublicationReport[size];
+        }
+    };
 
     public JSONObject getAddReportJson() {
         /** creates a json object from the publication as to be sent to the server */
@@ -156,5 +185,26 @@ public class ReportFromServer {
 
     public void setUpdateDate(String updateDate) {
         this.updateDate = updateDate;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(reportId);
+        dest.writeLong(publicationId);
+        dest.writeInt(publicationVersion);
+        dest.writeInt(reportType);
+        dest.writeInt(reportUserId);
+        dest.writeInt(rating);
+        dest.writeString(active_device_dev_uuid);
+        dest.writeString(createdDate);
+        dest.writeString(updateDate);
+        dest.writeString(dateOfReport);
+        dest.writeString(reportUserName);
+        dest.writeString(reportContactInfo);
     }
 }

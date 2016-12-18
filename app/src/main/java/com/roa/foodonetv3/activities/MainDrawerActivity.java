@@ -19,8 +19,10 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,29 +34,19 @@ import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
+
 import java.util.UUID;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainDrawerActivity";
 
-    // TODO: 12/11/2016 move two constants to different class
-    public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
-    public static final int OPEN_ADD_PUBLICATION = 1;
-    public static final int OPEN_PUBLICATION_DETAIL = 2;
-
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
-    private String mUsername;
-    private String mPhotoUrl;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
-
-    // Firebase instance variables
-    private FirebaseAuth mFirebaseAuth;
-    private static FirebaseUser mFirebaseUser;
-
-
 
 
     @Override
@@ -76,19 +68,26 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+//        View hView =  navigationView.inflateHeaderView(R.layout.nav_header_main);
+//        circleImageView imgvw = (CircleImageView)hView.findViewById(R.id.headerCircleImage);
 
-        // Initialize Firebase Auth
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        //set the header imageView
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View hView =  navigationView.getHeaderView(0);
+        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
+        circleImageView.setImageResource(R.drawable.foodonet_image);
         if (mFirebaseUser == null) {
-            // Not signed in, launch the Sign In activity
-            startActivity(new Intent(this, SignInActivity.class));
-            finish();
-            return;
+            // TODO: 24/11/2016 add logic?
         } else {
-            mUsername = mFirebaseUser.getDisplayName();
+            String mUsername = mFirebaseUser.getDisplayName();
             if (mFirebaseUser.getPhotoUrl() != null) {
-                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+                String mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+                Glide.with(this).load(mPhotoUrl).into(circleImageView);
+                headerTxt.setText(mUsername);
             }
         }
 
@@ -107,8 +106,15 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             public void onClick(View view) {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
-                Intent i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
-                i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,OPEN_ADD_PUBLICATION);
+                Intent i;
+                if(FirebaseAuth.getInstance().getCurrentUser()==null){
+                    /** no user logged in yet, open the sign in activity */
+                    i = new Intent(MainDrawerActivity.this,SignInActivity.class);
+                } else{
+                    /** a user is logged in, continue to open the activity and fragment of the add publication */
+                    i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
+                    i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_ADD_PUBLICATION);
+                }
                 startActivity(i);
             }
         });
@@ -119,7 +125,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
 
@@ -142,12 +148,15 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.main, menu);
+////        MenuItem searchItem = menu.findItem(R.id.search);
+////        SearchView searchView = (SearchView) searchItem.getActionView();
+////        searchView.setOnQueryTextListener();
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -156,15 +165,23 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id){
-            case R.id.action_settings:
-                mFirebaseAuth.signOut();
-                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                startActivity(new Intent(this, SignInActivity.class));
+//            case R.id.action_settings:
+//                FirebaseAuth.getInstance().signOut();
+//                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+//                /** remove user phone number and foodonet user ID from sharedPreferences */
+//                SharedPreferences.Editor editor = preferenceManager.edit();
+//                editor.remove(User.PHONE_NUMBER);
+//                editor.remove(User.IDENTITY_PROVIDER_USER_ID);
+//                editor.apply();
+//                Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
+//                return true;
+            case R.id.map:
+                CommonMethods.navigationItemSelectedAction(this,R.id.nav_map_view);
                 return true;
+            case R.id.search:
             default:
                 return super.onOptionsItemSelected(item);
         }
-
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -233,7 +250,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         }
     }
 
-    public static FirebaseUser getFireBaseUser(){
-        return mFirebaseUser;
-    }
+
 }
+
+

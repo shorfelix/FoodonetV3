@@ -32,7 +32,6 @@ public class User {
     }
 
     public JSONObject getUserJson(){
-        // not tested yet!!!
         JSONObject userJsonRoot = new JSONObject();
         JSONObject userJson = new JSONObject();
         try {
@@ -85,6 +84,9 @@ public class User {
     }
 
     public String getIdentityProviderEmail() {
+        if(identityProviderEmail==null){
+            return "";
+        }
         return identityProviderEmail;
     }
 
