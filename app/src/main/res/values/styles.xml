@@ -17,42 +17,68 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="HeaderTitle">
+    <style name="FooBlackXL">
         <item name="android:textSize">@dimen/text_size_36</item>
-        <!--<item name="android:textStyle">bold</item>-->
-        <item name="android:textColor">#FF000000</item>
+        <item name="android:textColor">@color/FooBlack</item>
     </style>
 
-    <style name="ItemTitleTextView">
-        <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">#FF000000</item>
+    <style name="FooXL">
+        <item name="android:textSize">@dimen/text_size_36</item>
     </style>
 
-    <style name="ItemDetailsTextView">
-        <item name="android:textSize">@dimen/text_size_12</item>
+    <style name="FooLarge">
+        <item name="android:textSize">@dimen/text_size_26</item>
     </style>
 
-    <style name="DetailTitleTextView">
-        <item name="android:textSize">@dimen/text_size_20</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">#FF000000</item>
+    <style name="FooBlackLarge">
+        <item name="android:textSize">@dimen/text_size_26</item>
+        <item name="android:textColor">@color/FooBlack</item>
     </style>
 
-    <style name="DetailSubtitleTextView">
-    <item name="android:textSize">@dimen/text_size_16</item>
-    <item name="android:textColor">#FF000000</item>
-    </style>
-
-    <style name="DetailBlueIndentTextView">
-        <item name="android:textSize">@dimen/text_size_20</item>
-        <item name="android:textStyle">italic</item>
-        <item name="android:textColor">#FF1030FF</item>
-    </style>
-
-    <style name="AboutUs">
+    <style name="FooMediumPlus">
         <item name="android:textSize">@dimen/text_size_22</item>
     </style>
 
-    <dimen name="text_size_26">26sp</dimen>
+    <style name="FooMedium">
+        <item name="android:textSize">@dimen/text_size_20</item>
+    </style>
+
+    <style name="FooBlackMedium">
+        <item name="android:textSize">@dimen/text_size_20</item>
+        <item name="android:textColor">@color/FooBlack</item>
+    </style>
+
+    <style name="FooBlackBoldMedium">
+        <item name="android:textSize">@dimen/text_size_20</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/FooBlack</item>
+    </style>
+
+
+    <style name="FooBlueIndentMedium">
+        <item name="android:textSize">@dimen/text_size_20</item>
+        <item name="android:textStyle">italic</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
+
+
+    <style name="FooBlackBoldSmall">
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/FooBlack</item>
+    </style>
+
+    <style name="FooBlackSmall">
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:textColor">@color/FooBlack</item>
+    </style>
+
+    <style name="FooXS">
+        <item name="android:textSize">@dimen/text_size_12</item>
+    </style>
+
+    <style name="FooBlueXS">
+        <item name="android:textSize">@dimen/text_size_12</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
 </resources>

@@ -13,5 +13,5 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:id="@+id/textView2"
-        style="@style/DetailTitleTextView" />
+        style="@style/FooBlackBoldMedium" />
 </RelativeLayout>

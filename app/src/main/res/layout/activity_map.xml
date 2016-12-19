@@ -1,4 +1,12 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_places"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.roa.foodonetv3.activities.PlacesActivity">
+
+<fragment
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/map"
@@ -6,3 +14,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.roa.foodonetv3.activities.MapActivity" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_height="130dp"
+        android:id="@+id/mapPublicationLayout"
+        android:background="#3033b5e5">
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/mapRecycler" />
+    </FrameLayout>
+
+</RelativeLayout>

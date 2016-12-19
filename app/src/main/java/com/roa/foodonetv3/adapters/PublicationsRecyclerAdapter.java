@@ -16,7 +16,6 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SplashScreenActivity;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
@@ -34,8 +33,8 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
     private static final String TAG = "PubsRecyclerAdapter";
 
     private Context context;
+    private ArrayList<Publication> filteredPublications = new ArrayList<>();
     private ArrayList<Publication> publications = new ArrayList<>();
-    private ArrayList<Publication> allPublications = new ArrayList<>();
     private TransferUtility transferUtility;
     private LatLng userLatLng;
     private static final double LOCATION_NOT_FOUND = -9999;
@@ -49,20 +48,21 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
     }
 
     public void updatePublications(ArrayList<Publication> publications){
+        filteredPublications.clear();
+        filteredPublications.addAll(publications);
         this.publications = publications;
-        allPublications.addAll(publications);
         notifyDataSetChanged();
     }
 
     public void filter(String text) {
-        publications.clear();
+        filteredPublications.clear();
         if(text.isEmpty()){
-            publications.addAll(allPublications);
+            filteredPublications.addAll(publications);
         } else{
             text = text.toLowerCase();
-            for(Publication publication: allPublications){
+            for(Publication publication: publications){
                 if(publication.getTitle().toLowerCase().contains(text) || publication.getAddress().toLowerCase().contains(text)){
-                    publications.add(publication);
+                    filteredPublications.add(publication);
                 }
             }
         }
@@ -78,12 +78,12 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
 
     @Override
     public void onBindViewHolder(PublicationHolder holder, int position) {
-        holder.bindPublication(publications.get(position));
+        holder.bindPublication(filteredPublications.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return publications.size();
+        return filteredPublications.size();
     }
 
     class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener, View.OnClickListener, View.OnLongClickListener {
@@ -121,7 +121,6 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             //add photo here
             if(publication.getPhotoURL().equals("")){
                 /** no image saved, display default image */
-//                imagePublication.setImageResource(R.drawable.camera_xxh);
                 Picasso.with(context)
                         .load(R.drawable.foodonet_image)
                         .resize(publicationImageSize,publicationImageSize)
@@ -181,7 +180,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         @Override
         public void onClick(View v) {
             Intent i = new Intent(context, PublicationActivity.class);
-            i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_PUBLICATION_DETAIL);
+            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.PUBLICATION_DETAIL_TAG);
             i.putExtra(Publication.PUBLICATION_KEY,publication);
             context.startActivity(i);
         }
@@ -190,7 +189,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         public boolean onLongClick(View v) {
             // TODO: 19/11/2016 test method to edit
             Intent i = new Intent(context, PublicationActivity.class);
-            i.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION,MainDrawerActivity.OPEN_EDIT_PUBLICATION);
+            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.EDIT_PUBLICATION_TAG);
             i.putExtra(Publication.PUBLICATION_KEY,publication);
             context.startActivity(i);
             return true;
