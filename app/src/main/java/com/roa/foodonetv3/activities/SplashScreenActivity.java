@@ -35,6 +35,8 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
+        setTitle(R.string.foodonet);
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         startGps();

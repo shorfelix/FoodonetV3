@@ -20,6 +20,7 @@ public class StartServiceMethods {
     /** SEND INTENTS: (putExtra)
      * - all actions - add String ACTION_TYPE to intent
      * - actions in post - add JSON_TO_SEND = (String) json data to intent
+     * - actions in put - add JSON_TO_SEND = (String) json data to intent
      * edit publication - add args[0] = (String) publication id
      * delete publication - add args[0] = (String) publication id
      * get reports - add args[0] = (String) publication id, args[1] = (String) publication version

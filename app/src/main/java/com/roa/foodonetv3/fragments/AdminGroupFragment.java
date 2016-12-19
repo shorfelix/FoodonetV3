@@ -21,8 +21,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.GroupMembersRecyclerAdapter;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.GroupMember;
@@ -77,10 +79,10 @@ public class AdminGroupFragment extends Fragment {
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
-        // TODO: 18/12/2016 test, view a member
-        ArrayList<GroupMember> members = group.getMembers();
-        members.add(new GroupMember(-1,-1,"Phone", "Test", true));
-        adapter.updateMembers(members);
+//        // TODO: 18/12/2016 test, view a member
+//        ArrayList<GroupMember> members = group.getMembers();
+//        members.add(new GroupMember(-1,-1,"Phone", "Test", true));
+        adapter.updateMembers(group.getMembers());
     }
 
     @Override
@@ -125,6 +127,12 @@ public class AdminGroupFragment extends Fragment {
             boolean error = false;
             if(phone==null || name == null){
                 error = true;
+            }
+            if(group.getMembers().size()==0){
+                GroupMember member = new GroupMember(group.getGroupID(), CommonMethods.getMyUserID(getContext()),
+                        CommonMethods.getMyUserPhone(getContext()), FirebaseAuth.getInstance().getCurrentUser().getDisplayName(),true);
+                /** if no members are in the group yet, when adding the first one, add the user as the admin as well */
+                group.addToMembers(member);
             }
             GroupMember member = new GroupMember(group.getGroupID(),0,phone,name,false);
             group.addToMembers(member);
