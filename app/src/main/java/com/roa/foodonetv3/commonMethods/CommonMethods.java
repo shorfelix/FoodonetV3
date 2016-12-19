@@ -3,19 +3,15 @@ package com.roa.foodonetv3.commonMethods;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,31 +19,19 @@ import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.roa.foodonetv3.ContactUsDialog;
+import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.AboutUsActivity;
 import com.roa.foodonetv3.activities.MainDrawerActivity;
 import com.roa.foodonetv3.activities.MapActivity;
 import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
-import com.roa.foodonetv3.activities.SignInActivity;
-import com.roa.foodonetv3.activities.WelcomeUserActivity;
-import com.roa.foodonetv3.fragments.MyPublicationsFragment;
-import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -69,17 +53,21 @@ public class CommonMethods {
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
-                intent.putExtra(MainDrawerActivity.ACTION_OPEN_PUBLICATION, MainDrawerActivity.OPEN_MY_PUBLICATIONS);
+                intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainDrawerActivity)) {
                     // TODO: 04/12/2016 roi, what's the point of running the method here?
                     ifGpsIsEnable(context);
                     ((Activity) context).finish();
-
                 }
                 break;
             case R.id.nav_all_events:
-
+                if (!(context instanceof MainDrawerActivity)) {
+                    intent = new Intent(context, MainDrawerActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    context.startActivity(intent);
+                    break;
+                }
                 break;
             case R.id.nav_map_view:
                 intent = new Intent(context, MapActivity.class);
@@ -95,7 +83,14 @@ public class CommonMethods {
 
                 break;
             case R.id.nav_groups:
-
+                intent = new Intent(context, GroupsActivity.class);
+                if(context instanceof GroupsActivity){
+                    // TODO: 06/12/2016 test
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    context.startActivity(intent);
+                } else{
+                    context.startActivity(intent);
+                }
                 break;
             case R.id.nav_settings:
 //                // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
@@ -111,7 +106,8 @@ public class CommonMethods {
                 context.startActivity(intent);
                 break;
             case R.id.nav_contact_us:
-
+                ContactUsDialog dialog = new ContactUsDialog(context);
+                dialog.show();
                 break;
             case R.id.nav_about:
                 intent = new Intent(context, AboutUsActivity.class);
@@ -122,7 +118,9 @@ public class CommonMethods {
 
     public static double getCurrentTimeSeconds() {
         /** returns current epoch time in seconds(NOT MILLIS!) */
-        return System.currentTimeMillis() / 1000;
+        long currentTime = System.currentTimeMillis()/1000;
+        Log.d("TIME TEST", currentTime+"");
+        return currentTime;
     }
 
     public static String getTimeDifference(Context context, Double earlierTime, Double laterTime) {
@@ -239,27 +237,6 @@ public class CommonMethods {
         return newFile;
     }
 
-    public static void copyFile(Context context, File sourceFile, File destFile) throws IOException {
-        if (!sourceFile.exists()) {
-            Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        FileChannel source = null;
-        FileChannel destination = null;
-        source = new FileInputStream(sourceFile).getChannel();
-        destination = new FileOutputStream(destFile).getChannel();
-        if (destination != null && source != null) {
-            destination.transferFrom(source, 0, source.size());
-        }
-        if (source != null) {
-            source.close();
-        }
-        if (destination != null) {
-            destination.close();
-        }
-    }
-
     public static String getFileNameFromPath(String path) {
         /** returns the file name without the path */
         String[] segments = path.split("/");
@@ -289,11 +266,11 @@ public class CommonMethods {
         return newFile;
     }
 
-    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath, Bitmap sourceImage) {
+    public static boolean editOverwriteImage(String mCurrentPhotoPath, Bitmap sourceImage) {
         /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
          * then, it will overwrite the local original one.
          * returns true if successful*/
-        return compressImage(context,sourceImage,mCurrentPhotoPath);
+        return compressImage(sourceImage,mCurrentPhotoPath);
     }
     public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath){
         /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
@@ -301,14 +278,14 @@ public class CommonMethods {
          * returns true if successful*/
         try {
             Bitmap sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
-            return compressImage(context,sourceBitmap,mCurrentPhotoPath);
+            return compressImage(sourceBitmap,mCurrentPhotoPath);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage());
         }
         return false;
     }
 
-    private static boolean compressImage(Context context, Bitmap sourceBitmap, String mCurrentPhotoPath){
+    private static boolean compressImage(Bitmap sourceBitmap, String mCurrentPhotoPath){
         /** ratio - 16:9 */
         final float ratio = 16 / 9f;
         final int WANTED_HEIGHT = 720;
