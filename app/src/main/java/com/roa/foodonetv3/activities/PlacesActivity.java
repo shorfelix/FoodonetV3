@@ -29,7 +29,7 @@ public class PlacesActivity extends AppCompatActivity implements AdapterView.OnI
     private ListView recentPlacesList;
     private int counter =0;
     private SharedPreferences preferences;
-    private static final int REQUEST_PLACE_PICKER = 10;
+    public static final int REQUEST_PLACE_PICKER = 10;
     private Intent intentForResult;
     private LatLng latLng;
     private ArrayList<String> places;

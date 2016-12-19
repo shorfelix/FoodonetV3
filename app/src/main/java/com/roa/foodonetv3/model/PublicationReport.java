@@ -7,7 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class ReportFromServer implements Parcelable {
+public class PublicationReport implements Parcelable {
 
     public static final String REPORT_KEY = "publication_report";
     private static final String REPORT_PUBLICATION_ID = "publication_id";
@@ -25,9 +25,9 @@ public class ReportFromServer implements Parcelable {
     private String active_device_dev_uuid, createdDate, updateDate, dateOfReport, reportUserName,
     reportContactInfo;
 
-    public ReportFromServer(long reportId, long publicationId, int publicationVersion, int reportType, String active_device_dev_uuid,
-                            String createdDate, String updateDate, String dateOfReport, String reportUserName,
-                            String reportContactInfo, int reportUserId, int rating) {
+    public PublicationReport(long reportId, long publicationId, int publicationVersion, int reportType, String active_device_dev_uuid,
+                             String createdDate, String updateDate, String dateOfReport, String reportUserName,
+                             String reportContactInfo, int reportUserId, int rating) {
         this.active_device_dev_uuid = active_device_dev_uuid;
         this.createdDate = createdDate;
         this.dateOfReport = dateOfReport;
@@ -42,7 +42,7 @@ public class ReportFromServer implements Parcelable {
         this.updateDate = updateDate;
     }
 
-    protected ReportFromServer(Parcel in) {
+    protected PublicationReport(Parcel in) {
         reportId = in.readLong();
         publicationId = in.readLong();
         publicationVersion = in.readInt();
@@ -57,15 +57,15 @@ public class ReportFromServer implements Parcelable {
         reportContactInfo = in.readString();
     }
 
-    public static final Creator<ReportFromServer> CREATOR = new Creator<ReportFromServer>() {
+    public static final Creator<PublicationReport> CREATOR = new Creator<PublicationReport>() {
         @Override
-        public ReportFromServer createFromParcel(Parcel in) {
-            return new ReportFromServer(in);
+        public PublicationReport createFromParcel(Parcel in) {
+            return new PublicationReport(in);
         }
 
         @Override
-        public ReportFromServer[] newArray(int size) {
-            return new ReportFromServer[size];
+        public PublicationReport[] newArray(int size) {
+            return new PublicationReport[size];
         }
     };
 
