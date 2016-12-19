@@ -11,7 +11,10 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -23,7 +26,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.adapters.MapPublicationRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.FoodonetService;
 
@@ -33,7 +38,7 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MapActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback {
+public class MapActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, MapPublicationRecyclerAdapter.OnImageAdapterClickListener {
 
     private GoogleMap mMap;
     private ArrayList<Publication> publications = new ArrayList<>();
@@ -44,6 +49,9 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
     private LatLng userLocation;
     private HashMap<String, Publication> hashMap;
     private FoodonetReceiver receiver;
+    private FrameLayout mapPublicationLayout;
+    private RecyclerView mapRecycler;
+    private MapPublicationRecyclerAdapter adapter;
 
 
     @Override
@@ -51,6 +59,12 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        receiver = new FoodonetReceiver();
+        mapPublicationLayout = (FrameLayout) findViewById(R.id.mapPublicationLayout);
+        mapRecycler = (RecyclerView) findViewById(R.id.mapRecycler);
+        mapRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        adapter = new MapPublicationRecyclerAdapter(this);
+        mapRecycler.setAdapter(adapter);
 
         startGps();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -72,9 +86,14 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
     @Override
     public void onResume() {
         super.onResume();
+        /** set the broadcast receiver for getting all publications from the server */
         receiver = new FoodonetReceiver();
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
+        /** temp request publications update from the server on fragment resume */
+        Intent intent = new Intent(this, FoodonetService.class);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
+        startService(intent);
     }
 
     @Override
@@ -156,6 +175,12 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
 
     }
 
+    @Override
+    public void onImageAdapterClicked(LatLng latLng) {
+        /**move the camera to publication location*/
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+    }
+
     private class FoodonetReceiver extends BroadcastReceiver {
 
         @Override
@@ -166,7 +191,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                 } else{
                     publications = intent.getParcelableArrayListExtra(Publication.PUBLICATION_KEY);
-
+                    adapter.updatePublications(publications);
                     // Obtain the SupportMapFragment and get notified when the map is ready to be used.
                     SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                             .findFragmentById(R.id.map);
@@ -177,6 +202,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
             }
         }
     }
+
 
     public void startGps(){
         gotLocation = false;
