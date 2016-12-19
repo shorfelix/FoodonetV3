@@ -54,6 +54,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.foodonet);
         setSupportActionBar(toolbar);
 
         /** get the string into a static field or a resource string*/
@@ -113,7 +114,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
                 } else{
                     /** a user is logged in, continue to open the activity and fragment of the add publication */
                     i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
-                    i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_ADD_PUBLICATION);
+                    i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.ADD_PUBLICATION_TAG);
                 }
                 startActivity(i);
             }
@@ -148,16 +149,6 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         }
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.main, menu);
-////        MenuItem searchItem = menu.findItem(R.id.search);
-////        SearchView searchView = (SearchView) searchItem.getActionView();
-////        searchView.setOnQueryTextListener();
-//        return true;
-//    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -165,16 +156,6 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id){
-//            case R.id.action_settings:
-//                FirebaseAuth.getInstance().signOut();
-//                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-//                /** remove user phone number and foodonet user ID from sharedPreferences */
-//                SharedPreferences.Editor editor = preferenceManager.edit();
-//                editor.remove(User.PHONE_NUMBER);
-//                editor.remove(User.IDENTITY_PROVIDER_USER_ID);
-//                editor.apply();
-//                Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
-//                return true;
             case R.id.map:
                 CommonMethods.navigationItemSelectedAction(this,R.id.nav_map_view);
                 return true;

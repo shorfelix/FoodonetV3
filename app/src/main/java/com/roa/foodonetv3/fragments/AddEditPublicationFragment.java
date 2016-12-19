@@ -2,8 +2,11 @@ package com.roa.foodonetv3.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -13,6 +16,7 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,7 +61,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private static int savePrefCount = 0;
     private SharedPreferences preferences;
 
-
+    private FoodonetReceiver receiver;
 
     /**
      * The TransferUtility is the primary class for managing transfer to S3
@@ -95,6 +99,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_add_edit_publication, container, false);
 
+        getActivity().setTitle(R.string.new_share);
+
         editTextTitleAddPublication = (EditText) v.findViewById(R.id.editTextTitleAddPublication);
         textLocationAddPublication = (TextView) v.findViewById(R.id.textLocationAddPublication);
         textLocationAddPublication.setOnClickListener(this);
@@ -105,14 +111,17 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         imagePictureAddPublication = (ImageView) v.findViewById(R.id.imagePictureAddPublication);
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        /** temporary button to add a test publication to the server */
-        v.findViewById(R.id.buttonTestAdd).setOnClickListener(this);
+//        /** temporary button to add a test publication to the server */
+//        v.findViewById(R.id.buttonTestAdd).setOnClickListener(this);
         return v;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        receiver = new FoodonetReceiver();
+        IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
         if (mCurrentPhotoPath == null) {
             /** check if there is no path yet, if not, load the default image */
             // TODO: 13/11/2016 fix image size error
@@ -124,6 +133,13 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         if (isEdit) {
             loadPublicationIntoViews();
         }
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
     }
 
     public void loadPublicationIntoViews() {
@@ -138,16 +154,16 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.buttonTestAdd:
-                /** button for uploading the publication to the server, if an image was taken,
-                 *  start uploading to the s3 server as well, currently no listener for s3 finished upload*/
-                uploadPublicationToServer();
-                if (!mCurrentPhotoPath.equals("")) {
-                    beginS3Upload("file:" + mCurrentPhotoPath);
-                } else {
-                    Toast.makeText(getContext(), "no photo path", Toast.LENGTH_SHORT).show();
-                }
-                break;
+//            case R.id.buttonTestAdd:
+//                /** button for uploading the publication to the server, if an image was taken,
+//                 *  start uploading to the s3 server as well, currently no listener for s3 finished upload*/
+//                uploadPublicationToServer();
+//                if (!mCurrentPhotoPath.equals("")) {
+//                    beginS3Upload("file:" + mCurrentPhotoPath);
+//                } else {
+//                    Toast.makeText(getContext(), "no photo path", Toast.LENGTH_SHORT).show();
+//                }
+//                break;
             case R.id.imageTakePictureAddPublication:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(getContext())
                         .setTitle(R.string.add_image)
@@ -185,31 +201,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
                 break;
             case R.id.textLocationAddPublication:
+                /** start the google places select activity */
                 startActivityForResult(new Intent(getContext(), PlacesActivity.class), PlacesActivity.REQUEST_PLACE_PICKER);
-                /** start the google places autocomplete widget */
-//                try {
-//                    PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
-//                    Intent intent = intentBuilder.build(getActivity());
-////                    Intent intent =
-////                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-////                                    .build(getActivity());
-//                    // Start the Intent by requesting a result, identified by a request code.
-//                    startActivityForResult(intent, REQUEST_PLACE_PICKER);
-//
-//                    // Hide the pick option in the UI to prevent users from starting the picker
-//                    // multiple times.
-////                    showPickAction(false);
-//
-//                } catch (GooglePlayServicesRepairableException e) {
-//                    GooglePlayServicesUtil
-//                            .getErrorDialog(e.getConnectionStatusCode(), getActivity(), 0);
-//                } catch (GooglePlayServicesNotAvailableException e) {
-//                    Toast.makeText(getActivity(), "Google Play Services is not available.",
-//                            Toast.LENGTH_LONG)
-//                            .show();
-//                }
-//
-//                // END_INCLUDE(intent)
                 break;
         }
     }
@@ -301,15 +294,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                         Log.e(TAG,e.getMessage());
                     }
                     break;
-//                case REQUEST_PLACE_PICKER:
-//                    /** a place was successfully received from the place autocomplete sdk, including the address, and latlng */
-//                    final Place place = PlacePicker.getPlace(getContext(), data);
-//                    final CharSequence address = place.getAddress();
-//                    latlng = place.getLatLng();
-//                    textLocationAddPublication.setText(address);
-//                    savePlaces(place, latlng);
-//                    Toast.makeText(getContext(), "latlng: " + place.getLatLng().toString(), Toast.LENGTH_SHORT).show();
-//                    break;
                 case PlacesActivity.REQUEST_PLACE_PICKER:
                     Place place = null;
                     String address = "";
@@ -337,39 +321,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             }
         }
     }
-//    @Override
-//    public void onPlaceClicked(int position) {
-//        if (position==0){
-//            /** start the google places autocomplete widget */
-//            try {
-//                PlacePicker.IntentBuilder intentBuilder = new PlacePicker.IntentBuilder();
-//                Intent intent = intentBuilder.build(getActivity());
-////                    Intent intent =
-////                            new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-////                                    .build(getActivity());
-//                // Start the Intent by requesting a result, identified by a request code.
-//                startActivityForResult(intent, REQUEST_PLACE_PICKER);
-//
-//                // Hide the pick option in the UI to prevent users from starting the picker
-//                // multiple times.
-////                    showPickAction(false);
-//
-//            } catch (GooglePlayServicesRepairableException e) {
-//                GooglePlayServicesUtil
-//                        .getErrorDialog(e.getConnectionStatusCode(), getActivity(), 0);
-//            } catch (GooglePlayServicesNotAvailableException e) {
-//                Toast.makeText(getActivity(), "Google Play Services is not available.",
-//                        Toast.LENGTH_LONG)
-//                        .show();
-//            }
-//        }else {
-//            position = position--;
-//            String address = preferences.getString("place_name"+position,"error");
-//            textLocationAddPublication.setText(address);
-//            LatLng latLng = new LatLng(preferences.getFloat("lat"+position,0), preferences.getFloat("long"+savePrefCount,0));
-//            this.latlng = latLng;
-//        }
-//    }
 
     public void savePlaces(String address, LatLng latLng){
 //        String address = place.getAddress().toString();
@@ -460,5 +411,30 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         // observer.setTransferListener(new UploadListener());
     }
 
-
+    private class FoodonetReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            /** receiver for reports got from the service */
+            int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE, -1);
+            switch (action) {
+                case ReceiverConstants.ACTION_FAB_CLICK:
+                    if (intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR, false)) {
+                        // TODO: 18/12/2016 add logic if fails
+                        Toast.makeText(context, "fab failed", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (intent.getIntExtra(ReceiverConstants.FAB_TYPE, -1) == ReceiverConstants.FAB_TYPE_SAVE_NEW_PUBLICATION) {
+                            /** button for uploading the publication to the server, if an image was taken,
+                             *  start uploading to the s3 server as well, currently no listener for s3 finished upload*/
+                            uploadPublicationToServer();
+                            if (!mCurrentPhotoPath.equals("")) {
+                                beginS3Upload("file:" + mCurrentPhotoPath);
+                            } else {
+                                Toast.makeText(getContext(), "no photo path", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+    }
 }

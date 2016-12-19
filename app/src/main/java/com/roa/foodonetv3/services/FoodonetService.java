@@ -2,6 +2,7 @@ package com.roa.foodonetv3.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
@@ -72,10 +73,11 @@ public class FoodonetService extends IntentService {
 
                         break;
                     case StartServiceMethods.HTTP_DELETE:
-
+                        connection.setRequestMethod("DELETE");
                         break;
                 }
-                if(connection.getResponseCode()!=HttpsURLConnection.HTTP_OK){
+                int responseCode = connection.getResponseCode();
+                if(responseCode!=HttpsURLConnection.HTTP_OK && responseCode != HttpsURLConnection.HTTP_CREATED){
                     serviceError = true;
                 } else{
                     reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -175,6 +177,10 @@ public class FoodonetService extends IntentService {
                     // TODO: 27/11/2016 check versions and the like
                     break;
 
+                case ReceiverConstants.ACTION_DELETE_PUBLICATION:
+                    Log.d(TAG,responseRoot);
+                    break;
+
                 case ReceiverConstants.ACTION_GET_REPORTS:
                     ArrayList<PublicationReport> reports = new ArrayList<>();
                     JSONArray rootGetReports;
@@ -234,8 +240,9 @@ public class FoodonetService extends IntentService {
 
                 case ReceiverConstants.ACTION_ADD_GROUP:
                     // TODO: 06/12/2016 add logic according to what we receive
-                    // currently not getting here...
-                    Log.d("TESTTTTTTTTTTTTTTT",responseRoot);
+                    JSONObject rootAddGroup = new JSONObject(responseRoot);
+                    int newGroupID = rootAddGroup.getInt("id");
+                    intent.putExtra(Group.KEY,newGroupID);
                     break;
 
                 case ReceiverConstants.ACTION_GET_GROUPS:

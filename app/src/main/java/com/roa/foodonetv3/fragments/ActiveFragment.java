@@ -115,7 +115,7 @@ public class ActiveFragment extends Fragment {
         });
     }
 
-    public class FoodonetReceiver extends BroadcastReceiver{
+    private class FoodonetReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
             /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
