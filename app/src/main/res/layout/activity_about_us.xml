@@ -28,7 +28,7 @@
         android:layout_toRightOf="@+id/imageFoodonetIcon"
         android:layout_toEndOf="@+id/imageFoodonetIcon"
         android:layout_marginTop="@dimen/margin_24"
-        style="@style/HeaderTitle"
+        style="@style/FooBlackXL"
         android:id="@+id/foodonet" />
 
     <TextView
@@ -59,7 +59,7 @@
                 android:layout_below="@+id/imageFoodonetIcon"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                style="@style/AboutUs"
+                style="@style/FooMediumPlus"
                 android:id="@+id/textAboutUs" />
         </LinearLayout>
     </ScrollView>

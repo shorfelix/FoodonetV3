@@ -3,6 +3,7 @@ package com.roa.foodonetv3.fragments;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
@@ -12,10 +13,14 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -27,10 +32,10 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.adapters.ReportsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
-import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.RegistrationPublication;
-import com.roa.foodonetv3.model.ReportFromServer;
+import com.roa.foodonetv3.model.PublicationReport;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
 
@@ -47,8 +52,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     private CircleImageView imagePublisherUser;
     private Publication publication;
     private ReportsRecyclerAdapter adapter;
-    private GetFoodonetResponseReceiver receiver;
-
+    private FoodonetReceiver receiver;
+    private boolean isAdmin;
+    private AlertDialog alertDialog;
 
     public PublicationDetailFragment() {
         // Required empty public constructor
@@ -57,10 +63,14 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
-        receiver = new GetFoodonetResponseReceiver();
-        IntentFilter filter = new IntentFilter(FoodonetService.BROADCAST_FOODONET_SERVER_FINISH);
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
+        isAdmin = publication != null && publication.getPublisherID() == CommonMethods.getMyUserID(getContext());
+        if(isAdmin) {
+            setHasOptionsMenu(true);
+        }
+
+        receiver = new FoodonetReceiver();
     }
 
     @Override
@@ -68,6 +78,8 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_publication_detail, container, false);
+
+        getActivity().setTitle(publication.getTitle());
 
         RecyclerView recyclerPublicationReport = (RecyclerView) v.findViewById(R.id.recyclerPublicationReport);
         recyclerPublicationReport.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -90,10 +102,17 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         imageActionPublicationReport = (ImageView) v.findViewById(R.id.imageActionPublicationSMS);
         imageActionPublicationPhone = (ImageView) v.findViewById(R.id.imageActionPublicationPhone);
         imageActionPublicationMap = (ImageView) v.findViewById(R.id.imageActionPublicationMap);
-        imageActionPublicationJoin.setOnClickListener(this);
-        imageActionPublicationReport.setOnClickListener(this);
-        imageActionPublicationPhone.setOnClickListener(this);
-        imageActionPublicationMap.setOnClickListener(this);
+        if (isAdmin) {
+            imageActionPublicationJoin.setVisibility(View.GONE);
+            imageActionPublicationReport.setVisibility(View.GONE);
+            imageActionPublicationPhone.setVisibility(View.GONE);
+            imageActionPublicationMap.setVisibility(View.GONE);
+        } else {
+            imageActionPublicationJoin.setOnClickListener(this);
+            imageActionPublicationReport.setOnClickListener(this);
+            imageActionPublicationPhone.setOnClickListener(this);
+            imageActionPublicationMap.setOnClickListener(this);
+        }
 
         return v;
     }
@@ -102,20 +121,65 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     public void onResume() {
         // TODO: 21/11/2016 load from server every resume?
         super.onResume();
+        if(alertDialog!=null && alertDialog.isShowing()){
+            alertDialog.dismiss();
+        }
+        IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
         Intent intent = new Intent(getContext(),FoodonetService.class);
-        intent.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_GET_REPORTS);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_REPORTS);
         String[] args = {String.valueOf(publication.getId()),String.valueOf(publication.getVersion())};
-        intent.putExtra(FoodonetService.ADDRESS_ARGS,args);
+        intent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
         getContext().startService(intent);
-        /** show that the list is being updated */
-//        Snackbar.make(imageActionPublicationJoin, R.string.updating,Snackbar.LENGTH_LONG).show();
         initViews();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        if(alertDialog!=null && alertDialog.isShowing()){
+            alertDialog.dismiss();
+        }
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.detail_options,menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(!isAdmin)return false;
+        switch (item.getItemId()){
+            case R.id.detail_edit:
+                // TODO: 19/12/2016 add logic
+                Toast.makeText(getContext(), "edit", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.detail_take_offline:
+                // TODO: 19/12/2016 add logic
+                Toast.makeText(getContext(), "take offline", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.detail_delete:
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext())
+                                .setTitle("Are you sure?")
+//                                .setMessage()
+                                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        String[] args = {String.valueOf(publication.getId())};
+                                        Intent deleteIntent = new Intent(getContext(),FoodonetService.class);
+                                        deleteIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_DELETE_PUBLICATION);
+                                        deleteIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+                                        getContext().startService(deleteIntent);
+                                    }
+                                })
+                                .setNegativeButton(R.string.no, null);
+                alertDialog = alertDialogBuilder.show();
+                return true;
+        }
+        return false;
     }
 
     private void initViews(){
@@ -130,7 +194,6 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
             // TODO: 13/11/2016 check if this code works 
             textCategory.setCompoundDrawables(group,null,null,null);
         }
-        // TODO: 13/11/2016 add a method to get remaining time till end
 
         String timeRemaining = String.format(Locale.US, "%1$s",
                 CommonMethods.getTimeDifference(getContext(),CommonMethods.getCurrentTimeSeconds(),Double.parseDouble(publication.getEndingDate())));
@@ -189,24 +252,25 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                     String registration = registrationPublication.getJsonForRegistration().toString();
                     String[] registrationArgs = {String.valueOf(publication.getId())};
                     i = new Intent(getContext(),FoodonetService.class);
-                    i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_REGISTER_TO_PUBLICATION);
-                    i.putExtra(FoodonetService.ADDRESS_ARGS,registrationArgs);
-                    i.putExtra(FoodonetService.JSON_TO_SEND,registration);
+                    i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION);
+                    i.putExtra(ReceiverConstants.ADDRESS_ARGS,registrationArgs);
+                    i.putExtra(ReceiverConstants.JSON_TO_SEND,registration);
                     getContext().startService(i);
                     break;
                 case R.id.imageActionPublicationSMS:
                     // TODO: 14/11/2016 not working! test for adding a report, hard coded
 //                    Snackbar.make(imageActionPublicationReport,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
-                    ReportFromServer reportFromServer = new ReportFromServer(-1,publication.getId(),publication.getVersion(),3,CommonMethods.getDeviceUUID(getContext()),
-                            "","",String.valueOf(CommonMethods.getCurrentTimeSeconds()),user.getDisplayName(),
+                    long currentTime = (long) CommonMethods.getCurrentTimeSeconds();
+                    PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(),3,CommonMethods.getDeviceUUID(getContext()),
+                            "","",String.valueOf(currentTime),user.getDisplayName(),
                             CommonMethods.getMyUserPhone(getContext()),CommonMethods.getMyUserID(getContext()),4);
-                    String reportJson = reportFromServer.getAddReportJson().toString();
+                    String reportJson = publicationReport.getAddReportJson().toString();
                     Log.d(TAG,"report json:"+reportJson);
                     i = new Intent(getContext(),FoodonetService.class);
-                    i.putExtra(StartServiceMethods.ACTION_TYPE,StartServiceMethods.ACTION_ADD_REPORT);
+                    i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_REPORT);
                     String[] reportArgs = {String.valueOf(publication.getId())};
-                    i.putExtra(FoodonetService.ADDRESS_ARGS,reportArgs);
-                    i.putExtra(FoodonetService.JSON_TO_SEND,reportJson);
+                    i.putExtra(ReceiverConstants.ADDRESS_ARGS,reportArgs);
+                    i.putExtra(ReceiverConstants.JSON_TO_SEND,reportJson);
                     getContext().startService(i);
                     break;
                 case R.id.imageActionPublicationPhone:
@@ -232,23 +296,23 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         }
     }
 
-    public class GetFoodonetResponseReceiver extends BroadcastReceiver {
+    private class FoodonetReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             /** receiver for reports got from the service */
-            int action = intent.getIntExtra(StartServiceMethods.ACTION_TYPE,-1);
+            int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             switch (action){
-                case StartServiceMethods.ACTION_GET_REPORTS:
-                    if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+                case ReceiverConstants.ACTION_GET_REPORTS:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        ArrayList<ReportFromServer> reports = intent.getParcelableArrayListExtra(ReportFromServer.REPORT_KEY);
+                        ArrayList<PublicationReport> reports = intent.getParcelableArrayListExtra(PublicationReport.REPORT_KEY);
                         adapter.updateReports(reports);
                     }
                     break;
-                case StartServiceMethods.ACTION_REGISTER_TO_PUBLICATION:
-                    if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+                case ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
@@ -256,13 +320,23 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                         Snackbar.make(imageActionPublicationJoin,getResources().getString(R.string.successfully_registered),Snackbar.LENGTH_LONG).show();
                     }
                     break;
-                case StartServiceMethods.ACTION_ADD_REPORT:
-                    if(intent.getBooleanExtra(FoodonetService.SERVICE_ERROR,false)){
+                case ReceiverConstants.ACTION_ADD_REPORT:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
                         /** registered successfully */
                         Snackbar.make(imageActionPublicationJoin,getResources().getString(R.string.report_added),Snackbar.LENGTH_LONG).show();
+                    }
+                    break;
+                case ReceiverConstants.ACTION_DELETE_PUBLICATION:
+                    if(alertDialog!=null && alertDialog.isShowing()){
+                        alertDialog.dismiss();
+                    }
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 19/12/2016 add logic if fails
+                    } else{
+                        Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show();
                     }
                     break;
             }

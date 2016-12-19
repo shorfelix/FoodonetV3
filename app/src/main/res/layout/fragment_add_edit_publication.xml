@@ -95,14 +95,6 @@
         android:layout_marginStart="@dimen/margin_16"
         android:hint="@string/post_hint_add_more_details" />
 
-    <Button
-        android:text="test add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/editTextDetailsAddPublication"
-        android:layout_alignEnd="@+id/editTextDetailsAddPublication"
-        android:layout_marginBottom="12dp"
-        android:id="@+id/buttonTestAdd" />
+
 
 </RelativeLayout>

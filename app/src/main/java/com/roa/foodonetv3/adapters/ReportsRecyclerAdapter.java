@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
-import com.roa.foodonetv3.model.ReportFromServer;
+import com.roa.foodonetv3.model.PublicationReport;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -19,14 +19,14 @@ public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecycler
     private static final int REPORT_VIEW = 1;
     private static final int REPORT_SPACER = 2;
     private Context context;
-    private ArrayList<ReportFromServer> reports;
+    private ArrayList<PublicationReport> reports;
 
     public ReportsRecyclerAdapter(Context context) {
         this.context = context;
         reports = new ArrayList<>();
     }
 
-    public void updateReports(ArrayList<ReportFromServer> reports){
+    public void updateReports(ArrayList<PublicationReport> reports){
         this.reports = reports;
         notifyDataSetChanged();
     }
@@ -70,7 +70,7 @@ public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecycler
             textReport = (TextView) itemView.findViewById(R.id.textReport);
         }
 
-        public void bindReport(ReportFromServer report){
+        public void bindReport(PublicationReport report){
             textReport.setText(String.format(Locale.US,"%1$s - (%2$s %3$s)",
                     CommonMethods.getReportStringFromType(context,report.getReportType()),
                     CommonMethods.getTimeDifference(context,Double.parseDouble(report.getDateOfReport()),CommonMethods.getCurrentTimeSeconds()),
