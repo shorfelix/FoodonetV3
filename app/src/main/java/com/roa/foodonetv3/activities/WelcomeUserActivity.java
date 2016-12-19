@@ -47,6 +47,8 @@ public class WelcomeUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome_user);
 
+        setTitle(R.string.foodonet);
+
         finishRegisterationButton = (Button) findViewById(R.id.finishRegisterationButton);
         userNameTxt = (TextView) findViewById(R.id.userNameTxt);
         userPhoneNumber = (EditText) findViewById(R.id.userPhoneNumberTxt);
@@ -153,7 +155,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
         return true;
     }
 
-    public class FoodonetReceiver extends BroadcastReceiver{
+    private class FoodonetReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_ADD_USER){

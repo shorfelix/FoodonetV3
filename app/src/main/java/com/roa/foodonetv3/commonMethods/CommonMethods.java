@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -52,7 +53,7 @@ public class CommonMethods {
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
-                intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_MY_PUBLICATIONS);
+                intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainDrawerActivity)) {
                     // TODO: 04/12/2016 roi, what's the point of running the method here?
@@ -117,7 +118,9 @@ public class CommonMethods {
 
     public static double getCurrentTimeSeconds() {
         /** returns current epoch time in seconds(NOT MILLIS!) */
-        return System.currentTimeMillis() / 1000;
+        long currentTime = System.currentTimeMillis()/1000;
+        Log.d("TIME TEST", currentTime+"");
+        return currentTime;
     }
 
     public static String getTimeDifference(Context context, Double earlierTime, Double laterTime) {

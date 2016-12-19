@@ -180,7 +180,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         @Override
         public void onClick(View v) {
             Intent i = new Intent(context, PublicationActivity.class);
-            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_PUBLICATION_DETAIL);
+            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.PUBLICATION_DETAIL_TAG);
             i.putExtra(Publication.PUBLICATION_KEY,publication);
             context.startActivity(i);
         }
@@ -189,7 +189,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         public boolean onLongClick(View v) {
             // TODO: 19/11/2016 test method to edit
             Intent i = new Intent(context, PublicationActivity.class);
-            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_EDIT_PUBLICATION);
+            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.EDIT_PUBLICATION_TAG);
             i.putExtra(Publication.PUBLICATION_KEY,publication);
             context.startActivity(i);
             return true;

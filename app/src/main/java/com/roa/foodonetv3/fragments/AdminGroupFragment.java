@@ -57,6 +57,8 @@ public class AdminGroupFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_admin_group, container, false);
 
+        getActivity().setTitle(group.getGroupName());
+
         RecyclerView recyclerGroupMembers = (RecyclerView) v.findViewById(R.id.recyclerGroupMembers);
         recyclerGroupMembers.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GroupMembersRecyclerAdapter(getContext());
@@ -148,10 +150,15 @@ public class AdminGroupFragment extends Fragment {
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             switch (action){
                 case ReceiverConstants.ACTION_FAB_CLICK:
-                    if(intent.getIntExtra(ReceiverConstants.FAB_TYPE,-1)==ReceiverConstants.FAB_TYPE_NEW_GROUP_MEMBER){
-                        Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
-                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-                        startActivityForResult(contactPickerIntent, CONTACT_PICKER);
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 18/12/2016 add logic if fails
+                        Toast.makeText(context, "fab failed", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (intent.getIntExtra(ReceiverConstants.FAB_TYPE, -1) == ReceiverConstants.FAB_TYPE_NEW_GROUP_MEMBER) {
+                            Intent contactPickerIntent = new Intent(Intent.ACTION_PICK,
+                                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+                            startActivityForResult(contactPickerIntent, CONTACT_PICKER);
+                        }
                     }
                     break;
                 case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:

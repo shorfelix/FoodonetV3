@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,8 @@ public class MyPublicationsFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_my_publications, container, false);
 
+        getActivity().setTitle(R.string.drawer_my_shares);
+
         RecyclerView recyclerMyPublications = (RecyclerView) v.findViewById(R.id.recyclerMyPublications);
         recyclerMyPublications.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new PublicationsRecyclerAdapter(getContext());
@@ -67,10 +70,10 @@ public class MyPublicationsFragment extends Fragment {
         Intent intent = new Intent(getContext(),FoodonetService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_USER_PUBLICATIONS);
         getContext().startService(intent);
-        /** show that the list is being updated */
-        if(getView()!= null){
-            Snackbar.make(getView(), R.string.updating,Snackbar.LENGTH_LONG).show();
-        }
+//        /** show that the list is being updated */
+//        if(getView()!= null){
+//            Snackbar.make(getView(), R.string.updating,Snackbar.LENGTH_LONG).show();
+//        }
     }
 
     @Override
@@ -79,18 +82,32 @@ public class MyPublicationsFragment extends Fragment {
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
     }
 
-    public class FoodonetReceiver extends BroadcastReceiver {
+    private class FoodonetReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
-            if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_GET_USER_PUBLICATIONS){
-                if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-                    // TODO: 27/11/2016 add logic if fails
-                    Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-                } else{
-                    ArrayList<Publication> publications = intent.getParcelableArrayListExtra(Publication.PUBLICATION_KEY);
-                    adapter.updatePublications(publications);
-                }
+            /** receiver for reports got from the service */
+            int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE, -1);
+            switch (action) {
+//                case ReceiverConstants.ACTION_FAB_CLICK:
+//                    if (intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR, false)) {
+//                        // TODO: 18/12/2016 add logic if fails
+//                        Toast.makeText(context, "fab failed", Toast.LENGTH_SHORT).show();
+//                    } else {
+//                        if(intent.getIntExtra(ReceiverConstants.FAB_TYPE,-1)==ReceiverConstants.FAB_TYPE_ADD_NEW_PUBLICATION){
+//
+//                        }
+//                    }
+//                    break;
+                case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
+                    /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 27/11/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        ArrayList<Publication> publications = intent.getParcelableArrayListExtra(Publication.PUBLICATION_KEY);
+                        adapter.updatePublications(publications);
+                    }
+                    break;
             }
         }
     }

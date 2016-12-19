@@ -18,6 +18,7 @@ public class ReceiverConstants {
     public static final int ACTION_GET_USER_PUBLICATIONS = 2;
     public static final int ACTION_ADD_PUBLICATION = 3;
     public static final int ACTION_EDIT_PUBLICATION = 4;
+    public static final int ACTION_DELETE_PUBLICATION = 5;
     public static final int ACTION_GET_REPORTS = 10;
     public static final int ACTION_ADD_REPORT = 11;
     public static final int ACTION_ADD_USER = 20;
@@ -33,5 +34,6 @@ public class ReceiverConstants {
 
     /** Local Extras*/
     public static final int FAB_TYPE_NEW_GROUP_MEMBER = 1;
-
+    public static final int FAB_TYPE_SAVE_NEW_PUBLICATION = 2;
+    public static final int FAB_TYPE_ADD_NEW_PUBLICATION = 3;
 }

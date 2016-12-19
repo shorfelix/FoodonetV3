@@ -54,6 +54,8 @@ public class GroupsOverviewFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_groups_overview, container, false);
 
+        getActivity().setTitle(R.string.drawer_groups);
+
         RecyclerView recyclerGroupsOverview = (RecyclerView) v.findViewById(R.id.recyclerGroupsOverview);
         recyclerGroupsOverview.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GroupsRecyclerAdapter(getContext());
@@ -120,10 +122,12 @@ public class GroupsOverviewFragment extends Fragment {
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else {
                         // TODO: 13/12/2016 test, the service is currently not working
-                        Group newGroup = intent.getParcelableExtra(Group.GROUP);
-                        ArrayList<Parcelable> arrayList = new ArrayList<>();
-                        arrayList.add(newGroup);
-                        replaceFragListener.replaceFrags(GroupsActivity.ADMIN_GROUP_TAG, arrayList);
+                        int groupID = intent.getIntExtra(Group.GROUP,-1);
+                        Intent updateIntent = new Intent(getContext(),FoodonetService.class);
+                        updateIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_GROUPS);
+                        String[] args = new String[]{String.valueOf(CommonMethods.getMyUserID(getContext()))};
+                        updateIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+                        getContext().startService(updateIntent);
                         break;
                     }
             }
