@@ -61,16 +61,26 @@ public class FoodonetService extends IntentService {
                         connection.addRequestProperty("Accept","application/json");
                         connection.addRequestProperty("Content-Type","application/json");
                         connection.setDoOutput(true);
-                        OutputStream os = connection.getOutputStream();
-                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"utf-8"));
-                        String jsonToSend = intent.getStringExtra(ReceiverConstants.JSON_TO_SEND);
-                        writer.write(jsonToSend);
-                        writer.flush();
-                        writer.close();
-                        os.close();
+                        OutputStream postOs = connection.getOutputStream();
+                        BufferedWriter postWriter = new BufferedWriter(new OutputStreamWriter(postOs,"utf-8"));
+                        String postJsonToSend = intent.getStringExtra(ReceiverConstants.JSON_TO_SEND);
+                        postWriter.write(postJsonToSend);
+                        postWriter.flush();
+                        postWriter.close();
+                        postOs.close();
                         break;
                     case StartServiceMethods.HTTP_PUT:
-
+                        connection.setRequestMethod("PUT");
+                        connection.addRequestProperty("Accept","application/json");
+                        connection.addRequestProperty("Content-Type","application/json");
+                        connection.setDoOutput(true);
+                        OutputStream putOs = connection.getOutputStream();
+                        BufferedWriter putWriter = new BufferedWriter(new OutputStreamWriter(putOs,"utf-8"));
+                        String putJsonToSend = intent.getStringExtra(ReceiverConstants.JSON_TO_SEND);
+                        putWriter.write(putJsonToSend);
+                        putWriter.flush();
+                        putWriter.close();
+                        putOs.close();
                         break;
                     case StartServiceMethods.HTTP_DELETE:
                         connection.setRequestMethod("DELETE");
@@ -280,8 +290,6 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case ReceiverConstants.ACTION_POST_FEEDBACK:
-                    // TODO: 05/12/2016 add logic according to what we receive
-                    Log.d("TESTTTTTTTTTTTTTT", responseRoot);
                     break;
             }
         } catch (JSONException e){

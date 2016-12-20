@@ -78,12 +78,7 @@ public class Group implements Parcelable {
         try {
             for (int i = 0; i < members.size(); i++) {
                 member = members.get(i);
-                JSONObject groupMember = new JSONObject();
-                groupMember.put(GroupMember.NAME,member.getName());
-                groupMember.put(GroupMember.USER_ID,0); // 0 means it's not the admin
-                groupMember.put(GroupMember.PHONE_NUMBER,member.getPhoneNumber());
-                groupMember.put(GroupMember.NAME,member.getName());
-                groupMember.put(GroupMember.IS_ADMIN,false); // false means it's not the admin
+                JSONObject groupMember = member.getAddMemberJson();
                 groupMembersArray.put(groupMember);
             }
             groupMembersRoot.put(GROUP_MEMBERS,groupMembersArray);
