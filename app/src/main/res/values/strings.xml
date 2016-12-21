@@ -80,5 +80,13 @@
     <string name="please_wait">Please wait</string>
     <string name="failed_to_pick_contact">Failed to pick contact</string>
     <string name="foodonet_group_members">/group_members</string>
+    <string name="active_shares">Active Shares</string>
+    <string name="new_share">New Share</string>
+    <string name="edit">Edit</string>
+    <string name="take_offline">Take Offline</string>
+    <string name="delete">Delete</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="users_joined">users joined</string>
 
 </resources>

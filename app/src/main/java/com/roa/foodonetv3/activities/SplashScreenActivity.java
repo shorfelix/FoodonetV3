@@ -20,9 +20,7 @@ import com.roa.foodonetv3.R;
 
 public class SplashScreenActivity extends AppCompatActivity implements LocationListener {
     private LocationManager locationManager;
-//    private boolean gotLocation;
     private String providerName;
-//    private Timer timer;
     public static final String USER_LATITUDE = "user_latitude";
     public static final String USER_LONGITUDE = "user_longitude";
     private static final int PERMISSION_REQUEST_NEW_LOCATION = 1;
@@ -35,13 +33,15 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
+        setTitle(R.string.foodonet);
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         startGps();
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent = new Intent(SplashScreenActivity.this, MainDrawerActivity.class);
+                Intent intent = new Intent(SplashScreenActivity.this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 finish();
@@ -50,7 +50,8 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
     }
 
     public void startGps(){
-//        gotLocation = false;
+        /** get a network based position (fastest, and accuracy is not an issue) so when the app starts it will have a reference to distances */
+        // TODO: 21/12/2016 change the logic to be run from a different class, add common methods - getUserLocation method
         sharedPreferences.edit().putBoolean(GOT_LOCATION,false).apply();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         providerName = LocationManager.NETWORK_PROVIDER;
@@ -58,49 +59,10 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(providerName, 1000, 100, SplashScreenActivity.this);
         }
-//        timer = new Timer("provider");
-//        TimerTask task = new TimerTask() {
-//            @Override
-//            public void run() {
-//                // if we do not have a location yet
-//                if(!gotLocation) {
-//                    try {
-//                        // remove old location provider(gps)
-//                        locationManager.removeUpdates((LocationListener) SplashScreenActivity.this);
-//                        // change provider name to NETWORK
-//                        providerName = LocationManager.NETWORK_PROVIDER;
-//                        // start listening to location again on the main thread
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-//                                    AlertDialog.Builder builder = new AlertDialog.Builder(SplashScreenActivity.this);
-//                                    builder.setMessage("Your NETWORK or your GPS seems to be disabled, please turn it on")
-//                                            .setPositiveButton("Ok", null);
-//                                    AlertDialog dialog = builder.create();
-//                                    dialog.show();
-//                                }
-//                                try {
-//                                    locationManager.requestLocationUpdates(providerName, 1000, 100, (LocationListener) SplashScreenActivity.this);
-//                                } catch (SecurityException e) {
-//                                    Log.e("Location Timer", e.getMessage());
-//                                }
-//                            }
-//                        });
-//                    } catch (SecurityException e) {
-//                        Log.e("Location", e.getMessage());
-//                    }
-//                }
-//            }
-//        };
-//        // schedule the timer to run the task after 5 seconds from now
-//        timer.schedule(task, new Date(System.currentTimeMillis() + 5000));
     }
 
     @Override
     public void onLocationChanged(Location location) {
-//        gotLocation = true;
-//        timer.cancel();
         LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(USER_LATITUDE, String.valueOf(userLocation.latitude));

@@ -1,5 +1,6 @@
 package com.roa.foodonetv3.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,8 +21,8 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
@@ -30,56 +31,66 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
-
+import com.roa.foodonetv3.services.FoodonetService;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.util.UUID;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class MainDrawerActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
-    private static final String TAG = "MainDrawerActivity";
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+    private static final String TAG = "MainActivity";
 
     private ViewPager viewPager;
     private ViewHolderAdapter adapter;
     private TabLayout tabs;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
+    private Button buttonTest;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /** toolbar set up */
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.foodonet);
         setSupportActionBar(toolbar);
 
-        /** get the string into a static field or a resource string*/
         /** check if the app is initialized*/
         preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
+        // TODO: 21/12/2016  get the string from a static field or a resource string
         if(!preferenceManager.getBoolean("initialized",false)){
             init();
         }
 
-
+        buttonTest = (Button) findViewById(R.id.buttonTest);
+        buttonTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                registerToPushNotification(MainActivity.this);
+            }
+        });
+        /** set the google api ? */
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
-//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-//        View hView =  navigationView.inflateHeaderView(R.layout.nav_header_main);
-//        circleImageView imgvw = (CircleImageView)hView.findViewById(R.id.headerCircleImage);
 
-        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        //set the header imageView
+        /** set the drawer */
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View hView =  navigationView.getHeaderView(0);
         CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
         TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
         circleImageView.setImageResource(R.drawable.foodonet_image);
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser == null) {
             // TODO: 24/11/2016 add logic?
         } else {
@@ -91,6 +102,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             }
         }
 
+        /** set the view pager */
         tabs = (TabLayout) findViewById(R.id.tabs);
 
         viewPager = (ViewPager) findViewById(R.id.viewPager);
@@ -100,38 +112,39 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         tabs.setOnTabSelectedListener(this);
         tabs.setupWithViewPager(viewPager);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-                Intent i;
-                if(FirebaseAuth.getInstance().getCurrentUser()==null){
-                    /** no user logged in yet, open the sign in activity */
-                    i = new Intent(MainDrawerActivity.this,SignInActivity.class);
-                } else{
-                    /** a user is logged in, continue to open the activity and fragment of the add publication */
-                    i = new Intent(MainDrawerActivity.this,PublicationActivity.class);
-                    i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_ADD_PUBLICATION);
-                }
-                startActivity(i);
-            }
-        });
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-//        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        /** set the floating action button, since it only serves one purpose, no need to animate or change the view */
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                /** pressed on create new publication */
+                Intent i;
+                if(FirebaseAuth.getInstance().getCurrentUser()==null){
+                    /** no user logged in yet, open the sign in activity */
+                    i = new Intent(MainActivity.this,SignInActivity.class);
+                } else{
+                    /** a user is logged in, continue to open the activity and fragment of the add publication */
+                    i = new Intent(MainActivity.this,PublicationActivity.class);
+                    i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.ADD_PUBLICATION_TAG);
+                }
+                startActivity(i);
+            }
+        });
     }
 
+
     private void init(){
-        /** get the string into a static field or a resource string*/
+        /** in first use, get a new UUID for the device and save it in the shared preferences */
         SharedPreferences.Editor edit = preferenceManager.edit();
+        // TODO: 21/12/2016 get the string from a static field or a resource string
         edit.putBoolean("initialized",true);
         String deviceUUID = UUID.randomUUID().toString();
         edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
@@ -148,33 +161,12 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         }
     }
 
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.main, menu);
-////        MenuItem searchItem = menu.findItem(R.id.search);
-////        SearchView searchView = (SearchView) searchItem.getActionView();
-////        searchView.setOnQueryTextListener();
-//        return true;
-//    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        switch (id){
-//            case R.id.action_settings:
-//                FirebaseAuth.getInstance().signOut();
-//                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-//                /** remove user phone number and foodonet user ID from sharedPreferences */
-//                SharedPreferences.Editor editor = preferenceManager.edit();
-//                editor.remove(User.PHONE_NUMBER);
-//                editor.remove(User.IDENTITY_PROVIDER_USER_ID);
-//                editor.apply();
-//                Snackbar.make(viewPager, R.string.signed_out_successfully,Snackbar.LENGTH_SHORT).show();
-//                return true;
+        switch (item.getItemId()){
             case R.id.map:
                 CommonMethods.navigationItemSelectedAction(this,R.id.nav_map_view);
                 return true;
@@ -187,7 +179,6 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-
         /** handle the navigation actions in the common methods class */
         CommonMethods.navigationItemSelectedAction(this,item.getItemId());
 
@@ -250,7 +241,25 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
         }
     }
 
-
+    /** test - sign to notifications */
+    public void registerToPushNotification(Context context){
+    JSONObject activeDeviceRoot = new JSONObject();
+    JSONObject activeDevice = new JSONObject();
+    try {
+        activeDevice.put("dev_uuid",CommonMethods.getDeviceUUID(context));
+        activeDevice.put("remote_notification_token", activeDevice.NULL);
+        activeDevice.put("is_ios", false);
+        activeDevice.put("last_location_latitude", PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LATITUDE, null));
+        activeDevice.put("last_location_longitude", PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LONGITUDE,null));
+        activeDeviceRoot.put("active_device",activeDevice);
+    } catch (JSONException e) {
+        e.printStackTrace();
+    }
+    Intent intent = new Intent(context, FoodonetService.class);
+    intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER);
+    intent.putExtra(ReceiverConstants.JSON_TO_SEND,activeDeviceRoot.toString());
+    context.startService(intent);
+    }
 }
 
 

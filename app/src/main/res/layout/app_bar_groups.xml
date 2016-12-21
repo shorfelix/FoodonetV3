@@ -30,6 +30,6 @@
         android:layout_gravity="bottom|end"
         android:src="@drawable/white_plus"
         android:layout_margin="@dimen/fab_margin"
-        app:backgroundTint="@android:color/holo_red_dark" />
+        app:backgroundTint="@color/colorPrimary" />
 
 </android.support.design.widget.CoordinatorLayout>

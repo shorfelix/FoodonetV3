@@ -1,25 +1,20 @@
 package com.roa.foodonetv3.model;
 
 import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-/**
- * Created by Owner on 27/11/2016.
- */
 
 public class RegistrationPublication {
     private static final String TAG = "RegistrationPublication";
 
-    public static final String REGISTERED_USER_FOR_PUBLICATION = "registered_user_for_publication";
-    public static final String PUBLICATION_ID = "publication_id";
-    public static final String DATE_OF_REGISTRATION = "date_of_registration";
-    public static final String ACTIVE_DEVICE_DEV_UUID = "active_device_dev_uuid";
-    public static final String PUBLICATION_VERSION = "publication_version";
-    public static final String COLLECTOR_NAME = "collector_name";
-    public static final String COLLECTOR_CONTACT_INFO = "collector_contact_info";
-    public static final String COLLECTOR_USER_ID = "collector_contact_info";
+    private static final String REGISTERED_USER_FOR_PUBLICATION = "registered_user_for_publication";
+    private static final String PUBLICATION_ID = "publication_id";
+    private static final String DATE_OF_REGISTRATION = "date_of_registration";
+    private static final String ACTIVE_DEVICE_DEV_UUID = "active_device_dev_uuid";
+    private static final String PUBLICATION_VERSION = "publication_version";
+    private static final String COLLECTOR_NAME = "collector_name";
+    private static final String COLLECTOR_CONTACT_INFO = "collector_contact_info";
+    private static final String COLLECTOR_USER_ID = "collector_user_id";
 
     private int publicationVersion,collectorUserID;
     private long publicationID;
@@ -37,6 +32,7 @@ public class RegistrationPublication {
         this.collectorUserID = collectorUserID;
     }
 
+    /** creates a json object to be sent to the server */
     public JSONObject getJsonForRegistration(){
         JSONObject root = new JSONObject();
         JSONObject registration = new JSONObject();

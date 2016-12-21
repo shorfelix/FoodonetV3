@@ -1,21 +1,9 @@
 package com.roa.foodonetv3.activities;
 
-import android.animation.Animator;
-import android.animation.AnimatorSet;
-import android.animation.ArgbEvaluator;
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -26,24 +14,27 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
+import android.widget.TextView;
 import android.widget.Toast;
-
+import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.NewGroupDialog;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.FabAnimation;
 import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.GroupsOverviewFragment;
 import com.roa.foodonetv3.fragments.AdminGroupFragment;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.services.FoodonetService;
-
 import java.util.ArrayList;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class GroupsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener , OnReplaceFragListener,NewGroupDialog.OnNewGroupClickListener {
     private static final String TAG = "GroupsActivity";
@@ -52,14 +43,10 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     public static final String ADMIN_GROUP_TAG = "newGroupFrag";
     public static final String OPEN_GROUP_TAG = "openGroupFrag";
 
-    private static final long FAB_ANIM_DURATION = 600;
-    private static final int FAB_SIZE = 56;
     public static final int CONTACT_PICKER = 1;
 
     private String currentFrag;
-    private ProgressDialog progressDialog;
     private NewGroupDialog newGroupDialog;
-    private String newGroupName;
 
     private FloatingActionButton fab;
     private FragmentManager fragmentManager;
@@ -72,21 +59,39 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        /** set the fragment manager */
         fragmentManager = getSupportFragmentManager();
 
+        /** set the drawer layout */
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        /** set the floating action button */
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
 
+        /** Initialize Firebase Auth */
+        FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser mFirebaseUser = mFirebaseAuth.getCurrentUser();
+
+        /** set header imageView */
+        View hView = navigationView.getHeaderView(0);
+        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
+        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
+            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
+            headerTxt.setText(mFirebaseUser.getDisplayName());
+        }else {
+            circleImageView.setImageResource(R.drawable.foodonet_image);
+        }
+
         if(savedInstanceState== null){
+            /** if new activity, open the overview group fragment */
             newGroupsFrag(GROUPS_OVERVIEW_TAG);
         }
     }
@@ -94,9 +99,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     protected void onPause() {
         super.onPause();
-        if(progressDialog!= null){
-            progressDialog.dismiss();
-        }
+        /** dismiss the dialog */
         if(newGroupDialog!= null){
             newGroupDialog.dismiss();
         }
@@ -104,49 +107,69 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
 
     @Override
     public void onBackPressed() {
-        switch (currentFrag){
-            case GROUPS_OVERVIEW_TAG:
-                super.onBackPressed();
-                break;
-            case ADMIN_GROUP_TAG:
-                replaceFrags(GROUPS_OVERVIEW_TAG, null);
-                break;
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            switch (currentFrag){
+                case GROUPS_OVERVIEW_TAG:
+                    super.onBackPressed();
+                    break;
+                case ADMIN_GROUP_TAG:
+                    // TODO: 21/12/2016 change
+                    replaceFrags(GROUPS_OVERVIEW_TAG, null);
+                    break;
+            }
         }
     }
 
     private void newGroupsFrag(String openFragType){
         currentFrag = openFragType;
-        if(progressDialog!=null){
-            progressDialog.dismiss();
-        }
         switch (openFragType) {
             case GROUPS_OVERVIEW_TAG:
+                /** no need to animate the fab since the group overview is set up in xml as it should */
                 GroupsOverviewFragment groupsOverviewFragment = new GroupsOverviewFragment();
                 fragmentManager.beginTransaction().add(R.id.containerGroups,groupsOverviewFragment, GROUPS_OVERVIEW_TAG).commit();
                 break;
         }
-        updateFragViews(openFragType);
     }
 
     @Override
     public void replaceFrags(String openFragType, ArrayList<Parcelable> arrayList) {
-        currentFrag = openFragType;
-        if(progressDialog!=null){
-            progressDialog.dismiss();
+        /** get the values for the fab animation */
+        long duration;
+        if(currentFrag==null){
+            /** if this is the first frag - don't make a long animation */
+            duration = 1;
+        } else{
+            duration = CommonConstants.FAB_ANIM_DURATION;
         }
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+        final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + CommonConstants.FAB_SIZE*2);
+
+        /** set the current frag to be the new one */
+        currentFrag = openFragType;
+
+        /** replace the fragment and animate the fab accordingly */
         switch (openFragType) {
             case GROUPS_OVERVIEW_TAG:
                 GroupsOverviewFragment groupsOverviewFragment = new GroupsOverviewFragment();
                 fragmentManager.beginTransaction().replace(R.id.containerGroups,groupsOverviewFragment, GROUPS_OVERVIEW_TAG).commit();
+                FabAnimation.animateFAB(this,fab,normalFabY, duration,R.drawable.white_plus,getResources().getColor(R.color.colorPrimary),false);
                 break;
             case ADMIN_GROUP_TAG:
-                // TODO: 13/12/2016 test when the service to add a new group will be fixed, should open automatically, currently hard coded empty members
                 AdminGroupFragment adminGroupFragment = new AdminGroupFragment();
                 Group newGroup = (Group) arrayList.get(0);
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(Group.GROUP,newGroup);
                 adminGroupFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().replace(R.id.containerGroups, adminGroupFragment, ADMIN_GROUP_TAG).commit();
+                // TODO: 19/12/2016 change the image for the fab
+                FabAnimation.animateFAB(this,fab,normalFabY, duration,R.drawable.user,getResources().getColor(R.color.FooGreen),false);
                 break;
             case OPEN_GROUP_TAG:
                 // TODO: 13/12/2016 add fragment
@@ -154,87 +177,6 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                 Toast.makeText(this, "Open Group", Toast.LENGTH_SHORT).show();
                 break;
         }
-        updateFragViews(openFragType);
-    }
-
-    private void updateFragViews(String openFragType){
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        int height = size.y;
-        final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + FAB_SIZE*2);
-        switch (openFragType){
-            case GROUPS_OVERVIEW_TAG:
-                animateFAB(normalFabY,FAB_ANIM_DURATION,R.drawable.white_plus,getResources().getColor(R.color.colorPrimary));
-                break;
-            case ADMIN_GROUP_TAG:
-                animateFAB(normalFabY,FAB_ANIM_DURATION,R.drawable.user,getResources().getColor(R.color.FooGreen));
-                break;
-        }
-    }
-
-    private void animateFAB(int y, long duration, int imageResource, int color){
-        fab.setClickable(false);
-        final Bitmap imageBitmap = BitmapFactory.decodeResource(getResources(),imageResource);
-
-        AnimatorSet animation = new AnimatorSet();
-
-        ObjectAnimator colorAnimation = ObjectAnimator.ofInt(fab,"backgroundTint", fab.getBackgroundTintList().getDefaultColor(),color);
-        colorAnimation.setEvaluator(new ArgbEvaluator());
-        colorAnimation.setInterpolator(new DecelerateInterpolator());
-        colorAnimation.setDuration(duration);
-        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int animatedValue = (int) valueAnimator.getAnimatedValue();
-                fab.setBackgroundTintList(ColorStateList.valueOf(animatedValue));
-            }
-        });
-
-        ObjectAnimator moveAnimation = ObjectAnimator.ofFloat(fab,"y",y);
-        moveAnimation.setInterpolator(new DecelerateInterpolator());
-        moveAnimation.setDuration(duration);
-
-        ObjectAnimator fadeOutImageAnimation = ObjectAnimator.ofInt(fab,"imageAlpha",255,0);
-        fadeOutImageAnimation.setDuration(duration/2);
-
-        ObjectAnimator fadeInImageAnimation = ObjectAnimator.ofInt(fab,"imageAlpha",0,255);
-        fadeInImageAnimation.setDuration(duration/2);
-        fadeInImageAnimation.setStartDelay(duration/2);
-        fadeInImageAnimation.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-                fab.setImageBitmap(imageBitmap);
-            }
-            @Override
-            public void onAnimationEnd(Animator animator) {
-            }
-            @Override
-            public void onAnimationCancel(Animator animator) {
-            }
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-            }
-        });
-
-        animation.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-            }
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                fab.setClickable(true);
-            }
-            @Override
-            public void onAnimationCancel(Animator animator) {
-            }
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-            }
-        });
-        animation.play(colorAnimation).with(moveAnimation).with(fadeOutImageAnimation).with(fadeInImageAnimation);
-        animation.start();
     }
 
     @Override
@@ -249,44 +191,40 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
 
     @Override
     public void onNewGroupClick(String groupName){
-        newGroupName = groupName;
+        /** after a user creates a new group from the dialog, run the service to create the group */
         Group newGroup = new Group(groupName, CommonMethods.getMyUserID(this),null,-1);
         Intent intent = new Intent(this, FoodonetService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_GROUP);
         intent.putExtra(ReceiverConstants.JSON_TO_SEND,newGroup.getAddGroupJson().toString());
-        intent.putExtra(ReceiverConstants.ADDRESS_ARGS, groupName);
+        String[] args = {groupName};
+        intent.putExtra(ReceiverConstants.ADDRESS_ARGS, args);
         this.startService(intent);
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle(R.string.please_wait);
-        progressDialog.show();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.fab:
-                switch (currentFrag){
-                    case GROUPS_OVERVIEW_TAG:
-//                        /** replace the main overview frag with the addGroup frag */
-//                        replaceFrags(ADMIN_GROUP_TAG, null);
-                        newGroupDialog = new NewGroupDialog(this);
-                        newGroupDialog.show();
-                        break;
-                    case ADMIN_GROUP_TAG:
-                        // TODO: 14/12/2016 add logic
-                        Toast.makeText(this, "add new member", Toast.LENGTH_SHORT).show();
-                        Intent fabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
-                        fabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_FAB_CLICK);
-                        fabClickIntent.putExtra(ReceiverConstants.FAB_TYPE,ReceiverConstants.FAB_TYPE_NEW_GROUP_MEMBER);
-                        fabClickIntent.putExtra(ReceiverConstants.SERVICE_ERROR,false);
-                        LocalBroadcastManager.getInstance(this).sendBroadcast(fabClickIntent);
-                        break;
+                if(currentFrag!=null){
+                    switch (currentFrag){
+                        case GROUPS_OVERVIEW_TAG:
+                            /** pressed on create a new group - shows the dialog of creating a new group */
+                            newGroupDialog = new NewGroupDialog(this);
+                            newGroupDialog.show();
+                            break;
+                        case ADMIN_GROUP_TAG:
+                            /** pressed on create a new user in a group the user is the admin of */
+                            // TODO: 14/12/2016 currently not working... getting a 404 code
+                            Toast.makeText(this, "add new member", Toast.LENGTH_SHORT).show();
+                            Intent fabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
+                            fabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_FAB_CLICK);
+                            fabClickIntent.putExtra(ReceiverConstants.FAB_TYPE,ReceiverConstants.FAB_TYPE_NEW_GROUP_MEMBER);
+                            fabClickIntent.putExtra(ReceiverConstants.SERVICE_ERROR,false);
+                            LocalBroadcastManager.getInstance(this).sendBroadcast(fabClickIntent);
+                            break;
+                    }
                 }
                 break;
         }
     }
-
-
-
-
 }

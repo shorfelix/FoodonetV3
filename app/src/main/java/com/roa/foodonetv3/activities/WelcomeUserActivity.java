@@ -25,7 +25,6 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class WelcomeUserActivity extends AppCompatActivity {
@@ -46,6 +45,8 @@ public class WelcomeUserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome_user);
+
+        setTitle(R.string.foodonet);
 
         finishRegisterationButton = (Button) findViewById(R.id.finishRegisterationButton);
         userNameTxt = (TextView) findViewById(R.id.userNameTxt);
@@ -78,7 +79,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
                     /** save user phone number to sharedPreferences */
                     preferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
 
-                    /** sign in the user to foodonet server and get his new (or old) id and save it to the shared preferences through the service */
+                    /** sign in the user to foodonet server and get his new (or existing) id and save it to the shared preferences through the service */
                     String uuid = preferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
                     String providerId = "";
                     String userEmail = mFirebaseUser.getEmail();
@@ -128,7 +129,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
     }
 
     public Boolean isLegalNumber(String number){
-        // TODO: 21/11/2016 currently just checking israeli mobile phone numbers, should allow line phones as well
+        // TODO: 21/11/2016 currently just checking israeli mobile phone numbers, should allow line phones as well, fix!
         if(number.length()<10){
             Toast.makeText(this, "invalid phone number", Toast.LENGTH_SHORT).show();
             return false;
@@ -153,10 +154,11 @@ public class WelcomeUserActivity extends AppCompatActivity {
         return true;
     }
 
-    public class FoodonetReceiver extends BroadcastReceiver{
+    private class FoodonetReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_ADD_USER){
+                /** receiver from the foodonet server of creating the new user */
                 if(dialog!=null){
                     dialog.dismiss();
                 }
@@ -165,7 +167,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                 } else{
                     /** user successfully added, finish the activity*/
-                    Intent a = new Intent(WelcomeUserActivity.this, MainDrawerActivity.class);
+                    Intent a = new Intent(WelcomeUserActivity.this, MainActivity.class);
                     a.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(a);
                     finish();

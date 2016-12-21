@@ -24,10 +24,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import javax.net.ssl.HttpsURLConnection;
 
-
+/** main service to communicate with foodonet server */
 public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
+
     private static final int TIMEOUT_TIME = 5000;
+
+    private int responseCode;
 
     public FoodonetService() {
         super("FoodonetService");
@@ -60,22 +63,35 @@ public class FoodonetService extends IntentService {
                         connection.addRequestProperty("Accept","application/json");
                         connection.addRequestProperty("Content-Type","application/json");
                         connection.setDoOutput(true);
-                        OutputStream os = connection.getOutputStream();
-                        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os,"utf-8"));
-                        String jsonToSend = intent.getStringExtra(ReceiverConstants.JSON_TO_SEND);
-                        writer.write(jsonToSend);
-                        writer.flush();
-                        writer.close();
-                        os.close();
+                        OutputStream postOs = connection.getOutputStream();
+                        BufferedWriter postWriter = new BufferedWriter(new OutputStreamWriter(postOs,"utf-8"));
+                        String postJsonToSend = intent.getStringExtra(ReceiverConstants.JSON_TO_SEND);
+                        postWriter.write(postJsonToSend);
+                        postWriter.flush();
+                        postWriter.close();
+                        postOs.close();
                         break;
                     case StartServiceMethods.HTTP_PUT:
-
+                        connection.setRequestMethod("PUT");
+                        connection.addRequestProperty("Accept","application/json");
+                        connection.addRequestProperty("Content-Type","application/json");
+                        connection.setDoOutput(true);
+                        OutputStream putOs = connection.getOutputStream();
+                        BufferedWriter putWriter = new BufferedWriter(new OutputStreamWriter(putOs,"utf-8"));
+                        String putJsonToSend = intent.getStringExtra(ReceiverConstants.JSON_TO_SEND);
+                        putWriter.write(putJsonToSend);
+                        putWriter.flush();
+                        putWriter.close();
+                        putOs.close();
                         break;
                     case StartServiceMethods.HTTP_DELETE:
-
+                        connection.setRequestMethod("DELETE");
                         break;
+                    default:
+                        serviceError = true;
                 }
-                if(connection.getResponseCode()!=HttpsURLConnection.HTTP_OK){
+                responseCode = connection.getResponseCode();
+                if(responseCode!=HttpsURLConnection.HTTP_OK && responseCode != HttpsURLConnection.HTTP_CREATED){
                     serviceError = true;
                 } else{
                     reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -161,7 +177,7 @@ public class FoodonetService extends IntentService {
                             price = publication.getDouble("price");
                             priceDescription = "price_description";
                             publications.add(new Publication(id, version, title, subtitle, address, typeOfCollecting, lat, lng, startingDate, endingDate, contactInfo, isOnAir,
-                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription));
+                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription,0));
                         }
                     }
                     intent.putParcelableArrayListExtra(Publication.PUBLICATION_KEY, publications);
@@ -173,6 +189,10 @@ public class FoodonetService extends IntentService {
 
                 case ReceiverConstants.ACTION_EDIT_PUBLICATION: // not tested
                     // TODO: 27/11/2016 check versions and the like
+                    break;
+
+                case ReceiverConstants.ACTION_DELETE_PUBLICATION:
+                    Log.d(TAG,responseRoot);
                     break;
 
                 case ReceiverConstants.ACTION_GET_REPORTS:
@@ -232,10 +252,21 @@ public class FoodonetService extends IntentService {
                     // TODO: 27/11/2016 update
                     break;
 
+                case ReceiverConstants.ACTION_GET_PUBLICATION_REGISTERED_USERS:
+                    // TODO: 20/12/2016 not tested yet!
+                    JSONArray registeredUsersArray = new JSONArray(responseRoot);
+                    intent.putExtra(Publication.PUBLICATION_COUNT_OF_REGISTER_USERS_KEY,registeredUsersArray.length());
+                    break;
+
+                case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
+                    intent.putExtra(Publication.PUBLICATION_COUNT_OF_REGISTER_USERS_KEY,responseRoot);
+                    break;
+
                 case ReceiverConstants.ACTION_ADD_GROUP:
                     // TODO: 06/12/2016 add logic according to what we receive
-                    // currently not getting here...
-                    Log.d("TESTTTTTTTTTTTTTTT",responseRoot);
+                    JSONObject rootAddGroup = new JSONObject(responseRoot);
+                    int newGroupID = rootAddGroup.getInt("id");
+                    intent.putExtra(Group.KEY,newGroupID);
                     break;
 
                 case ReceiverConstants.ACTION_GET_GROUPS:
@@ -273,8 +304,10 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case ReceiverConstants.ACTION_POST_FEEDBACK:
-                    // TODO: 05/12/2016 add logic according to what we receive
-                    Log.d("TESTTTTTTTTTTTTTT", responseRoot);
+                    break;
+
+                case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
+                    Log.d(TAG,responseRoot);
                     break;
             }
         } catch (JSONException e){

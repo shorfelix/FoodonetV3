@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
@@ -22,12 +21,12 @@ import com.roa.foodonetv3.ContactUsDialog;
 import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.AboutUsActivity;
-import com.roa.foodonetv3.activities.MainDrawerActivity;
+import com.roa.foodonetv3.activities.MainActivity;
 import com.roa.foodonetv3.activities.MapActivity;
 import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
+import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.model.User;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,30 +38,28 @@ import java.util.Locale;
 public class CommonMethods {
     private static final String TAG = "CommonMethods";
 
-    /**
-     * We only need one instance of the clients and credentials provider
-     */
+    /** we only need one instance of the clients and credentials provider */
     private static AmazonS3Client sS3Client;
     private static CognitoCachingCredentialsProvider sCredProvider;
     private static TransferUtility sTransferUtility;
 
     public static void navigationItemSelectedAction(Context context, int id) {
-        /** handle the navigation actions from the drawer*/
+        /** handles the navigation actions from the drawer*/
         Intent intent;
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
-                intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.OPEN_MY_PUBLICATIONS);
+                intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
-                if (!(context instanceof MainDrawerActivity)) {
+                if (!(context instanceof MainActivity)) {
                     // TODO: 04/12/2016 roi, what's the point of running the method here?
-                    ifGpsIsEnable(context);
+                    isGpsEnabled(context);
                     ((Activity) context).finish();
                 }
                 break;
             case R.id.nav_all_events:
-                if (!(context instanceof MainDrawerActivity)) {
-                    intent = new Intent(context, MainDrawerActivity.class);
+                if (!(context instanceof MainActivity)) {
+                    intent = new Intent(context, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
                     break;
@@ -70,7 +67,7 @@ public class CommonMethods {
                 break;
             case R.id.nav_map_view:
                 intent = new Intent(context, MapActivity.class);
-                if (context instanceof MainDrawerActivity) {
+                if (context instanceof MainActivity) {
                     context.startActivity(intent);
                 } else {
                     context.startActivity(intent);
@@ -92,16 +89,13 @@ public class CommonMethods {
                 }
                 break;
             case R.id.nav_settings:
-//                // TODO: 22/11/2016 temporary here, should be moved to settings menu when it will be available
-//                intent = new Intent(context, SignInActivity.class);
-//                if (context instanceof MainDrawerActivity) {
-//                    context.startActivity(intent);
-//                } else {
-//                    context.startActivity(intent);
-//                    ((Activity) context).finish();
-//
-//                }
-                intent = new Intent(context, PrefsActivity.class);
+                if(getMyUserID(context)==-1){
+                    /** if the user is not signed in yet, open the sign in activity */
+                    intent = new Intent(context,SignInActivity.class);
+                } else{
+                    /** open the preferences fragment activity */
+                    intent = new Intent(context, PrefsActivity.class);
+                }
                 context.startActivity(intent);
                 break;
             case R.id.nav_contact_us:
@@ -117,11 +111,12 @@ public class CommonMethods {
 
     public static double getCurrentTimeSeconds() {
         /** returns current epoch time in seconds(NOT MILLIS!) */
-        return System.currentTimeMillis() / 1000;
+        long currentTime = System.currentTimeMillis()/1000;
+        return currentTime;
     }
 
     public static String getTimeDifference(Context context, Double earlierTime, Double laterTime) {
-        /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the length */
+        /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the duration */
         long timeDiff = (long) (laterTime - earlierTime) / 60; // minutes as start
         String typeOfTime;
         if (timeDiff < 0) {
@@ -381,7 +376,7 @@ public class CommonMethods {
     }
 
 
-    public static boolean ifInternetIsEnable(Context context) {
+    public static boolean isInternetEnabled(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         if (activeNetwork != null) { // connected to the internet
@@ -401,7 +396,7 @@ public class CommonMethods {
         return false;
     }
 
-    public static boolean ifGpsIsEnable(Context context){
+    public static boolean isGpsEnabled(Context context){
         final LocationManager manager = (LocationManager) context.getSystemService( Context.LOCATION_SERVICE );
 
         if (manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {

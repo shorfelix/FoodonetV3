@@ -42,7 +42,8 @@
         android:id="@+id/editTextTitleAddPublication"
         android:layout_marginEnd="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
-        android:hint="@string/post_hint_what_would_you_like_to_share" />
+        android:hint="@string/post_hint_what_would_you_like_to_share"
+        style="@style/FooMediumPlus"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -54,7 +55,12 @@
         android:id="@+id/textLocationAddPublication"
         android:layout_marginEnd="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
-        android:hint="@string/post_hint_pickup_address" />
+        android:layout_marginTop="@dimen/margin_8"
+        android:layout_marginBottom="@dimen/margin_8"
+        android:paddingLeft="@dimen/margin_4"
+        android:paddingStart="@dimen/margin_4"
+        android:hint="@string/post_hint_pickup_address"
+        style="@style/FooMediumPlus" />
 
     <EditText
         android:layout_width="match_parent"
@@ -67,7 +73,8 @@
         android:id="@+id/editTextPriceAddPublication"
         android:layout_marginEnd="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
-        android:hint="@string/post_hint_price" />
+        android:hint="@string/post_hint_price"
+        style="@style/FooMediumPlus"/>
 
     <EditText
         android:layout_width="match_parent"
@@ -80,7 +87,8 @@
         android:id="@+id/editTextShareWithAddPublication"
         android:layout_marginEnd="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
-        android:hint="@string/post_hint_share_with" />
+        android:hint="@string/post_hint_share_with"
+        style="@style/FooMediumPlus"/>
 
     <EditText
         android:layout_width="match_parent"
@@ -93,16 +101,9 @@
         android:id="@+id/editTextDetailsAddPublication"
         android:layout_marginEnd="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
-        android:hint="@string/post_hint_add_more_details" />
+        android:hint="@string/post_hint_add_more_details"
+        style="@style/FooMediumPlus"/>
 
-    <Button
-        android:text="test add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/editTextDetailsAddPublication"
-        android:layout_alignEnd="@+id/editTextDetailsAddPublication"
-        android:layout_marginBottom="12dp"
-        android:id="@+id/buttonTestAdd" />
+
 
 </RelativeLayout>
