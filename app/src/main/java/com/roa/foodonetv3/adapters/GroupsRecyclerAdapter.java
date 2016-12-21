@@ -6,14 +6,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.model.Group;
-
 import java.util.ArrayList;
 
 public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAdapter.GroupHolder> {
@@ -39,6 +36,8 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
         notifyDataSetChanged();
     }
 
+    /** filter through the search in the action bar */
+    // TODO: 21/12/2016 currently not implemented
     public void filter(String text){
         filteredGroups.clear();
         if(text.isEmpty()){
@@ -114,6 +113,7 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
                     }
                     ArrayList<Parcelable> arrayList = new ArrayList<>();
                     arrayList.add(group);
+                    /** run the method on the listener to change the fragment */
                     listener.replaceFrags(fragToOpen,arrayList);
                     break;
             }

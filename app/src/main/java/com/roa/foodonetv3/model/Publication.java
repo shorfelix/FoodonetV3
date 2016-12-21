@@ -3,48 +3,47 @@ package com.roa.foodonetv3.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Publication implements Parcelable {
-    private long id;
-    private int version, publisherID, audience;
-    private String title,subtitle,address,startingDate,endingDate,contactInfo,activeDeviceDevUUID,photoURL,identityProviderUserName,priceDescription;
-    private short typeOfCollecting;
-    private double lat, lng,price;
-    private boolean isOnAir;
+    private static final String TAG = "Publication";
 
     public static final String PUBLICATION_KEY = "publication";
-    public static final String PUBLICATION_UNIQUE_ID_KEY = "_id";
-    public static final String PUBLICATION_PUBLISHER_UUID_KEY = "active_device_dev_uuid";
-    public static final String PUBLICATION_UNIQUE_ID_KEY_JSON = "id";
-    public static final String PUBLICATION_VERSION_KEY = "version";
-    public static final String PUBLICATION_TITLE_KEY = "title";
-    public static final String PUBLICATION_SUBTITLE_KEY = "subtitle";
-    public static final String PUBLICATION_ADDRESS_KEY = "address";
-    public static final String PUBLICATION_TYPE_OF_COLLECTION_KEY = "type_of_collecting";
-    public static final String PUBLICATION_LATITUDE_KEY = "latitude";
-    public static final String PUBLICATION_LONGITUDE_KEY = "longitude";
-    public static final String PUBLICATION_STARTING_DATE_KEY = "starting_date";
-    public static final String PUBLICATION_ENDING_DATE_KEY = "ending_date";
-    public static final String PUBLICATION_CONTACT_INFO_KEY = "contact_info";
-    public static final String PUBLICATION_PHOTO_URL = "photo_url";
     public static final String PUBLICATION_COUNT_OF_REGISTER_USERS_KEY = "pulbicationCountOfRegisteredUsersKey";
-    public static final String PUBLICATION_IS_ON_AIR_KEY = "is_on_air";
-    public static final String PUBLICATION_PUBLISHER_USER_NAME_KEY = "identity_provider_user_name";
-    public static final String PUBLICATION_PUBLISHER_ID_KEY = "publisher_id";
-    public static final String PUBLICATION_PRICE_KEY = "price";
-    public static final String PUBLICATION_PRICE_DESCRIPTION_KEY = "price_description";
-    public static final String PUBLICATION_USER_RATING_KEY = "user_rating";
-    public static final String PUBLICATION_AUDIENCE_KEY = "audience";
-    public static final String PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY = "publisher_user_name";
+
+    private static final String PUBLICATION_PUBLISHER_UUID_KEY = "active_device_dev_uuid";
+    private static final String PUBLICATION_TITLE_KEY = "title";
+    private static final String PUBLICATION_SUBTITLE_KEY = "subtitle";
+    private static final String PUBLICATION_ADDRESS_KEY = "address";
+    private static final String PUBLICATION_TYPE_OF_COLLECTION_KEY = "type_of_collecting";
+    private static final String PUBLICATION_LATITUDE_KEY = "latitude";
+    private static final String PUBLICATION_LONGITUDE_KEY = "longitude";
+    private static final String PUBLICATION_STARTING_DATE_KEY = "starting_date";
+    private static final String PUBLICATION_ENDING_DATE_KEY = "ending_date";
+    private static final String PUBLICATION_CONTACT_INFO_KEY = "contact_info";
+    private static final String PUBLICATION_PHOTO_URL = "photo_url";
+    private static final String PUBLICATION_IS_ON_AIR_KEY = "is_on_air";
+    private static final String PUBLICATION_PUBLISHER_ID_KEY = "publisher_id";
+    private static final String PUBLICATION_PRICE_KEY = "price";
+    private static final String PUBLICATION_PRICE_DESCRIPTION_KEY = "price_description";
+    private static final String PUBLICATION_AUDIENCE_KEY = "audience";
+    private static final String PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY = "publisher_user_name";
+
+    private long id;
+    private int version, publisherID, audience, registeredUsersCount;
+    private String title,subtitle,address,startingDate,endingDate,contactInfo,activeDeviceDevUUID,photoURL,identityProviderUserName,priceDescription;
+    private short typeOfCollecting;
+    private double lat, lng, price;
+    private boolean isOnAir;
+
+
 
 
     public Publication(long id, int version, String title, String subtitle, String address, short typeOfCollecting,
                        double lat, double lng, String startingDate, String endingDate, String contactInfo, boolean isOnAir,
                        String activeDeviceDevUUID, String photoURL, int publisherID, int audience, String identityProviderUserName,
-                       double price, String priceDescription) {
+                       double price, String priceDescription, int registeredUsersCount) {
         this.id = id;
         this.version = version;
         this.title = title;
@@ -64,6 +63,8 @@ public class Publication implements Parcelable {
         this.identityProviderUserName = identityProviderUserName;
         this.price = price;
         this.priceDescription = priceDescription;
+        this.registeredUsersCount = registeredUsersCount;
+
     }
 
     protected Publication(Parcel in) {
@@ -71,6 +72,7 @@ public class Publication implements Parcelable {
         version = in.readInt();
         publisherID = in.readInt();
         audience = in.readInt();
+        registeredUsersCount = in.readInt();
         title = in.readString();
         subtitle = in.readString();
         address = in.readString();
@@ -100,7 +102,7 @@ public class Publication implements Parcelable {
     };
 
     public JSONObject getPublicationJson(){
-        /** creates a json objedt from the publication as to be sent to the server */
+        /** creates a json object from the publication as to be sent to the server */
         JSONObject publicationJsonRoot = new JSONObject();
         JSONObject publicationJson = new JSONObject();
         try {
@@ -124,9 +126,13 @@ public class Publication implements Parcelable {
 
             publicationJsonRoot.put(PUBLICATION_KEY,publicationJson);
         } catch (JSONException e) {
-            Log.e("getPublicationJson", e.getMessage());
+            Log.e(TAG,e.getMessage());
         }
         return publicationJsonRoot;
+    }
+
+    public void addToRegisteredCount(){
+        registeredUsersCount++;
     }
 
     public long getId() {
@@ -281,31 +287,40 @@ public class Publication implements Parcelable {
         this.priceDescription = priceDescription;
     }
 
+    public int getRegisteredUsersCount() {
+        return registeredUsersCount;
+    }
+
+    public void setRegisteredUsersCount(int registeredUsersCount) {
+        this.registeredUsersCount = registeredUsersCount;
+    }
+
     @Override
     public int describeContents() {
         return 0;
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(id);
-        dest.writeInt(version);
-        dest.writeInt(publisherID);
-        dest.writeInt(audience);
-        dest.writeString(title);
-        dest.writeString(subtitle);
-        dest.writeString(address);
-        dest.writeString(startingDate);
-        dest.writeString(endingDate);
-        dest.writeString(contactInfo);
-        dest.writeString(activeDeviceDevUUID);
-        dest.writeString(photoURL);
-        dest.writeString(identityProviderUserName);
-        dest.writeString(priceDescription);
-        dest.writeDouble(lat);
-        dest.writeDouble(lng);
-        dest.writeDouble(price);
-        dest.writeByte((byte) (isOnAir ? 1 : 0));
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeLong(id);
+        parcel.writeInt(version);
+        parcel.writeInt(publisherID);
+        parcel.writeInt(audience);
+        parcel.writeInt(registeredUsersCount);
+        parcel.writeString(title);
+        parcel.writeString(subtitle);
+        parcel.writeString(address);
+        parcel.writeString(startingDate);
+        parcel.writeString(endingDate);
+        parcel.writeString(contactInfo);
+        parcel.writeString(activeDeviceDevUUID);
+        parcel.writeString(photoURL);
+        parcel.writeString(identityProviderUserName);
+        parcel.writeString(priceDescription);
+        parcel.writeDouble(lat);
+        parcel.writeDouble(lng);
+        parcel.writeDouble(price);
+        parcel.writeByte((byte) (isOnAir ? 1 : 0));
     }
 }
 

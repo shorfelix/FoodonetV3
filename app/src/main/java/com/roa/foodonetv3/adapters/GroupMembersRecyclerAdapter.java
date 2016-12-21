@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.GroupMember;
 import java.util.ArrayList;
@@ -49,26 +48,25 @@ public class GroupMembersRecyclerAdapter extends RecyclerView.Adapter<GroupMembe
         private ImageView imageMember, imageRemoveMember;
         private TextView textMemberName;
 
-        public MemberHolder(View itemView) {
+        MemberHolder(View itemView) {
             super(itemView);
+            // TODO: 21/12/2016 add imageMember logic to show if the member is a foodonet user or not
             imageMember = (ImageView) itemView.findViewById(R.id.imageMember);
             textMemberName = (TextView) itemView.findViewById(R.id.textMemberName);
             imageRemoveMember = (ImageView) itemView.findViewById(R.id.imageRemoveMember);
-            imageMember = (ImageView) itemView.findViewById(R.id.imageMember);
             imageRemoveMember.setOnClickListener(this);
         }
 
-        public void bindMember(GroupMember member){
+        void bindMember(GroupMember member){
             this.member = member;
             textMemberName.setText(member.getName());
         }
-
 
         @Override
         public void onClick(View view) {
             switch (view.getId()){
                 case R.id.imageRemoveMember:
-                    // TODO: 14/12/2016 add alert dialog and service
+                    // TODO: 14/12/2016 add alert dialog and service logic
                     Toast.makeText(context, "remove user", Toast.LENGTH_SHORT).show();
                     break;
             }

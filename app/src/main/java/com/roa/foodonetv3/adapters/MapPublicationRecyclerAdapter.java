@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
@@ -17,28 +16,22 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.util.ArrayList;
-
-/**
- * Created by roa on 19/12/2016.
- */
 
 public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPublicationRecyclerAdapter.PublicationHolder> {
 
     private static final String TAG = "MapPubsRecyclerAdapter";
+    private static final int publicationImageSize = 120;
     private Context context;
     private ArrayList<Publication> publications = new ArrayList<>();
     private TransferUtility transferUtility;
-    private int publicationImageSize;
     private OnImageAdapterClickListener listener;
 
 
     public MapPublicationRecyclerAdapter(Context context){
         this.context = context;
         transferUtility = CommonMethods.getTransferUtility(context);
-        publicationImageSize =120;
         listener = (OnImageAdapterClickListener) context;
 
     }
@@ -66,13 +59,13 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
         return publications.size();
     }
 
-    public class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener {
+    class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener {
 
         private ImageView mapRecyclerImageView;
         private File mCurrentPhotoFile;
         private int observerId;
 
-        public PublicationHolder(View itemView) {
+        PublicationHolder(View itemView) {
             super(itemView);
             mapRecyclerImageView = (ImageView) itemView.findViewById(R.id.mapRecyclerImageView);
             mapRecyclerImageView.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +76,7 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
             });
         }
 
-        public void bindPublication(Publication publication){
+        void bindPublication(Publication publication){
             //add photo here
             if(publication.getPhotoURL().equals("")){
                 /** no image saved, display default image */
@@ -120,7 +113,7 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
 
         @Override
         public void onStateChanged(int id, TransferState state) {
-            /** listener for the s3 server download, needs to be adapter wide since it's currently keeps using the same image in different layout */
+            /** listener for the s3 server download, needs to be class wide since it's currently keeps using the same image in different layout */
             // TODO: 09/11/2016 check picasso adapter for the images and using the s3 observer on an adapter scale
             Log.d(TAG,"amazon onStateChanged " + id + " "  + state.toString());
             if(state == TransferState.COMPLETED){
@@ -137,18 +130,14 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
 
         @Override
         public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-
         }
-
         @Override
         public void onError(int id, Exception ex) {
             Log.d(TAG,"amazon onError" + id + " " + ex.toString());
         }
 
-
     }
     public interface OnImageAdapterClickListener{
         void onImageAdapterClicked(LatLng latLng);
     }
-
 }

@@ -20,7 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.firebase.auth.FirebaseAuth;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.GroupMembersRecyclerAdapter;
@@ -29,9 +28,6 @@ import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.services.FoodonetService;
-
-import java.util.ArrayList;
-
 import static android.app.Activity.RESULT_OK;
 import static com.roa.foodonetv3.activities.GroupsActivity.CONTACT_PICKER;
 
@@ -59,6 +55,7 @@ public class AdminGroupFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_admin_group, container, false);
 
+        /** set title */
         getActivity().setTitle(group.getGroupName());
 
         RecyclerView recyclerGroupMembers = (RecyclerView) v.findViewById(R.id.recyclerGroupMembers);
@@ -79,9 +76,6 @@ public class AdminGroupFragment extends Fragment {
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
-//        // TODO: 18/12/2016 test, view a member
-//        ArrayList<GroupMember> members = group.getMembers();
-//        members.add(new GroupMember(-1,-1,"Phone", "Test", true));
         adapter.updateMembers(group.getMembers());
     }
 
@@ -157,6 +151,7 @@ public class AdminGroupFragment extends Fragment {
             /** receiver for reports got from the service */
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             switch (action){
+                /** fab click, add new group member */
                 case ReceiverConstants.ACTION_FAB_CLICK:
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 18/12/2016 add logic if fails
@@ -169,12 +164,13 @@ public class AdminGroupFragment extends Fragment {
                         }
                     }
                     break;
+                /** response from service of adding a new group member */
                 case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 14/12/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        // TODO: 14/12/2016 add logic
+                        // TODO: 14/12/2016 add logic, currently fails with a 404 code
                         Log.d(TAG,"ADDED MEMBER!");
                         Toast.makeText(context, "member added!", Toast.LENGTH_SHORT).show();
                     }

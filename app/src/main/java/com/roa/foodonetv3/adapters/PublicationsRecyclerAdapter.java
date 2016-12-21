@@ -21,7 +21,6 @@ import com.roa.foodonetv3.activities.SplashScreenActivity;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
 import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -29,7 +28,7 @@ import java.util.Locale;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
-    /** recycler adapter for publication */
+    /** recycler adapter for publications */
     private static final String TAG = "PubsRecyclerAdapter";
 
     private Context context;
@@ -41,6 +40,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
 
     public PublicationsRecyclerAdapter(Context context) {
         this.context = context;
+        /** get the S3 utility */
         transferUtility = CommonMethods.getTransferUtility(context);
 //        setHasStableIds(true);
         userLatLng = new LatLng(Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LATITUDE,String.valueOf(LOCATION_NOT_FOUND))),
@@ -54,6 +54,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         notifyDataSetChanged();
     }
 
+    /** filter through the search in the action bar */
     public void filter(String text) {
         filteredPublications.clear();
         if(text.isEmpty()){
@@ -90,7 +91,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         private Publication publication;
         private ImageView imagePublicationGroup;
         private CircleImageView imagePublication;
-        private TextView textPublicationTitle, textPublicationAddressDistance;
+        private TextView textPublicationTitle, textPublicationAddressDistance,textPublicationUsers;
         private File mCurrentPhotoFile;
         private int observerId;
         private int publicationImageSize;
@@ -102,6 +103,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             imagePublicationGroup = (ImageView) itemView.findViewById(R.id.imagePublicationGroup);
             textPublicationTitle = (TextView) itemView.findViewById(R.id.textPublicationTitle);
             textPublicationAddressDistance = (TextView) itemView.findViewById(R.id.textPublicationAddressDistance);
+            textPublicationUsers = (TextView) itemView.findViewById(R.id.textPublicationUsers);
             publicationImageSize = (int)context.getResources().getDimension(R.dimen.image_size_68);
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
@@ -118,6 +120,8 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             } else{
                 textPublicationAddressDistance.setText("");
             }
+            String registeredUsers = String.format(Locale.US,"%1$d %2$s",publication.getRegisteredUsersCount(),context.getResources().getString(R.string.users_joined));
+            textPublicationUsers.setText(registeredUsers);
             //add photo here
             if(publication.getPhotoURL().equals("")){
                 /** no image saved, display default image */
@@ -170,7 +174,6 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         }
         @Override
         public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-//            Log.d(TAG,"amazon onProgressChanged" + id + " " + bytesCurrent+ "/" + bytesTotal);
         }
         @Override
         public void onError(int id, Exception ex) {

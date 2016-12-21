@@ -1,10 +1,7 @@
 package com.roa.foodonetv3.commonMethods;
 
-
 import android.content.Context;
-
 import com.roa.foodonetv3.R;
-
 import java.util.Locale;
 
 public class StartServiceMethods {
@@ -26,6 +23,7 @@ public class StartServiceMethods {
      * get reports - add args[0] = (String) publication id, args[1] = (String) publication version
      * add report - add args[0] = (String) publication id
      * register for publication - add args[0] = (String) publication id
+     * get publication registered users - add args[0] = (String) publication id
      * add group - add args[0] = String group name
      * get groups - add args[0] = (String) user id
      * add group member - add args[0] = (String) group id*/
@@ -72,7 +70,17 @@ public class StartServiceMethods {
             case ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION:
                 builder.append(context.getResources().getString(R.string.foodonet_publications));
                 builder.append(String.format(Locale.US,"/%1$s",args[0]));
-                builder.append(context.getResources().getString(R.string.foodonet_registered_user_for_publication));
+                builder.append(context.getResources().getString(R.string.foodonet_registered_user_for_publications));
+                break;
+            case ReceiverConstants.ACTION_GET_PUBLICATION_REGISTERED_USERS:
+                builder.append(context.getResources().getString(R.string.foodonet_publications));
+                builder.append(String.format(Locale.US,"/%1$s",args[0]));
+                builder.append(context.getResources().getString(R.string.foodonet_registered_user_for_publications));
+                break;
+            case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
+                builder.append(context.getResources().getString(R.string.foodonet_publications));
+                builder.append("/1");
+                builder.append(context.getResources().getString(R.string.foodonet_registered_user_for_publications));
                 break;
             case ReceiverConstants.ACTION_ADD_GROUP:
                 builder.append(context.getResources().getString(R.string.foodonet_groups));
@@ -113,6 +121,10 @@ public class StartServiceMethods {
                 return HTTP_POST;
             case ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION:
                 return HTTP_POST;
+            case ReceiverConstants.ACTION_GET_PUBLICATION_REGISTERED_USERS:
+                return HTTP_GET;
+            case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
+                return HTTP_GET;
             case ReceiverConstants.ACTION_ADD_GROUP:
                 return HTTP_POST;
             case ReceiverConstants.ACTION_GET_GROUPS:

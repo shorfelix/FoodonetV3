@@ -6,8 +6,8 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 public class PublicationReport implements Parcelable {
+    private static final String TAG = "PublicationReport";
 
     public static final String REPORT_KEY = "publication_report";
     private static final String REPORT_PUBLICATION_ID = "publication_id";
@@ -69,6 +69,7 @@ public class PublicationReport implements Parcelable {
         }
     };
 
+    /** creates a json object to be sent to the server */
     public JSONObject getAddReportJson() {
         /** creates a json object from the publication as to be sent to the server */
         JSONObject reportJsonRoot = new JSONObject();
@@ -86,7 +87,7 @@ public class PublicationReport implements Parcelable {
 
             reportJsonRoot.put(REPORT_KEY, reportJson);
         } catch (JSONException e) {
-            Log.e("getPublicationJson", e.getMessage());
+            Log.e(TAG,e.getMessage());
         }
         return reportJsonRoot;
     }
