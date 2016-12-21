@@ -13,13 +13,18 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.animation.DecelerateInterpolator;
 
 public class FabAnimation {
-
+    /** animator method for floating action button */
     public static void animateFAB(Context context, final FloatingActionButton fab, int y, long duration, int imageResource, int color, boolean toHide){
+        /** in order of denying user input during animation, turn the clickable to false */
         fab.setClickable(false);
         if (toHide){
+            /** if there should be no fab visible, just hide it */
             fab.hide();
         } else {
+            /** show the fab first, as it may have been hidden before */
             fab.show();
+
+            /** animation */
             final Bitmap imageBitmap = BitmapFactory.decodeResource(context.getResources(), imageResource);
 
             AnimatorSet animation = new AnimatorSet();
@@ -49,17 +54,15 @@ public class FabAnimation {
             fadeInImageAnimation.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animator) {
+                    /** when this animation starts, it means the fab image is faded out, which means it's the time to change the image to the new one */
                     fab.setImageBitmap(imageBitmap);
                 }
-
                 @Override
                 public void onAnimationEnd(Animator animator) {
                 }
-
                 @Override
                 public void onAnimationCancel(Animator animator) {
                 }
-
                 @Override
                 public void onAnimationRepeat(Animator animator) {
                 }
@@ -69,16 +72,14 @@ public class FabAnimation {
                 @Override
                 public void onAnimationStart(Animator animator) {
                 }
-
                 @Override
                 public void onAnimationEnd(Animator animator) {
+                    /** when the animation set finishes, turn clickable back on */
                     fab.setClickable(true);
                 }
-
                 @Override
                 public void onAnimationCancel(Animator animator) {
                 }
-
                 @Override
                 public void onAnimationRepeat(Animator animator) {
                 }

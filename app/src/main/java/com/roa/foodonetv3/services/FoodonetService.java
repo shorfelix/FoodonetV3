@@ -2,7 +2,6 @@ package com.roa.foodonetv3.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
@@ -25,10 +24,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import javax.net.ssl.HttpsURLConnection;
 
-
+/** main service to communicate with foodonet server */
 public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
+
     private static final int TIMEOUT_TIME = 5000;
+
+    private int responseCode;
 
     public FoodonetService() {
         super("FoodonetService");
@@ -85,8 +87,10 @@ public class FoodonetService extends IntentService {
                     case StartServiceMethods.HTTP_DELETE:
                         connection.setRequestMethod("DELETE");
                         break;
+                    default:
+                        serviceError = true;
                 }
-                int responseCode = connection.getResponseCode();
+                responseCode = connection.getResponseCode();
                 if(responseCode!=HttpsURLConnection.HTTP_OK && responseCode != HttpsURLConnection.HTTP_CREATED){
                     serviceError = true;
                 } else{
@@ -173,7 +177,7 @@ public class FoodonetService extends IntentService {
                             price = publication.getDouble("price");
                             priceDescription = "price_description";
                             publications.add(new Publication(id, version, title, subtitle, address, typeOfCollecting, lat, lng, startingDate, endingDate, contactInfo, isOnAir,
-                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription));
+                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription,0));
                         }
                     }
                     intent.putParcelableArrayListExtra(Publication.PUBLICATION_KEY, publications);
@@ -248,6 +252,16 @@ public class FoodonetService extends IntentService {
                     // TODO: 27/11/2016 update
                     break;
 
+                case ReceiverConstants.ACTION_GET_PUBLICATION_REGISTERED_USERS:
+                    // TODO: 20/12/2016 not tested yet!
+                    JSONArray registeredUsersArray = new JSONArray(responseRoot);
+                    intent.putExtra(Publication.PUBLICATION_COUNT_OF_REGISTER_USERS_KEY,registeredUsersArray.length());
+                    break;
+
+                case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
+                    intent.putExtra(Publication.PUBLICATION_COUNT_OF_REGISTER_USERS_KEY,responseRoot);
+                    break;
+
                 case ReceiverConstants.ACTION_ADD_GROUP:
                     // TODO: 06/12/2016 add logic according to what we receive
                     JSONObject rootAddGroup = new JSONObject(responseRoot);
@@ -290,6 +304,10 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case ReceiverConstants.ACTION_POST_FEEDBACK:
+                    break;
+
+                case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
+                    Log.d(TAG,responseRoot);
                     break;
             }
         } catch (JSONException e){

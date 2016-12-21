@@ -38,11 +38,9 @@ import com.roa.foodonetv3.model.RegistrationPublication;
 import com.roa.foodonetv3.model.PublicationReport;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PublicationDetailFragment extends Fragment implements View.OnClickListener {
@@ -64,9 +62,13 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        /** get the publication from the intent */
         publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
+
+        /** check if the user is the admin of the publication */
         isAdmin = publication != null && publication.getPublisherID() == CommonMethods.getMyUserID(getContext());
         if(isAdmin) {
+            /** if the user is the admin, show the menu for editing, deleting or taking the publication offline */
             setHasOptionsMenu(true);
         }
 
@@ -79,14 +81,16 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_publication_detail, container, false);
 
+        /** set title */
         getActivity().setTitle(publication.getTitle());
 
+        /** set recycler view */
         RecyclerView recyclerPublicationReport = (RecyclerView) v.findViewById(R.id.recyclerPublicationReport);
         recyclerPublicationReport.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new ReportsRecyclerAdapter(getContext());
         recyclerPublicationReport.setAdapter(adapter);
 
-
+        /** set views */
         textCategory = (TextView) v.findViewById(R.id.textCategory);
         textTimeRemaining = (TextView) v.findViewById(R.id.textTimeRemaining);
         textJoined = (TextView) v.findViewById(R.id.textJoined);
@@ -102,6 +106,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         imageActionPublicationReport = (ImageView) v.findViewById(R.id.imageActionPublicationSMS);
         imageActionPublicationPhone = (ImageView) v.findViewById(R.id.imageActionPublicationPhone);
         imageActionPublicationMap = (ImageView) v.findViewById(R.id.imageActionPublicationMap);
+        /** if the user is the admin, don't show the communication buttons */
         if (isAdmin) {
             imageActionPublicationJoin.setVisibility(View.GONE);
             imageActionPublicationReport.setVisibility(View.GONE);
@@ -126,11 +131,15 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         }
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
+
+        // TODO: 21/12/2016 should be from db
         Intent intent = new Intent(getContext(),FoodonetService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_REPORTS);
         String[] args = {String.valueOf(publication.getId()),String.valueOf(publication.getVersion())};
         intent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
         getContext().startService(intent);
+
+        /** initialize the views */
         initViews();
     }
 
@@ -149,6 +158,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         inflater.inflate(R.menu.detail_options,menu);
     }
 
+    /** menu for a publication the user is the admin of */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(!isAdmin)return false;
@@ -182,6 +192,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         return false;
     }
 
+    /** set the views */
     private void initViews(){
         if(publication.getAudience()==0){
             /** audience is public */
@@ -199,7 +210,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 CommonMethods.getTimeDifference(getContext(),CommonMethods.getCurrentTimeSeconds(),Double.parseDouble(publication.getEndingDate())));
         textTimeRemaining.setText(timeRemaining);
         // TODO: 13/11/2016 get number of users who have joined this publication, currently hard coded
-        textJoined.setText(String.format(Locale.US,"%1$s : %2$d",getResources().getString(R.string.joined),5));
+        textJoined.setText(String.format(Locale.US,"%1$s : %2$d",getResources().getString(R.string.joined),publication.getRegisteredUsersCount()));
         textTitlePublication.setText(publication.getTitle());
         textPublicationAddress.setText(publication.getAddress());
         // TODO: 13/11/2016 get rating through reports
@@ -242,10 +253,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
             startActivity(i);
         } else{
             switch (v.getId()){
+                /** join publication */
                 case R.id.imageActionPublicationJoin:
-                    // TODO: 13/11/2016 add join logic
-//                    Snackbar.make(imageActionPublicationJoin,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
-                    // TODO: 27/11/2016 test for registering to publication
+                    // TODO: 21/12/2016 add logic for if the user is already signed to the publication
                     RegistrationPublication registrationPublication = new RegistrationPublication(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
                             CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),user.getDisplayName(),CommonMethods.getMyUserPhone(getContext()),
                             CommonMethods.getMyUserID(getContext()));
@@ -257,9 +267,10 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                     i.putExtra(ReceiverConstants.JSON_TO_SEND,registration);
                     getContext().startService(i);
                     break;
+
+                /** should be for sending SMS, currently used for adding report */
                 case R.id.imageActionPublicationSMS:
-                    // TODO: 14/11/2016 not working! test for adding a report, hard coded
-//                    Snackbar.make(imageActionPublicationReport,"Currently not implemented",Snackbar.LENGTH_LONG).setAction("ACTION",null).show();
+                    // TODO: 14/11/2016 test for adding a report, hard coded
                     long currentTime = (long) CommonMethods.getCurrentTimeSeconds();
                     PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(),3,CommonMethods.getDeviceUUID(getContext()),
                             "","",String.valueOf(currentTime),user.getDisplayName(),
@@ -273,12 +284,16 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                     i.putExtra(ReceiverConstants.JSON_TO_SEND,reportJson);
                     getContext().startService(i);
                     break;
+
+                /** simple intent to put the phone number in the phone's default dialer */
                 case R.id.imageActionPublicationPhone:
                     if (publication.getContactInfo().matches("[0-9]+") && publication.getContactInfo().length() > 2) {
                         i = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" + publication.getContactInfo()));
                         startActivity(i);
                     }
                     break;
+
+                /** intent to open navigation apps */
                 case R.id.imageActionPublicationMap:
                     // TODO: 22/11/2016 fix to allow both waze and google maps to work
                     if(publication.getLat()!=0 && publication.getLng()!= 0){
@@ -302,6 +317,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
             /** receiver for reports got from the service */
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             switch (action){
+                /** got reports */
                 case ReceiverConstants.ACTION_GET_REPORTS:
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 27/11/2016 add logic if fails
@@ -311,24 +327,30 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                         adapter.updateReports(reports);
                     }
                     break;
+
+                /** registered to a publication */
                 case ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION:
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
                         /** registered successfully */
-                        Snackbar.make(imageActionPublicationJoin,getResources().getString(R.string.successfully_registered),Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(imagePicturePublication,getResources().getString(R.string.successfully_registered),Snackbar.LENGTH_LONG).show();
                     }
                     break;
+
+                /** report added */
                 case ReceiverConstants.ACTION_ADD_REPORT:
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
                         /** registered successfully */
-                        Snackbar.make(imageActionPublicationJoin,getResources().getString(R.string.report_added),Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(imagePicturePublication,getResources().getString(R.string.report_added),Snackbar.LENGTH_LONG).show();
                     }
                     break;
+
+                /** publication deleted */
                 case ReceiverConstants.ACTION_DELETE_PUBLICATION:
                     if(alertDialog!=null && alertDialog.isShowing()){
                         alertDialog.dismiss();
@@ -336,6 +358,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 19/12/2016 add logic if fails
                     } else{
+                        // TODO: 21/12/2016 add logic
                         Toast.makeText(context, "Deleted", Toast.LENGTH_SHORT).show();
                     }
                     break;

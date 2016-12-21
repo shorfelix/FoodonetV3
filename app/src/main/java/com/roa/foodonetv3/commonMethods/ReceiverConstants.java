@@ -23,14 +23,19 @@ public class ReceiverConstants {
     public static final int ACTION_ADD_REPORT = 11;
     public static final int ACTION_ADD_USER = 20;
     public static final int ACTION_REGISTER_TO_PUBLICATION = 30;
+    public static final int ACTION_GET_PUBLICATION_REGISTERED_USERS = 31;
+    public static final int ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS = 32;
     public static final int ACTION_ADD_GROUP = 40;
     public static final int ACTION_GET_GROUPS = 41;
     public static final int ACTION_ADD_GROUP_MEMBER = 50;
     public static final int ACTION_POST_FEEDBACK = 60;
+    public static final int ACTION_ACTIVE_DEVICE_NEW_USER = 70;
 
     /** Local types */
     public static final int ACTION_FAB_CLICK = 100;
+
     public static final String FAB_TYPE = "fab_type";
+    public static final String PUBLICATION_REGISTERED_USERS = "publicationRegisteredUsers";
 
     /** Local Extras*/
     public static final int FAB_TYPE_NEW_GROUP_MEMBER = 1;

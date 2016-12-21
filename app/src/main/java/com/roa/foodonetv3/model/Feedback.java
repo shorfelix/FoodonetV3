@@ -3,11 +3,12 @@ package com.roa.foodonetv3.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Feedback implements Parcelable{
+    private static final String TAG = "Feedback";
+
     private static final String FEEDBACK = "feedback";
     private static final String ACTIVE_DEVICE_DEV_UUID = "active_device_dev_uuid";
     private static final String REPORTER_NAME = "reporter_name";
@@ -39,6 +40,7 @@ public class Feedback implements Parcelable{
         }
     };
 
+    /** creates a json object to be sent to the server */
     public JSONObject getFeedbackJson(){
         JSONObject feedbackRoot = new JSONObject();
         JSONObject feedback = new JSONObject();
@@ -49,7 +51,7 @@ public class Feedback implements Parcelable{
 
             feedbackRoot.put(FEEDBACK,feedback);
         } catch (JSONException e) {
-            Log.e("getPublicationJson", e.getMessage());
+            Log.e(TAG,e.getMessage());
         }
         return feedbackRoot;
     }
