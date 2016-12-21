@@ -27,6 +27,7 @@ public class ReceiverConstants {
     public static final int ACTION_GET_GROUPS = 41;
     public static final int ACTION_ADD_GROUP_MEMBER = 50;
     public static final int ACTION_POST_FEEDBACK = 60;
+    public static final int ACTION_ACTIVE_DEVICE_NEW_USER = 70;
 
     /** Local types */
     public static final int ACTION_FAB_CLICK = 100;

@@ -89,6 +89,10 @@ public class StartServiceMethods {
                 builder.append(context.getResources().getString(R.string.foodonet_groups));
                 builder.append(String.format(Locale.US,"/%1$s",args[0]));
                 builder.append(context.getResources().getString(R.string.foodonet_group_members));
+                break;
+            case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
+                builder.append(context.getResources().getString(R.string.foodonet_active_devices));
+                break;
         }
         return builder.toString();
     }
@@ -120,6 +124,8 @@ public class StartServiceMethods {
             case ReceiverConstants.ACTION_POST_FEEDBACK:
                 return HTTP_POST;
             case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
+                return HTTP_POST;
+            case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
                 return HTTP_POST;
         }
         return -1;

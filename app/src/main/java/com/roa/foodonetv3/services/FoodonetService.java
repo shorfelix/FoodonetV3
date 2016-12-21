@@ -30,6 +30,8 @@ public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
     private static final int TIMEOUT_TIME = 5000;
 
+    private int responseCode;
+
     public FoodonetService() {
         super("FoodonetService");
     }
@@ -86,7 +88,7 @@ public class FoodonetService extends IntentService {
                         connection.setRequestMethod("DELETE");
                         break;
                 }
-                int responseCode = connection.getResponseCode();
+                responseCode = connection.getResponseCode();
                 if(responseCode!=HttpsURLConnection.HTTP_OK && responseCode != HttpsURLConnection.HTTP_CREATED){
                     serviceError = true;
                 } else{
@@ -290,6 +292,10 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case ReceiverConstants.ACTION_POST_FEEDBACK:
+                    break;
+
+                case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
+                    Log.d(TAG,responseRoot);
                     break;
             }
         } catch (JSONException e){
