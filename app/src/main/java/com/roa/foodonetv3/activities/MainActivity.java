@@ -23,7 +23,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
@@ -38,10 +37,8 @@ import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.UUID;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -77,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         buttonTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                registerToPushNotification(MainDrawerActivity.this);
+                registerToPushNotification(MainActivity.this);
             }
         });
         /** set the google api ? */
@@ -243,7 +240,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return 3;
         }
     }
-public void registerToPushNotification(Context context){
+
+    /** test - sign to notifications */
+    public void registerToPushNotification(Context context){
     JSONObject activeDeviceRoot = new JSONObject();
     JSONObject activeDevice = new JSONObject();
     try {
@@ -261,7 +260,6 @@ public void registerToPushNotification(Context context){
     intent.putExtra(ReceiverConstants.JSON_TO_SEND,activeDeviceRoot.toString());
     context.startService(intent);
     }
-
 }
 
 

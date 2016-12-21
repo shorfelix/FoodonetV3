@@ -45,7 +45,7 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
     public PublicationHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         LayoutInflater inflater = LayoutInflater.from(context);
-        View v = inflater.inflate(R.layout.map_recycler_adapter, parent, false);
+        View v = inflater.inflate(R.layout.item_map_publication, parent, false);
         return new PublicationHolder(v);
     }
 

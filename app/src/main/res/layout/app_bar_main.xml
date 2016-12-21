@@ -33,7 +33,7 @@
         app:backgroundTint="@color/colorPrimary" />
 
     <Button
-        android:text="Button"
+        android:text="Test Sign in"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/buttonTest"

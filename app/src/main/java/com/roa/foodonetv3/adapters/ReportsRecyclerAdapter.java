@@ -41,9 +41,9 @@ public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecycler
     public ReportsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
         if(viewType == REPORT_VIEW){
-            return new ReportsHolder(inflater.inflate(R.layout.report_list_item,parent,false));
+            return new ReportsHolder(inflater.inflate(R.layout.item_report_list,parent,false));
         } else{
-            return new ReportsHolder(inflater.inflate(R.layout.report_list_spacer,parent,false));
+            return new ReportsHolder(inflater.inflate(R.layout.item_list_spacer,parent,false));
         }
     }
 
