@@ -12,7 +12,7 @@ public class GroupMember implements Parcelable{
 
     public static final String KEY = "members";
     // TODO: 07/12/2016 Group_id with a capital G?!
-    public static final String GROUP_ID = "Group_id";
+    public static final String GROUP_ID = "group_id";
     public static final String USER_ID = "user_id";
     public static final String PHONE_NUMBER = "phone_number";
     public static final String NAME = "name";

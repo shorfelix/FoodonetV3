@@ -121,7 +121,6 @@ public class GroupsOverviewFragment extends Fragment {
                         // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else {
-                        // TODO: 13/12/2016 test, the service is currently not working
                         int groupID = intent.getIntExtra(Group.GROUP,-1);
                         Intent updateIntent = new Intent(getContext(),FoodonetService.class);
                         updateIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_GROUPS);

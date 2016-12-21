@@ -1,5 +1,6 @@
 package com.roa.foodonetv3.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -30,10 +32,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
 import com.roa.foodonetv3.model.User;
+import com.roa.foodonetv3.services.FoodonetService;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.UUID;
 
@@ -47,6 +54,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
     private TabLayout tabs;
     private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
+    private Button buttonTest;
 
 
     @Override
@@ -64,7 +72,13 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             init();
         }
 
-
+        buttonTest = (Button) findViewById(R.id.buttonTest);
+        buttonTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                registerToPushNotification(MainDrawerActivity.this);
+            }
+        });
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
@@ -129,6 +143,7 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
 //        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
+
 
     private void init(){
         /** get the string into a static field or a resource string*/
@@ -230,7 +245,24 @@ public class MainDrawerActivity extends AppCompatActivity implements NavigationV
             return 3;
         }
     }
-
+public void registerToPushNotification(Context context){
+    JSONObject activeDeviceRoot = new JSONObject();
+    JSONObject activeDevice = new JSONObject();
+    try {
+        activeDevice.put("dev_uuid",CommonMethods.getDeviceUUID(context));
+        activeDevice.put("remote_notification_token", activeDevice.NULL);
+        activeDevice.put("is_ios", false);
+        activeDevice.put("last_location_latitude", PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LATITUDE, null));
+        activeDevice.put("last_location_longitude", PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LONGITUDE,null));
+        activeDeviceRoot.put("active_device",activeDevice);
+    } catch (JSONException e) {
+        e.printStackTrace();
+    }
+    Intent intent = new Intent(context, FoodonetService.class);
+    intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER);
+    intent.putExtra(ReceiverConstants.JSON_TO_SEND,activeDeviceRoot.toString());
+    context.startService(intent);
+    }
 
 }
 
