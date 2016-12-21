@@ -13,8 +13,8 @@ public class PublicationReport implements Parcelable {
     private static final String REPORT_PUBLICATION_ID = "publication_id";
     private static final String REPORT_PUBLICATION_VERSION = "publication_version";
     private static final String REPORT_REPORT = "report";
-    private static final String REPORT_DATE_OF_REPORT = "“date_of_report";
-    private static final String REPORT_ACTIVE_DEVICE_DEV_UUID = "“active_device_dev_uuid";
+    private static final String REPORT_DATE_OF_REPORT = "date_of_report";
+    private static final String REPORT_ACTIVE_DEVICE_DEV_UUID = "active_device_dev_uuid";
     private static final String REPORT_USER_NAME = "report_user_name";
     private static final String REPORT_CONTACT_INFO = "report_contact_info";
     private static final String REPORT_RATING = "rating";
