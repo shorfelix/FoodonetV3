@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -95,6 +97,18 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
     public void onPause() {
         super.onPause();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            locationManager.removeUpdates(MapActivity.this);
+        }
+        catch(SecurityException e){
+            Log.e("Location", e.getMessage());
+        }
+
     }
 
     /**
@@ -224,18 +238,43 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-                                    builder.setMessage("Your NETWORK or your GPS seems to be disabled, please turn it on")
-                                            .setPositiveButton("Ok", null);
-                                    AlertDialog dialog = builder.create();
-                                    dialog.show();
-                                }
+                                Context context = MapActivity.this;
+
+                                ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                                NetworkInfo netInfo = cm.getActiveNetworkInfo();
                                 try {
-                                    locationManager.requestLocationUpdates(providerName, 1000, 100, (LocationListener) MapActivity.this);
-                                } catch (SecurityException e) {
-                                    Log.e("Location Timer", e.getMessage());
+                                    if (netInfo != null && netInfo.isConnected()) {
+                                        try {
+                                            locationManager.requestLocationUpdates(providerName, 1000, 100, (LocationListener) MapActivity.this);
+                                        } catch (SecurityException e) {
+                                            Log.e("Location Timer", e.getMessage());
+                                        }
+                                    } else {
+                                        if(!((MapActivity) context).isFinishing())
+                                        {
+                                            //show dialog
+                                            AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                                            builder.setMessage("Your NETWORK or your GPS seems to be disabled, please turn it on")
+                                                    .setPositiveButton("Ok", null);
+                                            AlertDialog dialog = builder.create();
+                                            dialog.show();
+                                        }
+
+                                    }
+                                }catch (NullPointerException e){
+                                    if(!((MapActivity) context).isFinishing())
+                                    {
+                                        //show dialog
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
+                                        builder.setMessage("Your NETWORK or your GPS seems to be disabled, please turn it on")
+                                                .setPositiveButton("Ok", null);
+                                        AlertDialog dialog = builder.create();
+                                        dialog.show();
+                                    }
                                 }
+
+//                                if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+//                                }
                             }
                         });
                     } catch (SecurityException e) {
