@@ -25,7 +25,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.maps.model.LatLng;
@@ -40,7 +39,6 @@ import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -63,9 +61,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
     private FoodonetReceiver receiver;
 
-    /**
-     * The TransferUtility is the primary class for managing transfer to S3
-     */
+    /** The TransferUtility is the primary class for managing transfer to S3 */
     private TransferUtility transferUtility;
 
     public AddEditPublicationFragment() {
@@ -101,6 +97,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
         getActivity().setTitle(R.string.new_share);
 
+        /** set layouts */
         editTextTitleAddPublication = (EditText) v.findViewById(R.id.editTextTitleAddPublication);
         textLocationAddPublication = (TextView) v.findViewById(R.id.textLocationAddPublication);
         textLocationAddPublication.setOnClickListener(this);
@@ -111,8 +108,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         imagePictureAddPublication = (ImageView) v.findViewById(R.id.imagePictureAddPublication);
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-//        /** temporary button to add a test publication to the server */
-//        v.findViewById(R.id.buttonTestAdd).setOnClickListener(this);
         return v;
     }
 
@@ -143,7 +138,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     }
 
     public void loadPublicationIntoViews() {
-        // TODO: 19/11/2016 test
+        // TODO: 19/11/2016 not tested yet
         editTextTitleAddPublication.setText(publication.getTitle());
         textLocationAddPublication.setText(publication.getAddress());
         editTextShareWithAddPublication.setText("currently not working");
@@ -154,16 +149,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-//            case R.id.buttonTestAdd:
-//                /** button for uploading the publication to the server, if an image was taken,
-//                 *  start uploading to the s3 server as well, currently no listener for s3 finished upload*/
-//                uploadPublicationToServer();
-//                if (!mCurrentPhotoPath.equals("")) {
-//                    beginS3Upload("file:" + mCurrentPhotoPath);
-//                } else {
-//                    Toast.makeText(getContext(), "no photo path", Toast.LENGTH_SHORT).show();
-//                }
-//                break;
             case R.id.imageTakePictureAddPublication:
                 AlertDialog.Builder dialog = new AlertDialog.Builder(getContext())
                         .setTitle(R.string.add_image)
@@ -172,7 +157,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                             public void onClick(DialogInterface dialog, int which) {
                                 /** start the popup activity*/
                                 getContext().startActivity(new Intent(getContext(), SplashForCamera.class));
-                                /**wait for the popup activity before start the camera */
+                                /**wait for the popup activity before starting the camera */
                                 Thread thread = new Thread() {
                                     @Override
                                     public void run() {
@@ -194,6 +179,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                         .setNegativeButton(R.string.gallery, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                /** get image from gallery */
                                 dispatchPickPictureIntent();
                             }
                         });
@@ -233,6 +219,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         }
     }
 
+    /** get image from gallery app installed */
     private void dispatchPickPictureIntent() {
         Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
         getIntent.setType("image/*");
@@ -261,10 +248,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
 
+                /** an image was successfully taken, since we have the path already,
+                 *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
+                 *  returns true if successful*/
                 case INTENT_TAKE_PICTURE:
-                    /** an image was successfully taken, since we have the path already,
-                     *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
-                     *  returns true if successful*/
                     if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath)) {
                         /** let picasso handle the caching and scaling to the imageView */
                         Picasso.with(getContext())
@@ -274,10 +261,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                                 .into(imagePictureAddPublication);
                     }
                     break;
+                /** an image was successfully picked, since we have the path already,
+                 *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
+                 *  returns true if successful*/
                 case INTENT_PICK_PICTURE:
-                    /** an image was successfully picked, since we have the path already,
-                     *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
-                     *  returns true if successful*/
                     Uri uri = data.getData();
 
                     try {
@@ -323,7 +310,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     }
 
     public void savePlaces(String address, LatLng latLng){
-//        String address = place.getAddress().toString();
         SharedPreferences.Editor editor = preferences.edit();
                 editor.putFloat("lat"+savePrefCount, (float) latLng.latitude);
                 editor.putFloat("long"+savePrefCount, (float) latLng.longitude);
@@ -374,10 +360,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                 }
             }
 
-            // TODO: 08/11/2016 repair starting time and ending time. also currently some fields are hard coded for testing
+            // TODO: 08/11/2016 currently some fields are hard coded for testing
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, latlng.latitude, latlng.longitude,
-                    String.valueOf(startingDate), String.valueOf(endingDate),
-                    contactInfo, true, CommonMethods.getDeviceUUID(getContext()), CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "");
+                    String.valueOf(startingDate), String.valueOf(endingDate), contactInfo, true, CommonMethods.getDeviceUUID(getContext()),
+                    CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "",0);
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
             Intent i = new Intent(getContext(), FoodonetService.class);
             i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_PUBLICATION);

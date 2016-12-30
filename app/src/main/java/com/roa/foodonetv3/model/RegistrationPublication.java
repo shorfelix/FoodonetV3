@@ -1,7 +1,6 @@
 package com.roa.foodonetv3.model;
 
 import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,6 +32,7 @@ public class RegistrationPublication {
         this.collectorUserID = collectorUserID;
     }
 
+    /** creates a json object to be sent to the server */
     public JSONObject getJsonForRegistration(){
         JSONObject root = new JSONObject();
         JSONObject registration = new JSONObject();

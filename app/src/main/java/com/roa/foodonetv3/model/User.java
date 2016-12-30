@@ -31,6 +31,7 @@ public class User {
         this.activeDeviceDevUuid = activeDeviceDevUuid;
     }
 
+    /** creates a json object to be sent to the server */
     public JSONObject getUserJson(){
         JSONObject userJsonRoot = new JSONObject();
         JSONObject userJson = new JSONObject();
@@ -46,7 +47,7 @@ public class User {
 
             userJsonRoot.put(USER_KEY,userJson);
         } catch (JSONException e) {
-            Log.e("getPublicationJson", e.getMessage());
+            Log.e(TAG,e.getMessage());
         }
         return userJsonRoot;
     }

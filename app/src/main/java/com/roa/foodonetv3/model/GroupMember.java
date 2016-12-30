@@ -3,7 +3,6 @@ package com.roa.foodonetv3.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,7 +10,6 @@ public class GroupMember implements Parcelable{
     private static final String TAG = "GroupMember";
 
     public static final String KEY = "members";
-    // TODO: 07/12/2016 Group_id with a capital G?!
     public static final String GROUP_ID = "group_id";
     public static final String USER_ID = "user_id";
     public static final String PHONE_NUMBER = "phone_number";
@@ -50,6 +48,7 @@ public class GroupMember implements Parcelable{
         }
     };
 
+    /** creates a json object to be sent to the server */
     public JSONObject getAddMemberJson(){
         JSONObject member = new JSONObject();
         try {
