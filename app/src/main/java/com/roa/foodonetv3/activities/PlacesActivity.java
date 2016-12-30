@@ -12,7 +12,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -20,8 +19,6 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.fragments.AddEditPublicationFragment;
-
 import java.util.ArrayList;
 
 public class PlacesActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
