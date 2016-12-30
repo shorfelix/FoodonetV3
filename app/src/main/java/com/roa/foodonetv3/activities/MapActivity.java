@@ -99,17 +99,6 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        try {
-            locationManager.removeUpdates(MapActivity.this);
-        }
-        catch(SecurityException e){
-            Log.e("Location", e.getMessage());
-        }
-
-    }
 
     /**
      * Manipulates the map once available.
