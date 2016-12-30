@@ -272,9 +272,6 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
                                         dialog.show();
                                     }
                                 }
-
-//                                if(!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-//                                }
                             }
                         });
                     } catch (SecurityException e) {
