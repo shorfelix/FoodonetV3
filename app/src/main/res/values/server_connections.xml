@@ -17,8 +17,9 @@
     <string name="foodonet_publication_reports">/publication_reports.json</string>
     <string name="foodonet_feedback">/feedbacks</string>
     <string name="foodonet_groups">/groups</string>
-    <string name="foodonet_registered_user_for_publication">/registered_user_for_publications.json</string>
+    <string name="foodonet_registered_user_for_publications">/registered_user_for_publications.json</string>
     <string name="foodonet_users">/users</string>
+    <string name="foodonet_active_devices">/active_devices.json</string>
     <string name=".json">.json</string>
 
     <string name="amazon_bucket">foodonet</string>

@@ -77,12 +77,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
 //            Log.e("Location", e.getMessage());
 //        }
 
-
-
-
-
     }
-
     @Override
     public void onResume() {
         super.onResume();
