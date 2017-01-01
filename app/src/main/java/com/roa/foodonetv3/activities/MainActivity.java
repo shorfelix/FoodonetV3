@@ -85,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
 
+
+        // TODO: 01/01/2017 remove the notification token generator to initializes place
         /** generate notification token to register the device to get notification*/
         String token = preferenceManager.getString("notification_token",null);
         if (token == null) {
