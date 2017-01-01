@@ -27,6 +27,8 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -83,6 +85,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
 
+        /** generate notification token to register the device to get notification*/
+        String token = preferenceManager.getString("notification_token",null);
+        if (token == null) {
+            generateNotificationToken();
+        }
 
         /** set the drawer */
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -243,11 +250,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /** test - sign to notifications */
     public void registerToPushNotification(Context context){
+
+
     JSONObject activeDeviceRoot = new JSONObject();
     JSONObject activeDevice = new JSONObject();
     try {
+        String token = preferenceManager.getString("notification_token", null);
         activeDevice.put("dev_uuid",CommonMethods.getDeviceUUID(context));
-        activeDevice.put("remote_notification_token", activeDevice.NULL);
+        if (token== null) {
+            activeDevice.put("remote_notification_token", activeDevice.NULL);
+        }else {
+            activeDevice.put("remote_notification_token", token);
+        }
         activeDevice.put("is_ios", false);
         activeDevice.put("last_location_latitude", PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LATITUDE, null));
         activeDevice.put("last_location_longitude", PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LONGITUDE,null));
@@ -259,6 +273,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER);
     intent.putExtra(ReceiverConstants.JSON_TO_SEND,activeDeviceRoot.toString());
     context.startService(intent);
+    }
+
+    public void generateNotificationToken(){
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                try {
+                    InstanceID instanceID = InstanceID.getInstance(MainActivity.this);
+                    String token;
+
+                    token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
+                            GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+                    SharedPreferences.Editor editor = preferenceManager.edit();
+                    editor.putString("notification_token", token);
+                    editor.apply();
+
+                    Log.i(TAG, "GCM Registration Token: " + token);
+
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to complete token refresh " + e.getMessage(), e);
+                }
+            }
+        };
+        t.start();
     }
 }
 
