@@ -17,7 +17,6 @@ import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,7 +29,6 @@ import com.roa.foodonetv3.fragments.AddEditPublicationFragment;
 import com.roa.foodonetv3.fragments.MyPublicationsFragment;
 import com.roa.foodonetv3.fragments.PublicationDetailFragment;
 import com.roa.foodonetv3.model.Publication;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
@@ -57,6 +55,15 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
+        /** set the fragment manager */
+        fragmentManager = getSupportFragmentManager();
+
+        /** set the floating action button */
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(this);
+
+        /** set the drawer */
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -65,23 +72,11 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        Intent intent = getIntent();
-        String openFragType = intent.getStringExtra(ACTION_OPEN_PUBLICATION);
-
-        fragmentManager = getSupportFragmentManager();
-
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);
-
-        // Initialize Firebase Auth
         FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
         FirebaseUser mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        //set header imageView
         View hView = navigationView.getHeaderView(0);
         CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
         TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
-
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
             headerTxt.setText(mFirebaseUser.getDisplayName());
@@ -89,6 +84,9 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
             circleImageView.setImageResource(R.drawable.foodonet_image);
         }
 
+        /** get which fragment should be open from the intent, and open it */
+        Intent intent = getIntent();
+        String openFragType = intent.getStringExtra(ACTION_OPEN_PUBLICATION);
         if(savedInstanceState==null){
             openNewPublicationFrag(openFragType);
         }
@@ -114,20 +112,28 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
     }
 
     private void openNewPublicationFrag(String openFragType){
-        long duration = CommonConstants.FAB_ANIM_DURATION;
+        /** get the values for the fab animation */
+        long duration;
         if(currentFrag==null){
             /** if this is the first frag - don't make a long animation */
             duration = 1;
+        } else{
+            duration = CommonConstants.FAB_ANIM_DURATION;
         }
-        currentFrag = openFragType;
-        Publication publication;
-        Bundle bundle;
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         int width = size.x;
         int height = size.y;
         final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + CommonConstants.FAB_SIZE*2);
+
+        /** set the current frag to be the new one */
+        currentFrag = openFragType;
+
+        Publication publication;
+        Bundle bundle;
+
+        /** replace the fragment and animate the fab accordingly */
         switch (openFragType){
             case ADD_PUBLICATION_TAG:
                 AddEditPublicationFragment addPublicationFragment = new AddEditPublicationFragment();
@@ -170,6 +176,8 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 if(currentFrag!= null){
                     switch (currentFrag){
                         case ADD_PUBLICATION_TAG:
+                            /** clicked on save (the new publication)
+                             * send the new publication to the server */
                             Intent fabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
                             fabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_FAB_CLICK);
                             fabClickIntent.putExtra(ReceiverConstants.SERVICE_ERROR,false);
@@ -177,6 +185,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                             LocalBroadcastManager.getInstance(this).sendBroadcast(fabClickIntent);
                             break;
                         case MY_PUBLICATIONS_TAG:
+                            /** clicked on create new publication */
                             // TODO: 18/12/2016 currently instantiating another activity just for the back press
                             Intent newAddPublicationIntent = new Intent(this,PublicationActivity.class);
                             newAddPublicationIntent.putExtra(ACTION_OPEN_PUBLICATION,ADD_PUBLICATION_TAG);

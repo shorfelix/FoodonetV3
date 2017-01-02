@@ -3,11 +3,9 @@ package com.roa.foodonetv3.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 
 public class Group implements Parcelable {
@@ -15,7 +13,6 @@ public class Group implements Parcelable {
 
     public static final String KEY = "group";
     public static final String GROUP_MEMBERS = "group_members";
-
     public static final String GROUP = "group";
     public static final String ADD_GROUP_NAME = "name";
     public static final String USER_ID = "user_id";
@@ -56,6 +53,7 @@ public class Group implements Parcelable {
         members.add(member);
     }
 
+    /** creates a json object to be sent to the server */
     public JSONObject getAddGroupJson(){
         JSONObject groupRoot = new JSONObject();
         JSONObject group = new JSONObject();
@@ -70,6 +68,7 @@ public class Group implements Parcelable {
         return groupRoot;
     }
 
+    /** creates a json object to be sent to the server */
     public JSONObject getAddGroupMembersJson(){
         ArrayList<GroupMember> members = getMembers();
         JSONObject groupMembersRoot = new JSONObject();

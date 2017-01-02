@@ -19,7 +19,7 @@ public class ContactUsDialog extends Dialog implements View.OnClickListener {
 
     public ContactUsDialog(Context context) {
         super(context);
-        setContentView(R.layout.contact_us_dialog);
+        setContentView(R.layout.dialog_contact_us);
         this.context = context;
         contactEditText = (EditText) findViewById(R.id.contactEditText);
         setTitle(context.getResources().getString(R.string.feedback_feedback));
