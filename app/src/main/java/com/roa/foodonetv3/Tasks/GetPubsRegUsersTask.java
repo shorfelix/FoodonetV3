@@ -33,7 +33,7 @@ public class GetPubsRegUsersTask extends AsyncTask<Void,Void,ArrayList<Publicati
                 for(int j = 0; j < publications.size(); j++){
                     publication = publications.get(j);
                     if(publication.getId()==publicationID){
-                        publication.addToRegisteredCount();
+                        publication.addToRegisteredUsers(registeredUser.getInt("collector_user_id"));
                     }
                 }
             }

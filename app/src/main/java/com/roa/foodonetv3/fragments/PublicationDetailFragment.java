@@ -52,6 +52,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     private ReportsRecyclerAdapter adapter;
     private FoodonetReceiver receiver;
     private boolean isAdmin;
+    private boolean isRegistered;
     private AlertDialog alertDialog;
 
     public PublicationDetailFragment() {
@@ -62,14 +63,20 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        /** get the user's ID */
+        int userID = CommonMethods.getMyUserID(getContext());
+
         /** get the publication from the intent */
         publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
 
         /** check if the user is the admin of the publication */
-        isAdmin = publication != null && publication.getPublisherID() == CommonMethods.getMyUserID(getContext());
+        isAdmin = publication != null && publication.getPublisherID() == userID;
         if(isAdmin) {
             /** if the user is the admin, show the menu for editing, deleting or taking the publication offline */
             setHasOptionsMenu(true);
+        } else{
+            /** the user is not the admin, check if he's a registered user for the publication */
+            isRegistered = publication.getRegisteredUsers().contains(userID);
         }
 
         receiver = new FoodonetReceiver();
@@ -209,7 +216,6 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         String timeRemaining = String.format(Locale.US, "%1$s",
                 CommonMethods.getTimeDifference(getContext(),CommonMethods.getCurrentTimeSeconds(),Double.parseDouble(publication.getEndingDate())));
         textTimeRemaining.setText(timeRemaining);
-        // TODO: 13/11/2016 get number of users who have joined this publication, currently hard coded
         textJoined.setText(String.format(Locale.US,"%1$s : %2$d",getResources().getString(R.string.joined),publication.getRegisteredUsersCount()));
         textTitlePublication.setText(publication.getTitle());
         textPublicationAddress.setText(publication.getAddress());

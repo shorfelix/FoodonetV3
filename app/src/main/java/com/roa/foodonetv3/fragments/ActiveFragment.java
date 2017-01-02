@@ -117,7 +117,7 @@ public class ActiveFragment extends Fragment implements GetPubsRegUsersTask.OnGe
     @Override
     public void onGetRegisteredUsers(ArrayList<Publication> publications) {
         this.publications = publications;
-        adapter.updatePublications(publications);
+        adapter.updatePublications(this.publications);
     }
 
     private class FoodonetReceiver extends BroadcastReceiver{

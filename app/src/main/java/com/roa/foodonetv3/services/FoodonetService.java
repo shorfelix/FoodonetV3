@@ -177,7 +177,7 @@ public class FoodonetService extends IntentService {
                             price = publication.getDouble("price");
                             priceDescription = "price_description";
                             publications.add(new Publication(id, version, title, subtitle, address, typeOfCollecting, lat, lng, startingDate, endingDate, contactInfo, isOnAir,
-                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription,0));
+                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription,null));
                         }
                     }
                     intent.putParcelableArrayListExtra(Publication.PUBLICATION_KEY, publications);

@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <LinearLayout
@@ -123,10 +121,11 @@
         android:layout_height="50dp"
         android:src="@drawable/camera_xxh"
         android:id="@+id/imagePublisherUser"
-        android:layout_below="@+id/textTitlePublication"
+        android:layout_below="@id/textTitlePublication"
         android:layout_marginStart="@dimen/margin_16"
         android:layout_marginLeft="@dimen/margin_16"
-        android:layout_marginTop="@dimen/margin_8" />
+        android:layout_marginTop="@dimen/margin_8"
+        />
 
     <TextView
         android:text="Tel Aviv, Zhabotinski 48"
@@ -182,10 +181,10 @@
         android:text="@string/item_price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/imagePublisherUser"
+        android:layout_below="@+id/imageStar"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/text1"
+        android:id="@+id/textGroupName"
         style="@style/FooBlackSmall"
         android:layout_marginLeft="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16" />
@@ -194,9 +193,9 @@
         android:text="Free"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/text1"
-        android:layout_toRightOf="@+id/text1"
-        android:layout_toEndOf="@+id/text1"
+        android:layout_alignBottom="@+id/textGroupName"
+        android:layout_toRightOf="@+id/textGroupName"
+        android:layout_toEndOf="@+id/textGroupName"
         android:id="@+id/textPublicationPrice"
         style="@style/FooBlueIndentMedium"
         android:layout_marginLeft="@dimen/margin_8"
@@ -206,7 +205,7 @@
         android:text="Lorem ipsum dolor sit amet, conserctetur adipiscing elit."
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/text1"
+        android:layout_below="@+id/textGroupName"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:id="@+id/textPublicationDetails"
@@ -225,7 +224,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        >
+        android:background="?attr/colorPrimary">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -6,11 +6,13 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 public class Publication implements Parcelable {
     private static final String TAG = "Publication";
 
     public static final String PUBLICATION_KEY = "publication";
-    public static final String PUBLICATION_COUNT_OF_REGISTER_USERS_KEY = "pulbicationCountOfRegisteredUsersKey";
+    public static final String PUBLICATION_COUNT_OF_REGISTER_USERS_KEY = "publicationCountOfRegisteredUsersKey";
 
     private static final String PUBLICATION_PUBLISHER_UUID_KEY = "active_device_dev_uuid";
     private static final String PUBLICATION_TITLE_KEY = "title";
@@ -31,7 +33,8 @@ public class Publication implements Parcelable {
     private static final String PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY = "publisher_user_name";
 
     private long id;
-    private int version, publisherID, audience, registeredUsersCount;
+    private int version, publisherID, audience;
+    private ArrayList<Integer> registeredUsers;
     private String title,subtitle,address,startingDate,endingDate,contactInfo,activeDeviceDevUUID,photoURL,identityProviderUserName,priceDescription;
     private short typeOfCollecting;
     private double lat, lng, price;
@@ -43,7 +46,7 @@ public class Publication implements Parcelable {
     public Publication(long id, int version, String title, String subtitle, String address, short typeOfCollecting,
                        double lat, double lng, String startingDate, String endingDate, String contactInfo, boolean isOnAir,
                        String activeDeviceDevUUID, String photoURL, int publisherID, int audience, String identityProviderUserName,
-                       double price, String priceDescription, int registeredUsersCount) {
+                       double price, String priceDescription, ArrayList<Integer> registeredUsers) {
         this.id = id;
         this.version = version;
         this.title = title;
@@ -63,7 +66,7 @@ public class Publication implements Parcelable {
         this.identityProviderUserName = identityProviderUserName;
         this.price = price;
         this.priceDescription = priceDescription;
-        this.registeredUsersCount = registeredUsersCount;
+        this.registeredUsers = registeredUsers;
 
     }
 
@@ -72,7 +75,6 @@ public class Publication implements Parcelable {
         version = in.readInt();
         publisherID = in.readInt();
         audience = in.readInt();
-        registeredUsersCount = in.readInt();
         title = in.readString();
         subtitle = in.readString();
         address = in.readString();
@@ -87,6 +89,7 @@ public class Publication implements Parcelable {
         lng = in.readDouble();
         price = in.readDouble();
         isOnAir = in.readByte() != 0;
+        registeredUsers = (ArrayList<Integer>) in.readSerializable();
     }
 
     public static final Creator<Publication> CREATOR = new Creator<Publication>() {
@@ -131,8 +134,19 @@ public class Publication implements Parcelable {
         return publicationJsonRoot;
     }
 
-    public void addToRegisteredCount(){
-        registeredUsersCount++;
+    public int getRegisteredUsersCount(){
+        if(registeredUsers== null){
+            return 0;
+        } else{
+            return registeredUsers.size();
+        }
+    }
+
+    public void addToRegisteredUsers(int registeredUserID){
+        if(registeredUsers==null){
+            registeredUsers = new ArrayList<>();
+        }
+        registeredUsers.add(registeredUserID);
     }
 
     public long getId() {
@@ -287,12 +301,15 @@ public class Publication implements Parcelable {
         this.priceDescription = priceDescription;
     }
 
-    public int getRegisteredUsersCount() {
-        return registeredUsersCount;
+    public ArrayList<Integer> getRegisteredUsers() {
+        if(registeredUsers == null){
+            registeredUsers = new ArrayList<>();
+        }
+        return registeredUsers;
     }
 
-    public void setRegisteredUsersCount(int registeredUsersCount) {
-        this.registeredUsersCount = registeredUsersCount;
+    public void setRegisteredUsers(ArrayList<Integer> registeredUsers) {
+        this.registeredUsers = registeredUsers;
     }
 
     @Override
@@ -306,7 +323,6 @@ public class Publication implements Parcelable {
         parcel.writeInt(version);
         parcel.writeInt(publisherID);
         parcel.writeInt(audience);
-        parcel.writeInt(registeredUsersCount);
         parcel.writeString(title);
         parcel.writeString(subtitle);
         parcel.writeString(address);
@@ -321,6 +337,7 @@ public class Publication implements Parcelable {
         parcel.writeDouble(lng);
         parcel.writeDouble(price);
         parcel.writeByte((byte) (isOnAir ? 1 : 0));
+        parcel.writeSerializable(registeredUsers);
     }
 }
 

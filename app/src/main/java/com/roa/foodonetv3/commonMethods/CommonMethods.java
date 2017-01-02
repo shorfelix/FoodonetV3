@@ -109,31 +109,40 @@ public class CommonMethods {
         }
     }
 
+    /** returns current epoch time in seconds(NOT MILLIS!) */
     public static double getCurrentTimeSeconds() {
-        /** returns current epoch time in seconds(NOT MILLIS!) */
         long currentTime = System.currentTimeMillis()/1000;
         return currentTime;
     }
 
+    /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the duration */
     public static String getTimeDifference(Context context, Double earlierTime, Double laterTime) {
-        /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the duration */
         long timeDiff = (long) (laterTime - earlierTime) / 60; // minutes as start
-        String typeOfTime;
+        StringBuilder message = new StringBuilder();
         if (timeDiff < 0) {
             return "N/A";
-        } else if (timeDiff < 120) {
-            /** returns time in minutes */
-            typeOfTime = context.getResources().getString(R.string.minutes);
-        } else if (timeDiff / 60 < 48) {
-            /** returns time in hours */
-            typeOfTime = context.getResources().getString(R.string.hours);
-            timeDiff /= 60;
+        } else if(timeDiff < 1440){
+            /** hours, minutes */
+            if(timeDiff /60 != 0){
+                message.append(String.format(Locale.US,"%1$d%2$s ", timeDiff / 60 , context.getResources().getString(R.string.h_hours)));
+            }
+            message.append(String.format(Locale.US,"%1$d%2$s", timeDiff % 60, context.getResources().getString(R.string.min_minutes)));
         } else {
-            /** returns time in days */
-            typeOfTime = context.getResources().getString(R.string.days);
-            timeDiff /= 60 / 24;
+            /** days, hours */
+            long days = timeDiff / 1440;
+            String daysString;
+            if (days == 1) {
+                daysString = context.getResources().getString(R.string.day);
+            } else {
+                daysString = context.getResources().getString(R.string.days);
+            }
+            message.append(String.format(Locale.US, "%1$d %2$s ", days, daysString));
+            if (timeDiff < 10080) {
+                /** only add hours if the difference is less than a week, otherwise just show days */
+                message.append(String.format(Locale.US, "%1$d%2$s", (timeDiff % 1440) / 60, context.getResources().getString(R.string.h_hours)));
+            }
         }
-        return String.format(Locale.US, "%1$d %2$s", timeDiff, typeOfTime);
+        return message.toString();
     }
 
     public static String getReportStringFromType(Context context, int typeOfReport) {

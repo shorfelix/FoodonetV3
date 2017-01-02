@@ -17,12 +17,18 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
@@ -34,6 +40,7 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PlacesActivity;
 import com.roa.foodonetv3.activities.SplashForCamera;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.DecimalDigitsInputFilter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.User;
@@ -41,6 +48,7 @@ import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 
 public class AddEditPublicationFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "AddEditPublicationFrag";
@@ -48,7 +56,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private static final int INTENT_PICK_PICTURE = 3;
     public static final int TYPE_NEW_PUBLICATION = 1;
     public static final int TYPE_EDIT_PUBLICATION = 2;
-    private EditText editTextTitleAddPublication, editTextPriceAddPublication, editTextShareWithAddPublication, editTextDetailsAddPublication;
+    private EditText editTextTitleAddPublication, editTextPriceAddPublication, editTextDetailsAddPublication;
+    private Spinner spinnerShareWith;
     private TextView textLocationAddPublication;
     private long endingDate;
     private String mCurrentPhotoPath;
@@ -58,6 +67,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private boolean isEdit;
     private static int savePrefCount = 0;
     private SharedPreferences preferences;
+    private String[] groups;
 
     private FoodonetReceiver receiver;
 
@@ -77,6 +87,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         mCurrentPhotoPath = "";
 
         isEdit = getArguments().getInt(TAG, TYPE_NEW_PUBLICATION) != TYPE_NEW_PUBLICATION;
+
+        // TODO: 29/12/2016 when user's groups will be available in db, load them here
+        groups = new String[]{"public","test"};
+
         if (isEdit) {
             /** if there's a publication in the intent - it is an edit of an existing publication */
             if (savedInstanceState == null) {
@@ -101,9 +115,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         editTextTitleAddPublication = (EditText) v.findViewById(R.id.editTextTitleAddPublication);
         textLocationAddPublication = (TextView) v.findViewById(R.id.textLocationAddPublication);
         textLocationAddPublication.setOnClickListener(this);
-        editTextShareWithAddPublication = (EditText) v.findViewById(R.id.editTextShareWithAddPublication);
+        spinnerShareWith = (Spinner) v.findViewById(R.id.spinnerShareWith);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(getContext(),R.layout.item_spinner_groups,R.id.textGroupName,groups);
+        spinnerShareWith.setAdapter(spinnerAdapter);
         editTextDetailsAddPublication = (EditText) v.findViewById(R.id.editTextDetailsAddPublication);
         editTextPriceAddPublication = (EditText) v.findViewById(R.id.editTextPriceAddPublication);
+        editTextPriceAddPublication.setFilters(new InputFilter[] {new DecimalDigitsInputFilter(5,2)});
         v.findViewById(R.id.imageTakePictureAddPublication).setOnClickListener(this);
         imagePictureAddPublication = (ImageView) v.findViewById(R.id.imagePictureAddPublication);
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -141,7 +158,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         // TODO: 19/11/2016 not tested yet
         editTextTitleAddPublication.setText(publication.getTitle());
         textLocationAddPublication.setText(publication.getAddress());
-        editTextShareWithAddPublication.setText("currently not working");
+        // TODO: 29/12/2016 add logic to spinner?
+//        spinnerShareWith.set
         editTextDetailsAddPublication.setText(publication.getSubtitle());
         editTextPriceAddPublication.setText(String.valueOf(publication.getPrice()));
     }
@@ -330,7 +348,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         String title = editTextTitleAddPublication.getText().toString();
         String location = textLocationAddPublication.getText().toString();
         String priceS = editTextPriceAddPublication.getText().toString();
-        String shareWith = editTextShareWithAddPublication.getText().toString();
+//        String shareWith = editTextShareWithAddPublication.getText().toString();
         String details = editTextDetailsAddPublication.getText().toString();
         /** currently starting time is now */
         long startingDate = System.currentTimeMillis()/1000;
@@ -344,7 +362,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         } else {
             localPublicationID = publication.getId();
         }
-        if (title.equals("") || location.equals("") || shareWith.equals("") || latlng == null) {
+        if (title.equals("") || location.equals("") || latlng == null) {
             Toast.makeText(getContext(), R.string.post_please_enter_all_fields, Toast.LENGTH_SHORT).show();
         } else {
             double price;
@@ -363,7 +381,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             // TODO: 08/11/2016 currently some fields are hard coded for testing
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, latlng.latitude, latlng.longitude,
                     String.valueOf(startingDate), String.valueOf(endingDate), contactInfo, true, CommonMethods.getDeviceUUID(getContext()),
-                    CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "",0);
+                    CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "",null);
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
             Intent i = new Intent(getContext(), FoodonetService.class);
             i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_PUBLICATION);
@@ -423,4 +441,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             }
         }
     }
+
+
 }
