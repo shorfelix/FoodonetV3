@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         edit.putBoolean("initialized",true);
         String deviceUUID = UUID.randomUUID().toString();
         edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
-        Log.v("Got new device UUID",deviceUUID);
+        Log.d("Got new device UUID",deviceUUID);
     }
 
     @Override

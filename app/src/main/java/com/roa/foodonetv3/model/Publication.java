@@ -32,9 +32,9 @@ public class Publication implements Parcelable {
     private static final String PUBLICATION_AUDIENCE_KEY = "audience";
     private static final String PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY = "publisher_user_name";
 
-    private long id;
-    private int version, publisherID, audience;
-    private ArrayList<Integer> registeredUsers;
+    private long id, publisherID;
+    private int version, audience;
+    private ArrayList<Long> registeredUsers;
     private String title,subtitle,address,startingDate,endingDate,contactInfo,activeDeviceDevUUID,photoURL,identityProviderUserName,priceDescription;
     private short typeOfCollecting;
     private double lat, lng, price;
@@ -45,8 +45,8 @@ public class Publication implements Parcelable {
 
     public Publication(long id, int version, String title, String subtitle, String address, short typeOfCollecting,
                        double lat, double lng, String startingDate, String endingDate, String contactInfo, boolean isOnAir,
-                       String activeDeviceDevUUID, String photoURL, int publisherID, int audience, String identityProviderUserName,
-                       double price, String priceDescription, ArrayList<Integer> registeredUsers) {
+                       String activeDeviceDevUUID, String photoURL, long publisherID, int audience, String identityProviderUserName,
+                       double price, String priceDescription, ArrayList<Long> registeredUsers) {
         this.id = id;
         this.version = version;
         this.title = title;
@@ -73,7 +73,7 @@ public class Publication implements Parcelable {
     protected Publication(Parcel in) {
         id = in.readLong();
         version = in.readInt();
-        publisherID = in.readInt();
+        publisherID = in.readLong();
         audience = in.readInt();
         title = in.readString();
         subtitle = in.readString();
@@ -89,7 +89,7 @@ public class Publication implements Parcelable {
         lng = in.readDouble();
         price = in.readDouble();
         isOnAir = in.readByte() != 0;
-        registeredUsers = (ArrayList<Integer>) in.readSerializable();
+        registeredUsers = (ArrayList<Long>) in.readSerializable();
     }
 
     public static final Creator<Publication> CREATOR = new Creator<Publication>() {
@@ -142,7 +142,7 @@ public class Publication implements Parcelable {
         }
     }
 
-    public void addToRegisteredUsers(int registeredUserID){
+    public void addToRegisteredUsers(long registeredUserID){
         if(registeredUsers==null){
             registeredUsers = new ArrayList<>();
         }
@@ -261,11 +261,11 @@ public class Publication implements Parcelable {
         this.photoURL = photoURL;
     }
 
-    public int getPublisherID() {
+    public long getPublisherID() {
         return publisherID;
     }
 
-    public void setPublisherID(int publisherID) {
+    public void setPublisherID(long publisherID) {
         this.publisherID = publisherID;
     }
 
@@ -301,14 +301,14 @@ public class Publication implements Parcelable {
         this.priceDescription = priceDescription;
     }
 
-    public ArrayList<Integer> getRegisteredUsers() {
+    public ArrayList<Long> getRegisteredUsers() {
         if(registeredUsers == null){
             registeredUsers = new ArrayList<>();
         }
         return registeredUsers;
     }
 
-    public void setRegisteredUsers(ArrayList<Integer> registeredUsers) {
+    public void setRegisteredUsers(ArrayList<Long> registeredUsers) {
         this.registeredUsers = registeredUsers;
     }
 
@@ -321,7 +321,7 @@ public class Publication implements Parcelable {
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeLong(id);
         parcel.writeInt(version);
-        parcel.writeInt(publisherID);
+        parcel.writeLong(publisherID);
         parcel.writeInt(audience);
         parcel.writeString(title);
         parcel.writeString(subtitle);

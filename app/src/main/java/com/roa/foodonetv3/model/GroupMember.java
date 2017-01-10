@@ -16,11 +16,11 @@ public class GroupMember implements Parcelable{
     public static final String NAME = "name";
     public static final String IS_ADMIN = "is_admin";
 
-    private int groupID, userID;
+    private long groupID, userID;
     private String name, phoneNumber;
     private boolean isAdmin;
 
-    public GroupMember(int groupID, int userID, String phoneNumber, String name, boolean isAdmin) {
+    public GroupMember(long groupID, long userID, String phoneNumber, String name, boolean isAdmin) {
         this.groupID = groupID;
         this.userID = userID;
         this.phoneNumber = phoneNumber;
@@ -29,8 +29,8 @@ public class GroupMember implements Parcelable{
     }
 
     protected GroupMember(Parcel in) {
-        groupID = in.readInt();
-        userID = in.readInt();
+        groupID = in.readLong();
+        userID = in.readLong();
         name = in.readString();
         phoneNumber = in.readString();
         isAdmin = in.readByte() != 0;
@@ -63,19 +63,19 @@ public class GroupMember implements Parcelable{
         return member;
     }
 
-    public int getGroupID() {
+    public long getGroupID() {
         return groupID;
     }
 
-    public void setGroupID(int groupID) {
+    public void setGroupID(long groupID) {
         this.groupID = groupID;
     }
 
-    public int getUserID() {
+    public long getUserID() {
         return userID;
     }
 
-    public void setUserID(int userID) {
+    public void setUserID(long userID) {
         this.userID = userID;
     }
 
@@ -110,8 +110,8 @@ public class GroupMember implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(groupID);
-        dest.writeInt(userID);
+        dest.writeLong(groupID);
+        dest.writeLong(userID);
         dest.writeString(name);
         dest.writeString(phoneNumber);
         dest.writeByte((byte) (isAdmin ? 1 : 0));

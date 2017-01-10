@@ -116,8 +116,8 @@ public class CommonMethods {
     }
 
     /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the duration */
-    public static String getTimeDifference(Context context, Double earlierTime, Double laterTime) {
-        long timeDiff = (long) (laterTime - earlierTime) / 60; // minutes as start
+    public static String getTimeDifference(Context context, Double earlierTimeInSeconds, Double laterTimeInSeconds) {
+        long timeDiff = (long) (laterTimeInSeconds - earlierTimeInSeconds) / 60; // minutes as start
         StringBuilder message = new StringBuilder();
         if (timeDiff < 0) {
             return "N/A";
@@ -145,8 +145,8 @@ public class CommonMethods {
         return message.toString();
     }
 
+    /** get the message according to the server specified report type */
     public static String getReportStringFromType(Context context, int typeOfReport) {
-        /** get the message according to the server specified report type */
         switch (typeOfReport) {
             case 1:
                 return context.getResources().getString(R.string.report_has_more_to_offer);
@@ -158,27 +158,27 @@ public class CommonMethods {
         return null;
     }
 
+    /** returns a UUID */
     public static String getDeviceUUID(Context context) {
-        /** returns a UUID */
         return PreferenceManager.getDefaultSharedPreferences(context).getString(User.ACTIVE_DEVICE_DEV_UUID, null);
     }
 
-    public static int getMyUserID(Context context) {
-        /** returns the userID from shared preferences */
-        return PreferenceManager.getDefaultSharedPreferences(context).getInt(User.IDENTITY_PROVIDER_USER_ID, -1);
+    /** returns the userID from shared preferences */
+    public static long getMyUserID(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getLong(User.IDENTITY_PROVIDER_USER_ID, -1);
     }
 
-    public static void setMyUserID(Context context, int userID) {
-        /** saves the userID to shared preferences */
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(User.IDENTITY_PROVIDER_USER_ID, userID).apply();
+    /** saves the userID to shared preferences */
+    public static void setMyUserID(Context context, long userID) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(User.IDENTITY_PROVIDER_USER_ID, userID).apply();
     }
 
     public static String getMyUserPhone(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER, null);
     }
 
+    /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
     public static long getNewLocalPublicationID() {
-        /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
         //todo add a check for available negative id, currently hard coded
         return -1;
     }
@@ -213,8 +213,8 @@ public class CommonMethods {
         return distance;
     }
 
+    /** Creates a local image file name for taking the picture with the camera */
     public static File createImageFile(Context context) throws IOException {
-        /** Creates a local image file name for taking the picture with the camera */
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -224,8 +224,8 @@ public class CommonMethods {
                 storageDir      /* directory */);
     }
 
+    /** Creates a local image file name for downloaded images from s3 server of a specific publication */
     public static File createImageFile(Context context, long publicationID) throws IOException {
-        /** Creates a local image file name for downloaded images from s3 server of a specific publication */
         String imageFileName = "PublicationID." + publicationID;
         File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 //        return File.createTempFile(
@@ -238,14 +238,14 @@ public class CommonMethods {
         return newFile;
     }
 
+    /** returns the file name without the path */
     public static String getFileNameFromPath(String path) {
-        /** returns the file name without the path */
         String[] segments = path.split("/");
         return segments[segments.length - 1];
     }
 
+    /** returns the file name without the path */
     public static String getPublicationIDFromFile(String path) {
-        /** returns the file name without the path */
         String[] segments = path.split(".");
         if (segments.length > 1) {
             return segments[segments.length - 2];
@@ -254,8 +254,8 @@ public class CommonMethods {
         }
     }
 
+    /** Creates a local image file name for downloaded images from s3 server of a specific publication */
     public static String getPhotoPathByID(Context context, long publicationID) {
-        /** Creates a local image file name for downloaded images from s3 server of a specific publication */
         String imageFileName = "PublicationID." + publicationID;
         String storageDir = (context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
 //        return File.createTempFile(
@@ -267,16 +267,17 @@ public class CommonMethods {
         return newFile;
     }
 
+    /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
+     * then, it will overwrite the local original one.
+     * returns true if successful*/
     public static boolean editOverwriteImage(String mCurrentPhotoPath, Bitmap sourceImage) {
-        /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
-         * then, it will overwrite the local original one.
-         * returns true if successful*/
         return compressImage(sourceImage,mCurrentPhotoPath);
     }
+
+    /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
+     * then, it will overwrite the local original one.
+     * returns true if successful*/
     public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath){
-        /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
-         * then, it will overwrite the local original one.
-         * returns true if successful*/
         try {
             Bitmap sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
             return compressImage(sourceBitmap,mCurrentPhotoPath);

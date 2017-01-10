@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.transition.Fade;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
@@ -23,12 +24,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.FullscreenActivityImage;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.adapters.ReportsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
@@ -64,7 +67,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         super.onCreate(savedInstanceState);
 
         /** get the user's ID */
-        int userID = CommonMethods.getMyUserID(getContext());
+        long userID = CommonMethods.getMyUserID(getContext());
 
         /** get the publication from the intent */
         publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
@@ -108,6 +111,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         textPublicationPrice = (TextView) v.findViewById(R.id.textPublicationPrice);
         textPublicationDetails = (TextView) v.findViewById(R.id.textPublicationDetails);
         imagePicturePublication = (ImageView) v.findViewById(R.id.imagePicturePublication);
+        imagePicturePublication.setOnClickListener(this);
         imagePublisherUser = (CircleImageView) v.findViewById(R.id.imagePublisherUser);
         imageActionPublicationJoin = (ImageView) v.findViewById(R.id.imageActionPublicationJoin);
         imageActionPublicationReport = (ImageView) v.findViewById(R.id.imageActionPublicationSMS);
@@ -278,8 +282,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 case R.id.imageActionPublicationSMS:
                     // TODO: 14/11/2016 test for adding a report, hard coded
                     long currentTime = (long) CommonMethods.getCurrentTimeSeconds();
-                    PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(),3,CommonMethods.getDeviceUUID(getContext()),
-                            "","",String.valueOf(currentTime),user.getDisplayName(),
+                    PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(), (short) 3,CommonMethods.getDeviceUUID(getContext()),
+                            //"","",
+                            String.valueOf(currentTime),user.getDisplayName(),
                             CommonMethods.getMyUserPhone(getContext()),CommonMethods.getMyUserID(getContext()),4);
                     String reportJson = publicationReport.getAddReportJson().toString();
                     Log.d(TAG,"report json:"+reportJson);
@@ -312,6 +317,12 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                                 ));
                         startActivity(i);
                     }
+                    break;
+
+                /** pressing on the publication image - open full screen view of the image */
+                case R.id.imagePicturePublication:
+                    i = new Intent(getContext(), FullscreenActivityImage.class);
+                    startActivity(i);
                     break;
             }
         }

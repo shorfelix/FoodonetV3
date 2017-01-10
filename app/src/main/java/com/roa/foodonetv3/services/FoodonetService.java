@@ -125,7 +125,7 @@ public class FoodonetService extends IntentService {
 
     private Intent addResponseToIntent(int actionType, String responseRoot, Intent intent){
         try {
-            int userID = CommonMethods.getMyUserID(this);
+            long userID = CommonMethods.getMyUserID(this);
             switch (actionType) {
                 case ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
                 case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
@@ -134,26 +134,15 @@ public class FoodonetService extends IntentService {
                     rootGetPublications = new JSONArray(responseRoot);
                     /** declarations */
                     long id;
-                    int version;
-                    String title;
-                    String subtitle;
-                    String address;
+                    String title,subtitle,address,startingDate,endingDate,contactInfo,activeDeviceDevUUID,photoURL,identityProviderUserName,priceDescription;
                     short typeOfCollecting;
-                    Double lat;
-                    Double lng;
-                    String startingDate;
-                    String endingDate;
-                    String contactInfo;
+                    Double lat,lng,price;
                     boolean isOnAir;
-                    String activeDeviceDevUUID;
-                    String photoURL;
-                    int audience;
-                    String identityProviderUserName;
-                    Double price;
-                    String priceDescription;
+                    int version,audience;
+
                     for (int i = 0; i < rootGetPublications.length(); i++) {
                         JSONObject publication = rootGetPublications.getJSONObject(i);
-                        int publisherID = publication.getInt("publisher_id");
+                        long publisherID = publication.getLong("publisher_id");
                         if (publisherID != userID && actionType == ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER
                                 || publisherID == userID && actionType == ReceiverConstants.ACTION_GET_USER_PUBLICATIONS) {
                             /** depending on the action intended, either get all publications except the ones created by the user, or get only the publications created by the user */
@@ -200,38 +189,32 @@ public class FoodonetService extends IntentService {
                     JSONArray rootGetReports;
                     rootGetReports = new JSONArray(responseRoot);
                     /** declarations */
-                    long reportId;
-                    long publicationID;
-                    int publicationVersion;
-                    int reportType;
-                    String active_device_dev_uuid;
-                    String createdDate;
-                    String updateDate;
-                    String dateOfReport;
-                    String reportUserName;
-                    String reportContactInfo;
-                    int reportUserId;
-                    int rating;
+                    long reportId,publicationID,reportUserID;
+                    int publicationVersion,rating;
+                    String active_device_dev_uuid,createdDate,updateDate,dateOfReport,reportUserName,reportContactInfo;
+                    short reportType;
+
                     for (int i = 0; i < rootGetReports.length(); i++) {
                         JSONObject report = rootGetReports.getJSONObject(i);
                         reportId = report.getLong("id");
                         publicationID = report.getLong("publication_id");
                         publicationVersion = report.getInt("publication_version");
-                        reportType = report.getInt("report");
+                        reportType = (short) report.getInt("report");
                         active_device_dev_uuid = report.getString("active_device_dev_uuid");
-                        createdDate = report.getString("created_at");
-                        updateDate = report.getString("updated_at");
+//                        createdDate = report.getString("created_at");
+//                        updateDate = report.getString("updated_at");
                         dateOfReport = report.getString("date_of_report");
                         reportUserName = "No user name";
                         if (report.getString("report_user_name") != null) {
                             reportUserName = report.getString("report_user_name");
                         }
                         reportContactInfo = report.getString("report_contact_info");
-                        reportUserId = report.getInt("reporter_user_id");
+                        reportUserID = report.getLong("reporter_user_id");
                         rating = report.getInt("rating");
 
                         reports.add(new PublicationReport(reportId, publicationID, publicationVersion, reportType, active_device_dev_uuid,
-                                createdDate, updateDate, dateOfReport, reportUserName, reportContactInfo, reportUserId, rating));
+                                //createdDate, updateDate,
+                                dateOfReport, reportUserName, reportContactInfo, reportUserID, rating));
                         }
                     intent.putParcelableArrayListExtra(PublicationReport.REPORT_KEY, reports);
                     break;
@@ -273,12 +256,10 @@ public class FoodonetService extends IntentService {
                     JSONArray groupArray = new JSONArray(responseRoot);
                     /** declarations */
                     ArrayList<Group> groups = new ArrayList<>();
-                    int groupID;
-                    String groupName;
-                    int memberID;
-                    String phoneNumber;
-                    String memberName;
+                    int groupID,memberID;
+                    String groupName,phoneNumber,memberName;
                     boolean isAdmin;
+
                     for (int i = 0; i < groupArray.length(); i++) {
                         JSONObject group = groupArray.getJSONObject(i);
                         userID = group.getInt(Group.USER_ID);

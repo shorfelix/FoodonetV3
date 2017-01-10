@@ -13,6 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.Tasks.GetPubsRegUsersTask;
@@ -25,6 +26,9 @@ import java.util.ArrayList;
 public class MyPublicationsFragment extends Fragment implements GetPubsRegUsersTask.OnGetRegisteredUsersListener {
     private PublicationsRecyclerAdapter adapter;
     private FoodonetReceiver receiver;
+
+    private TextView textInfo;
+    private View layoutInfo;
 
     private ArrayList<Publication> publications;
 
@@ -46,6 +50,11 @@ public class MyPublicationsFragment extends Fragment implements GetPubsRegUsersT
         recyclerMyPublications.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new PublicationsRecyclerAdapter(getContext());
         recyclerMyPublications.setAdapter(adapter);
+
+        /** set info screen for when there are no user publication yet */
+        layoutInfo = v.findViewById(R.id.layoutInfo);
+        layoutInfo.setVisibility(View.GONE);
+        textInfo = (TextView) v.findViewById(R.id.textInfo);
 
         return v;
     }
@@ -74,6 +83,12 @@ public class MyPublicationsFragment extends Fragment implements GetPubsRegUsersT
     @Override
     public void onGetRegisteredUsers(ArrayList<Publication> publications) {
         this.publications = publications;
+        if(publications.size()==0){
+            layoutInfo.setVisibility(View.VISIBLE);
+            textInfo.setText(R.string.hi_what_would_you_like_to_share);
+        } else{
+            layoutInfo.setVisibility(View.GONE);
+        }
         adapter.updatePublications(publications);
     }
 

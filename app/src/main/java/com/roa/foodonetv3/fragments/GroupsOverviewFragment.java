@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.GroupsRecyclerAdapter;
@@ -27,6 +28,9 @@ public class GroupsOverviewFragment extends Fragment {
     private static final String TAG = "GroupsOverviewFragment";
 
     private GroupsRecyclerAdapter adapter;
+    private TextView textInfo;
+    private View layoutInfo;
+
     private FoodonetReceiver receiver;
 
     public GroupsOverviewFragment() {
@@ -52,6 +56,11 @@ public class GroupsOverviewFragment extends Fragment {
         recyclerGroupsOverview.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GroupsRecyclerAdapter(getContext());
         recyclerGroupsOverview.setAdapter(adapter);
+
+        /** set info screen for when there are no groups yet */
+        layoutInfo = v.findViewById(R.id.layoutInfo);
+        layoutInfo.setVisibility(View.GONE);
+        textInfo = (TextView) v.findViewById(R.id.textInfo);
 
         return v;
     }
@@ -90,6 +99,12 @@ public class GroupsOverviewFragment extends Fragment {
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
                         ArrayList<Group> groups = intent.getParcelableArrayListExtra(Group.KEY);
+                        if(groups.size() == 0){
+                            layoutInfo.setVisibility(View.VISIBLE);
+                            textInfo.setText(R.string.you_dont_have_any_groups_yet);
+                        } else{
+                            layoutInfo.setVisibility(View.GONE);
+                        }
                         adapter.updateGroups(groups);
                     }
                     break;

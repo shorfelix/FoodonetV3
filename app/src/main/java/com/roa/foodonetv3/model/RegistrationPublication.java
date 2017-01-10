@@ -16,13 +16,13 @@ public class RegistrationPublication {
     private static final String COLLECTOR_CONTACT_INFO = "collector_contact_info";
     private static final String COLLECTOR_USER_ID = "collector_user_id";
 
-    private int publicationVersion,collectorUserID;
-    private long publicationID;
+    private int publicationVersion;
+    private long publicationID,collectorUserID;
     private double dateOfRegistration;
     private String activeDeviceDevUUID,collectorName,collectorContactInfo;
 
 
-    public RegistrationPublication(long publicationID, double dateOfRegistration, String activeDeviceDevUUID, int publicationVersion, String collectorName, String collectorContactInfo, int collectorUserID) {
+    public RegistrationPublication(long publicationID, double dateOfRegistration, String activeDeviceDevUUID, int publicationVersion, String collectorName, String collectorContactInfo, long collectorUserID) {
         this.publicationID = publicationID;
         this.dateOfRegistration = dateOfRegistration;
         this.activeDeviceDevUUID = activeDeviceDevUUID;
@@ -67,11 +67,11 @@ public class RegistrationPublication {
         this.publicationVersion = publicationVersion;
     }
 
-    public int getCollectorUserID() {
+    public long getCollectorUserID() {
         return collectorUserID;
     }
 
-    public void setCollectorUserID(int collectorUserID) {
+    public void setCollectorUserID(long collectorUserID) {
         this.collectorUserID = collectorUserID;
     }
 

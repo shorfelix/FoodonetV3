@@ -92,5 +92,11 @@
     <string name="min_minutes">min</string>
     <string name="day">day</string>
     <string name="price">Price:</string>
+    <string name="you_dont_have_any_groups_yet">You don\'t have any groups yet</string>
+    <string name="hi_what_would_you_like_to_share">Hi,\nWhat would you like\n to share?</string>
+
+    <string name="title_activity_fullscreen_image">FullscreenActivityImage</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 
 </resources>

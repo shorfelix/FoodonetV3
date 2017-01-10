@@ -21,10 +21,10 @@ public class Group implements Parcelable {
     public static final String GET_GROUP_NAME = "group_name";
 
     private String groupName;
-    private int userID, groupID;
+    private long userID, groupID;
     private ArrayList<GroupMember> members;
 
-    public Group(String groupName, int userID, ArrayList<GroupMember> members, int groupID) {
+    public Group(String groupName, long userID, ArrayList<GroupMember> members, long groupID) {
         this.groupName = groupName;
         this.userID = userID;
         this.members = members;
@@ -33,7 +33,7 @@ public class Group implements Parcelable {
 
     protected Group(Parcel in) {
         groupName = in.readString();
-        userID = in.readInt();
+        userID = in.readLong();
         members = in.createTypedArrayList(GroupMember.CREATOR);
     }
 
@@ -95,11 +95,11 @@ public class Group implements Parcelable {
         this.groupName = groupName;
     }
 
-    public int getUserID() {
+    public long getUserID() {
         return userID;
     }
 
-    public void setUserID(int userID) {
+    public void setUserID(long userID) {
         this.userID = userID;
     }
 
@@ -111,11 +111,11 @@ public class Group implements Parcelable {
         this.members = members;
     }
 
-    public int getGroupID() {
+    public long getGroupID() {
         return groupID;
     }
 
-    public void setGroupID(int groupID) {
+    public void setGroupID(long groupID) {
         this.groupID = groupID;
     }
 
@@ -127,8 +127,8 @@ public class Group implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(groupName);
-        dest.writeInt(userID);
-        dest.writeInt(groupID);
+        dest.writeLong(userID);
+        dest.writeLong(groupID);
         dest.writeTypedList(members);
     }
 }
