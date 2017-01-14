@@ -30,7 +30,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.MapPublicationRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
-import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.services.FoodonetService;
 
@@ -89,7 +88,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
         /** temp request publications update from the server on fragment resume */
         Intent intent = new Intent(this, FoodonetService.class);
-        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS);
         startService(intent);
     }
 
@@ -154,7 +153,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
         userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         // temp
         Intent intent = new Intent(this,FoodonetService.class);
-        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS);
         startService(intent);
     }
 
@@ -183,7 +182,7 @@ public class MapActivity extends FragmentActivity implements LocationListener, O
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER){
+            if(intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)== ReceiverConstants.ACTION_GET_PUBLICATIONS){
                 if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                     // TODO: 27/11/2016 add logic if fails
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();

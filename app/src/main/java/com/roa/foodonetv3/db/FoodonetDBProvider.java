@@ -82,6 +82,15 @@ public class FoodonetDBProvider extends ContentProvider {
         public static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/"+TABLE_NAME);
     }
 
+    public static class RegisteredUsersDB{
+        public static final String TABLE_NAME = "registered_users";
+        public static final String _ID_COLUMN = "_id";
+        public static final String PUBLICATION_ID_COLUMN = "publication_id";
+        public static final String PUBLICATION_VERSION_COLUMN = "publication_version";
+        public static final String REGISTERED_USER_ID_COLUMN = "registered_user_id";
+        public static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/"+TABLE_NAME);
+    }
+
     @Override
     public boolean onCreate() {
         helper = new FoodonetDBHelper(getContext());

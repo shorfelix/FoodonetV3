@@ -186,10 +186,15 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                             break;
                         case MY_PUBLICATIONS_TAG:
                             /** clicked on create new publication */
-                            // TODO: 18/12/2016 currently instantiating another activity just for the back press
-                            Intent newAddPublicationIntent = new Intent(this,PublicationActivity.class);
-                            newAddPublicationIntent.putExtra(ACTION_OPEN_PUBLICATION,ADD_PUBLICATION_TAG);
-                            startActivity(newAddPublicationIntent);
+                            if(CommonMethods.getMyUserID(this)==-1){
+                                Intent intent = new Intent(this,SignInActivity.class);
+                                startActivity(intent);
+                            } else{
+                                // TODO: 18/12/2016 currently instantiating another activity just for the back press
+                                Intent newAddPublicationIntent = new Intent(this,PublicationActivity.class);
+                                newAddPublicationIntent.putExtra(ACTION_OPEN_PUBLICATION,ADD_PUBLICATION_TAG);
+                                startActivity(newAddPublicationIntent);
+                            }
                     }
                     break;
                 }

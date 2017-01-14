@@ -283,11 +283,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             public void run() {
                 super.run();
                 try {
-                    InstanceID instanceID = InstanceID.getInstance(MainActivity.this);
-                    String token;
-
-                    token = instanceID.getToken(getString(R.string.gcm_defaultSenderId),
+                    String token = InstanceID.getInstance(MainActivity.this).getToken(getString(R.string.gcm_defaultSenderId),
                             GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+
                     SharedPreferences.Editor editor = preferenceManager.edit();
                     editor.putString("notification_token", token);
                     editor.apply();

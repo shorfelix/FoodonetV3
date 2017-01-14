@@ -193,6 +193,7 @@ public class CommonMethods {
         return df.format(num);
     }
 
+
     /*
      * Calculate distance between two points in latitude and longitude taking
      * into account height difference.

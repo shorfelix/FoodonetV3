@@ -14,9 +14,17 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.model.User;
+import com.roa.foodonetv3.services.FoodonetService;
+import com.roa.foodonetv3.services.GetDataService;
+
+import java.util.UUID;
 
 public class SplashScreenActivity extends AppCompatActivity implements LocationListener {
     private LocationManager locationManager;
@@ -37,7 +45,13 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        if(!sharedPreferences.getBoolean("initialized",false)){
+            init();
+        }
         startGps();
+        getNewData();
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -47,6 +61,22 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
                 finish();
             }
         }, 1000);
+    }
+
+    private void init(){
+        /** in first use, get a new UUID for the device and save it in the shared preferences */
+        SharedPreferences.Editor edit = sharedPreferences.edit();
+        // TODO: 21/12/2016 get the string from a static field or a resource string
+        edit.putBoolean("initialized",true);
+        String deviceUUID = UUID.randomUUID().toString();
+        edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
+        Log.d("Got new device UUID",deviceUUID);
+    }
+
+    private void getNewData(){
+        Intent getDataIntent = new Intent(this, GetDataService.class);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+        this.startService(getDataIntent);
     }
 
     public void startGps(){

@@ -3,6 +3,7 @@ package com.roa.foodonetv3.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.preference.PreferenceManager;
+import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,7 +20,10 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SplashScreenActivity;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.db.PublicationsDBHandler;
+import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
+import com.roa.foodonetv3.model.RegisteredUser;
 import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
@@ -34,9 +38,11 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
     private Context context;
     private ArrayList<Publication> filteredPublications = new ArrayList<>();
     private ArrayList<Publication> publications = new ArrayList<>();
+    private LongSparseArray<Integer> registeredUsersArray = new LongSparseArray<>();
     private TransferUtility transferUtility;
     private LatLng userLatLng;
     private static final double LOCATION_NOT_FOUND = -9999;
+    private PublicationsDBHandler publicationsDBHandler;
 
     public PublicationsRecyclerAdapter(Context context) {
         this.context = context;
@@ -47,7 +53,31 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
                 Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LONGITUDE,String.valueOf(LOCATION_NOT_FOUND))));
     }
 
-    public void updatePublications(ArrayList<Publication> publications){
+//    private int getNumberRegisteredUsers(long publicationID){
+//        int count = 0;
+//        for (int i = 0; i < registeredUsersArray.size(); i++) {
+//            if (registeredUsersArray.get(i).getPublicationID() == publicationID){
+//                count++;
+//            }
+//        }
+//        return count;
+//    }
+
+    public void updatePublications(ArrayList<Publication> publications, LongSparseArray<Integer> registeredUsersArray){
+        this.registeredUsersArray = registeredUsersArray;
+        filteredPublications.clear();
+        filteredPublications.addAll(publications);
+        this.publications = publications;
+        notifyDataSetChanged();
+    }
+
+    public void updatePublications(int typeFilter){
+        if(publicationsDBHandler == null){
+            publicationsDBHandler = new PublicationsDBHandler(context);
+        }
+        RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(context);
+        ArrayList<Publication> publications = publicationsDBHandler.getPublications(typeFilter);
+        registeredUsersArray = registeredUsersDBHandler.getAllRegisteredUsersCount();
         filteredPublications.clear();
         filteredPublications.addAll(publications);
         this.publications = publications;
@@ -119,7 +149,11 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             } else{
                 textPublicationAddressDistance.setText("");
             }
-            String registeredUsers = String.format(Locale.US,"%1$d %2$s",publication.getRegisteredUsersCount(),context.getResources().getString(R.string.users_joined));
+            Integer numberRegisteredUsers = registeredUsersArray.get(publication.getId());
+            if(numberRegisteredUsers== null){
+                numberRegisteredUsers = 0;
+            }
+            String registeredUsers = String.format(Locale.US,"%1$d %2$s", numberRegisteredUsers,context.getResources().getString(R.string.users_joined));
             textPublicationUsers.setText(registeredUsers);
             //add photo here
             if(publication.getPhotoURL().equals("")){

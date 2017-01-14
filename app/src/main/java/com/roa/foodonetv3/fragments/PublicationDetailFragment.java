@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.transition.Fade;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
@@ -24,7 +23,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,8 +34,10 @@ import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.adapters.ReportsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.db.PublicationsDBHandler;
+import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.model.RegistrationPublication;
+import com.roa.foodonetv3.model.RegisteredUser;
 import com.roa.foodonetv3.model.PublicationReport;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
@@ -54,6 +54,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     private Publication publication;
     private ReportsRecyclerAdapter adapter;
     private FoodonetReceiver receiver;
+    private int countRegisteredUsers;
     private boolean isAdmin;
     private boolean isRegistered;
     private AlertDialog alertDialog;
@@ -74,13 +75,18 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
         /** check if the user is the admin of the publication */
         isAdmin = publication != null && publication.getPublisherID() == userID;
+        RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(getContext());
         if(isAdmin) {
             /** if the user is the admin, show the menu for editing, deleting or taking the publication offline */
             setHasOptionsMenu(true);
         } else{
             /** the user is not the admin, check if he's a registered user for the publication */
-            isRegistered = publication.getRegisteredUsers().contains(userID);
+            // TODO: 13/01/2017 add db get
+
+            isRegistered = registeredUsersDBHandler.isUserRegistered(publication.getId());
         }
+        /** get the number of users registered for this publication */
+        countRegisteredUsers = registeredUsersDBHandler.getRegisteredUsersCount(publication.getId());
 
         receiver = new FoodonetReceiver();
     }
@@ -219,8 +225,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
         String timeRemaining = String.format(Locale.US, "%1$s",
                 CommonMethods.getTimeDifference(getContext(),CommonMethods.getCurrentTimeSeconds(),Double.parseDouble(publication.getEndingDate())));
+
         textTimeRemaining.setText(timeRemaining);
-        textJoined.setText(String.format(Locale.US,"%1$s : %2$d",getResources().getString(R.string.joined),publication.getRegisteredUsersCount()));
+        textJoined.setText(String.format(Locale.US,"%1$s : %2$d",getResources().getString(R.string.joined),countRegisteredUsers));
         textTitlePublication.setText(publication.getTitle());
         textPublicationAddress.setText(publication.getAddress());
         // TODO: 13/11/2016 get rating through reports
@@ -266,10 +273,10 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 /** join publication */
                 case R.id.imageActionPublicationJoin:
                     // TODO: 21/12/2016 add logic for if the user is already signed to the publication
-                    RegistrationPublication registrationPublication = new RegistrationPublication(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
+                    RegisteredUser registeredUser = new RegisteredUser(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
                             CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),user.getDisplayName(),CommonMethods.getMyUserPhone(getContext()),
                             CommonMethods.getMyUserID(getContext()));
-                    String registration = registrationPublication.getJsonForRegistration().toString();
+                    String registration = registeredUser.getJsonForRegistration().toString();
                     String[] registrationArgs = {String.valueOf(publication.getId())};
                     i = new Intent(getContext(),FoodonetService.class);
                     i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION);

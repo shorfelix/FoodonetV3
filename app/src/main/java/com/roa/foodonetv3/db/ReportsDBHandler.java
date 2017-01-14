@@ -20,7 +20,6 @@ public class ReportsDBHandler {
     public ArrayList<PublicationReport> getReportsForPublication(long publicationID){
         ArrayList<PublicationReport> reports = new ArrayList<>();
 
-
         String where = String.format("%1$s = ?" ,FoodonetDBProvider.ReportsDB.PUBLICATION_ID_COLUMN);
         String[] whereArgs = {String.valueOf(publicationID)};
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.ReportsDB.CONTENT_URI,null,where,whereArgs,null);

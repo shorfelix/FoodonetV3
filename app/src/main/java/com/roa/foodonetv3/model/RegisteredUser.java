@@ -4,8 +4,8 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class RegistrationPublication {
-    private static final String TAG = "RegistrationPublication";
+public class RegisteredUser {
+    private static final String TAG = "RegisteredUser";
 
     private static final String REGISTERED_USER_FOR_PUBLICATION = "registered_user_for_publication";
     private static final String PUBLICATION_ID = "publication_id";
@@ -22,7 +22,7 @@ public class RegistrationPublication {
     private String activeDeviceDevUUID,collectorName,collectorContactInfo;
 
 
-    public RegistrationPublication(long publicationID, double dateOfRegistration, String activeDeviceDevUUID, int publicationVersion, String collectorName, String collectorContactInfo, long collectorUserID) {
+    public RegisteredUser(long publicationID, double dateOfRegistration, String activeDeviceDevUUID, int publicationVersion, String collectorName, String collectorContactInfo, long collectorUserID) {
         this.publicationID = publicationID;
         this.dateOfRegistration = dateOfRegistration;
         this.activeDeviceDevUUID = activeDeviceDevUUID;

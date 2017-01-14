@@ -113,8 +113,11 @@
         <provider
             android:name=".db.FoodonetDBProvider"
             android:authorities="com.roa.foodonetv3.db.FoodonetDBProvider"
-            android:enabled="false"
-            android:exported="false"/>
+            android:exported="false" />
+
+        <service
+            android:name=".services.GetDataService"
+            android:exported="false"></service>
     </application>
 
 </manifest>

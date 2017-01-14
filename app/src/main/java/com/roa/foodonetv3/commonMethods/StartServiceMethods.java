@@ -35,8 +35,7 @@ public class StartServiceMethods {
         /** add the server to foodonet */
         builder.append(context.getResources().getString(R.string.foodonet_server));
         switch (actionType){
-            case ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
-            case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
+            case ReceiverConstants.ACTION_GET_PUBLICATIONS:
                 builder.append(context.getString(R.string.foodonet_publications));
                 break;
             case ReceiverConstants.ACTION_ADD_PUBLICATION:
@@ -107,9 +106,7 @@ public class StartServiceMethods {
 
     public static int getHTTPType(int actionType){
         switch (actionType){
-            case ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
-                return HTTP_GET;
-            case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
+            case ReceiverConstants.ACTION_GET_PUBLICATIONS:
                 return HTTP_GET;
             case ReceiverConstants.ACTION_ADD_PUBLICATION:
                 return HTTP_POST;

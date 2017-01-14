@@ -3,14 +3,21 @@ package com.roa.foodonetv3.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.util.LongSparseArray;
+import android.support.v4.util.SparseArrayCompat;
 import android.util.Log;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.db.GroupsDBHandler;
+import com.roa.foodonetv3.db.PublicationsDBHandler;
+import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.PublicationReport;
+import com.roa.foodonetv3.model.RegisteredUser;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +29,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import javax.net.ssl.HttpsURLConnection;
 
 /** main service to communicate with foodonet server */
@@ -127,25 +136,27 @@ public class FoodonetService extends IntentService {
         try {
             long userID = CommonMethods.getMyUserID(this);
             switch (actionType) {
-                case ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
-                case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
+                case ReceiverConstants.ACTION_GET_PUBLICATIONS:
+                    /** get the users groups id, as we don't care about the others */
+                    GroupsDBHandler groupsDBHandler1 = new GroupsDBHandler(this);
+                    ArrayList<Long> groupsIDs = groupsDBHandler1.getGroupsIDs();
                     ArrayList<Publication> publications = new ArrayList<>();
                     JSONArray rootGetPublications;
                     rootGetPublications = new JSONArray(responseRoot);
                     /** declarations */
-                    long id;
+                    long id,audience;
                     String title,subtitle,address,startingDate,endingDate,contactInfo,activeDeviceDevUUID,photoURL,identityProviderUserName,priceDescription;
                     short typeOfCollecting;
                     Double lat,lng,price;
                     boolean isOnAir;
-                    int version,audience;
+                    int version;
 
                     for (int i = 0; i < rootGetPublications.length(); i++) {
                         JSONObject publication = rootGetPublications.getJSONObject(i);
-                        long publisherID = publication.getLong("publisher_id");
-                        if (publisherID != userID && actionType == ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER
-                                || publisherID == userID && actionType == ReceiverConstants.ACTION_GET_USER_PUBLICATIONS) {
-                            /** depending on the action intended, either get all publications except the ones created by the user, or get only the publications created by the user */
+                        audience = publication.getInt("audience");
+
+                        if(audience == 0 || groupsIDs.contains(audience)){
+                            long publisherID = publication.getLong("publisher_id");
                             id = publication.getLong("id");
                             version = publication.getInt("version");
                             title = publication.getString("title");
@@ -157,19 +168,22 @@ public class FoodonetService extends IntentService {
                             startingDate = publication.getString("starting_date");
                             endingDate = publication.getString("ending_date");
                             contactInfo = publication.getString("contact_info");
-                            if (publication.getBoolean("is_on_air")) isOnAir = true;
-                            else isOnAir = false;
+                            isOnAir = publication.getBoolean("is_on_air");
                             activeDeviceDevUUID = publication.getString("active_device_dev_uuid");
                             photoURL = publication.getString("photo_url");
-                            audience = publication.getInt("audience");
+
                             identityProviderUserName = publication.getString("identity_provider_user_name");
                             price = publication.getDouble("price");
                             priceDescription = "price_description";
                             publications.add(new Publication(id, version, title, subtitle, address, typeOfCollecting, lat, lng, startingDate, endingDate, contactInfo, isOnAir,
-                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription,null));
+                                    activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription));
                         }
                     }
-                    intent.putParcelableArrayListExtra(Publication.PUBLICATION_KEY, publications);
+                    PublicationsDBHandler publicationsDBHandler = new PublicationsDBHandler(this);
+                    publicationsDBHandler.replaceAllPublications(publications);
+                    Intent getDataIntent2 = new Intent(this,GetDataService.class);
+                    getDataIntent2.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS);
+                    startService(getDataIntent2);
                     break;
 
                 case ReceiverConstants.ACTION_ADD_PUBLICATION:
@@ -226,7 +240,7 @@ public class FoodonetService extends IntentService {
                 case ReceiverConstants.ACTION_ADD_USER:
                     JSONObject rootAddUser;
                     rootAddUser = new JSONObject(responseRoot);
-                    int newUserID = rootAddUser.getInt("id");
+                    long newUserID = rootAddUser.getLong("id");
                     CommonMethods.setMyUserID(this, newUserID);
                     Log.d("Add user response", "id: " + newUserID);
                     break;
@@ -242,13 +256,55 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
-                    intent.putExtra(Publication.PUBLICATION_COUNT_OF_REGISTER_USERS_KEY,responseRoot);
+                    ArrayList<RegisteredUser> registeredUsers = new ArrayList<>();
+
+                    PublicationsDBHandler publicationsDBHandler1 = new PublicationsDBHandler(this);
+                    ArrayList<Long> publicationsIDs = publicationsDBHandler1.getPublicationsIDs();
+
+                    long currentPublicationID, collectorUserID;
+                    int publicationVersion1;
+
+                    JSONArray root = new JSONArray(responseRoot);
+                    for (int i = 0; i < root.length(); i++) {
+                        JSONObject registeredUser = root.getJSONObject(i);
+                        currentPublicationID = registeredUser.getLong("publication_id");
+                        if(publicationsIDs.contains(currentPublicationID)){
+                            publicationVersion1 = registeredUser.getInt("publication_version");
+                            collectorUserID = registeredUser.getLong("collector_user_id");
+
+                            registeredUsers.add(new RegisteredUser(currentPublicationID,-1,null,publicationVersion1,null,null,collectorUserID));
+                        }
+                    }
+                    RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(this);
+                    registeredUsersDBHandler.replaceAllRegisteredUsers(registeredUsers);
+
+//                    LongSparseArray<Integer> registeredUsers = new LongSparseArray<>();
+//
+//                    PublicationsDBHandler publicationsDBHandler1 = new PublicationsDBHandler(this);
+//                    ArrayList<Long> publicationsIDs = publicationsDBHandler1.getPublicationsIDs();
+//
+//                    long currentPublicationID;
+//                    JSONArray root = new JSONArray(responseRoot);
+//                    for (int i = 0; i < root.length(); i++) {
+//                        JSONObject registeredUser = root.getJSONObject(i);
+//                        currentPublicationID = registeredUser.getInt("publication_id");
+//                        if(publicationsIDs.contains(currentPublicationID)){
+//                            if(registeredUsers.get(currentPublicationID)==null){
+//                                registeredUsers.put(currentPublicationID,1);
+//                            } else{
+//                                registeredUsers.put(currentPublicationID,registeredUsers.get(currentPublicationID)+1);
+//                            }
+//                        }
+//                    }
+//                    RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(this);
+//                    registeredUsersDBHandler.replaceAllRegisteredUsers(registeredUsers);
+
                     break;
 
                 case ReceiverConstants.ACTION_ADD_GROUP:
                     // TODO: 06/12/2016 add logic according to what we receive
                     JSONObject rootAddGroup = new JSONObject(responseRoot);
-                    int newGroupID = rootAddGroup.getInt("id");
+                    long newGroupID = rootAddGroup.getLong("id");
                     intent.putExtra(Group.KEY,newGroupID);
                     break;
 
@@ -256,7 +312,7 @@ public class FoodonetService extends IntentService {
                     JSONArray groupArray = new JSONArray(responseRoot);
                     /** declarations */
                     ArrayList<Group> groups = new ArrayList<>();
-                    int groupID,memberID;
+                    long groupID,memberID;
                     String groupName,phoneNumber,memberName;
                     boolean isAdmin;
 
@@ -277,7 +333,12 @@ public class FoodonetService extends IntentService {
                         }
                         groups.add(new Group(groupName,userID,members,groupID));
                     }
-                    intent.putParcelableArrayListExtra(Group.KEY,groups);
+                    GroupsDBHandler groupsDBHandler = new GroupsDBHandler(this);
+                    groupsDBHandler.replaceAllGroups(groups);
+
+                    Intent getDataIntent1 = new Intent(this,GetDataService.class);
+                    getDataIntent1.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_PUBLICATIONS);
+                    startService(getDataIntent1);
                     break;
 
                 case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
