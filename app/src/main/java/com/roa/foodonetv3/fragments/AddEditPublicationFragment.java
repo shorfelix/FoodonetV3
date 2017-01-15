@@ -39,16 +39,22 @@ import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PlacesActivity;
 import com.roa.foodonetv3.activities.SplashForCamera;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.DecimalDigitsInputFilter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.db.GroupsDBHandler;
+import com.roa.foodonetv3.db.PublicationsDBHandler;
+import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.Publication;
+import com.roa.foodonetv3.model.SavedPlace;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 public class AddEditPublicationFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "AddEditPublicationFrag";
@@ -62,12 +68,13 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private long endingDate;
     private String mCurrentPhotoPath;
     private ImageView imagePictureAddPublication;
-    private LatLng latlng;
+    private SavedPlace place;
     private Publication publication;
     private boolean isEdit;
     private static int savePrefCount = 0;
     private SharedPreferences preferences;
-    private String[] groups;
+    private ArrayList<Group> groups;
+    private ArrayAdapter<String> spinnerAdapter;
 
     private FoodonetReceiver receiver;
 
@@ -88,15 +95,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
         isEdit = getArguments().getInt(TAG, TYPE_NEW_PUBLICATION) != TYPE_NEW_PUBLICATION;
 
-        // TODO: 29/12/2016 when user's groups will be available in db, load them here
-        groups = new String[]{"public","test"};
-
         if (isEdit) {
             /** if there's a publication in the intent - it is an edit of an existing publication */
             if (savedInstanceState == null) {
                 /** also check if there's a savedInstanceState, if there isn't - load the publication, if there is - load from savedInstanceState */
                 publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
-                latlng = new LatLng(publication.getLat(), publication.getLng());
+                place = new SavedPlace(publication.getAddress(),publication.getLat(),publication.getLng());
             } else {
                 // TODO: 19/11/2016 add savedInstanceState reader
             }
@@ -116,7 +120,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         textLocationAddPublication = (TextView) v.findViewById(R.id.textLocationAddPublication);
         textLocationAddPublication.setOnClickListener(this);
         spinnerShareWith = (Spinner) v.findViewById(R.id.spinnerShareWith);
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(getContext(),R.layout.item_spinner_groups,R.id.textGroupName,groups);
+        spinnerAdapter = new ArrayAdapter<>(getContext(),R.layout.item_spinner_groups,R.id.textGroupName);
         spinnerShareWith.setAdapter(spinnerAdapter);
         editTextDetailsAddPublication = (EditText) v.findViewById(R.id.editTextDetailsAddPublication);
         editTextPriceAddPublication = (EditText) v.findViewById(R.id.editTextPriceAddPublication);
@@ -134,6 +138,19 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         receiver = new FoodonetReceiver();
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
+
+        GroupsDBHandler handler = new GroupsDBHandler(getContext());
+        groups = handler.getAllGroupsWithPublic();
+        String[] groupsNames = new String[groups.size()];
+        Group group;
+        String groupName;
+        for (int i = 0; i < groups.size(); i++) {
+            group = groups.get(i);
+            groupName = group.getGroupName();
+            groupsNames[i] = groupName;
+        }
+        spinnerAdapter.addAll(groupsNames);
+
         if (mCurrentPhotoPath == null) {
             /** check if there is no path yet, if not, load the default image */
             // TODO: 13/11/2016 fix image size error
@@ -300,46 +317,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                     }
                     break;
                 case PlacesActivity.REQUEST_PLACE_PICKER:
-                    Place place = null;
-                    String address = "";
-                    if (data.getParcelableExtra("place")!= null){
-                        place = data.getParcelableExtra("place");
-                        address = place.getAddress().toString();
-                        latlng = place.getLatLng();
-                        textLocationAddPublication.setText(address);
-
-                    }else {
-                        address = data.getStringExtra("address");
-                        latlng = new LatLng(data.getFloatExtra("lat",0), data.getFloatExtra("long",0));
-                        textLocationAddPublication.setText(address);
-                    }
-                    int count =0;
-                    while (count<=4){
-                        if (address.equals(preferences.getString("place_name"+count,"error"))){
-                            return;
-                        }else {
-                            count++;
-                        }
-                    }
-                    savePlaces(address,latlng);
+                    place = data.getParcelableExtra("place");
+                    textLocationAddPublication.setText(place.getAddress());
                     break;
             }
         }
     }
-
-    public void savePlaces(String address, LatLng latLng){
-        SharedPreferences.Editor editor = preferences.edit();
-                editor.putFloat("lat"+savePrefCount, (float) latLng.latitude);
-                editor.putFloat("long"+savePrefCount, (float) latLng.longitude);
-                editor.putString("place_name"+savePrefCount, address);
-                editor.apply();
-                if (savePrefCount<4) {
-                    savePrefCount++;
-                }else {
-                    savePrefCount=0;
-                }
-    }
-
 
     public void uploadPublicationToServer() {
         /** upload the publication to the foodonet server */
@@ -348,7 +331,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         String title = editTextTitleAddPublication.getText().toString();
         String location = textLocationAddPublication.getText().toString();
         String priceS = editTextPriceAddPublication.getText().toString();
-//        String shareWith = editTextShareWithAddPublication.getText().toString();
         String details = editTextDetailsAddPublication.getText().toString();
         /** currently starting time is now */
         long startingDate = System.currentTimeMillis()/1000;
@@ -362,7 +344,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         } else {
             localPublicationID = publication.getId();
         }
-        if (title.equals("") || location.equals("") || latlng == null) {
+        if (title.equals("") || location.equals("") || place.getLat()== CommonConstants.LATLNG_ERROR || place.getLng()==CommonConstants.LATLNG_ERROR) {
             Toast.makeText(getContext(), R.string.post_please_enter_all_fields, Toast.LENGTH_SHORT).show();
         } else {
             double price;
@@ -379,15 +361,15 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             }
 
             // TODO: 08/11/2016 currently some fields are hard coded for testing
-            publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, latlng.latitude, latlng.longitude,
+            publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, place.getLat(), place.getLng(),
                     String.valueOf(startingDate), String.valueOf(endingDate), contactInfo, true, CommonMethods.getDeviceUUID(getContext()),
-                    CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()), 0, user.getDisplayName(), price, "");
+                    CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()),
+                    groups.get(spinnerShareWith.getSelectedItemPosition()).getGroupID() , user.getDisplayName(), price, "");
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
             Intent i = new Intent(getContext(), FoodonetService.class);
             i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_PUBLICATION);
             i.putExtra(ReceiverConstants.JSON_TO_SEND, publication.getPublicationJson().toString());
             getContext().startService(i);
-            getActivity().finish();
         }
     }
 
@@ -438,6 +420,26 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                         }
                     }
                     break;
+
+                case ReceiverConstants.ACTION_ADD_PUBLICATION:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 20/12/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        long publicationID = intent.getLongExtra(Publication.PUBLICATION_ID,-1);
+                        int publicationVersion = intent.getIntExtra(Publication.PUBLICATION_VERSION,-1);
+                        if(publicationID==-1 || publicationVersion == -1){
+                            // TODO: 15/01/2017 change
+                            Toast.makeText(context, "failed to add publication", Toast.LENGTH_SHORT).show();
+                        } else{
+                            publication.setId(publicationID);
+                            publication.setVersion(publicationVersion);
+                            // TODO: 15/01/2017 add logic to check that the publication is the same one
+                            PublicationsDBHandler handler = new PublicationsDBHandler(getContext());
+                            handler.insertPublication(publication);
+                            getActivity().finish();
+                        }
+                    }
             }
         }
     }

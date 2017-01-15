@@ -18,12 +18,11 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PublicationActivity;
-import com.roa.foodonetv3.activities.SplashScreenActivity;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.model.RegisteredUser;
 import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
@@ -49,8 +48,8 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         /** get the S3 utility */
         transferUtility = CommonMethods.getTransferUtility(context);
 //        setHasStableIds(true);
-        userLatLng = new LatLng(Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LATITUDE,String.valueOf(LOCATION_NOT_FOUND))),
-                Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LONGITUDE,String.valueOf(LOCATION_NOT_FOUND))));
+        userLatLng = new LatLng(Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LATITUDE,String.valueOf(LOCATION_NOT_FOUND))),
+                Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LONGITUDE,String.valueOf(LOCATION_NOT_FOUND))));
     }
 
 //    private int getNumberRegisteredUsers(long publicationID){

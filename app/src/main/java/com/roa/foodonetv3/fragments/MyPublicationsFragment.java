@@ -29,6 +29,7 @@ import java.util.ArrayList;
 public class MyPublicationsFragment extends Fragment{
     private PublicationsRecyclerAdapter adapter;
     private FoodonetReceiver receiver;
+    private RecyclerView recyclerMyPublications;
 
     private TextView textInfo;
     private View layoutInfo;
@@ -50,7 +51,7 @@ public class MyPublicationsFragment extends Fragment{
         getActivity().setTitle(R.string.drawer_my_shares);
 
         /** set recycler view */
-        RecyclerView recyclerMyPublications = (RecyclerView) v.findViewById(R.id.recyclerMyPublications);
+        recyclerMyPublications = (RecyclerView) v.findViewById(R.id.recyclerMyPublications);
         recyclerMyPublications.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new PublicationsRecyclerAdapter(getContext());
         recyclerMyPublications.setAdapter(adapter);
@@ -78,8 +79,10 @@ public class MyPublicationsFragment extends Fragment{
         RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(getContext());
         registeredUsers = registeredUsersDBHandler.getAllRegisteredUsersCount();
         if(publications.size()==0){
+            recyclerMyPublications.setVisibility(View.GONE);
             layoutInfo.setVisibility(View.VISIBLE);
         } else{
+            recyclerMyPublications.setVisibility(View.VISIBLE);
             layoutInfo.setVisibility(View.GONE);
             adapter.updatePublications(publications,registeredUsers);
         }

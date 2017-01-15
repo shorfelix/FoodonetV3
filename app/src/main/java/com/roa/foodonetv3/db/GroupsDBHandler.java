@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.Group;
 
 import java.util.ArrayList;
@@ -23,7 +24,26 @@ public class GroupsDBHandler {
         /** declarations */
         String groupName;
         long userID, groupID;
-        Group group;
+        while(c!=null && c.moveToNext()){
+            groupID = c.getLong(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_ID_COLUMN));
+            groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));
+            userID = c.getLong(c.getColumnIndex(FoodonetDBProvider.GroupsDB.ADMIN_ID_COLUMN));
+
+            groups.add(new Group(groupName,userID,null,groupID));
+        }
+        if(c!=null){
+            c.close();
+        }
+        return groups;
+    }
+
+    public ArrayList<Group> getAllGroupsWithPublic(){
+        Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,null,null,null);
+        ArrayList<Group> groups = new ArrayList<>();
+        groups.add(new Group(context.getResources().getString(R.string.audience_public),-1,null,0));
+        /** declarations */
+        String groupName;
+        long userID, groupID;
         while(c!=null && c.moveToNext()){
             groupID = c.getLong(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_ID_COLUMN));
             groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));

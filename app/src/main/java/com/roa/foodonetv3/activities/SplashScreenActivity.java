@@ -18,19 +18,15 @@ import android.util.Log;
 import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
-import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.User;
-import com.roa.foodonetv3.services.FoodonetService;
-import com.roa.foodonetv3.services.GetDataService;
 
 import java.util.UUID;
 
 public class SplashScreenActivity extends AppCompatActivity implements LocationListener {
     private LocationManager locationManager;
     private String providerName;
-    public static final String USER_LATITUDE = "user_latitude";
-    public static final String USER_LONGITUDE = "user_longitude";
     private static final int PERMISSION_REQUEST_NEW_LOCATION = 1;
     private static final int PERMISSION_REQUEST_UNREGISTER = 2;
     private static final String GOT_LOCATION = "gotLocation";
@@ -50,7 +46,7 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
             init();
         }
         startGps();
-        getNewData();
+        CommonMethods.getNewData(this);
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -73,12 +69,6 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         Log.d("Got new device UUID",deviceUUID);
     }
 
-    private void getNewData(){
-        Intent getDataIntent = new Intent(this, GetDataService.class);
-        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
-        this.startService(getDataIntent);
-    }
-
     public void startGps(){
         /** get a network based position (fastest, and accuracy is not an issue) so when the app starts it will have a reference to distances */
         // TODO: 21/12/2016 change the logic to be run from a different class, add common methods - getUserLocation method
@@ -95,8 +85,8 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
     public void onLocationChanged(Location location) {
         LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(USER_LATITUDE, String.valueOf(userLocation.latitude));
-        editor.putString(USER_LONGITUDE, String.valueOf(userLocation.longitude));
+        editor.putString(CommonConstants.USER_LATITUDE, String.valueOf(userLocation.latitude));
+        editor.putString(CommonConstants.USER_LONGITUDE, String.valueOf(userLocation.longitude));
         editor.putBoolean(GOT_LOCATION,true);
         editor.apply();
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);

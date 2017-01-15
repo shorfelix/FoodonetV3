@@ -3,6 +3,7 @@ package com.roa.foodonetv3.commonMethods;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -17,6 +18,7 @@ import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.ContactUsDialog;
 import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.R;
@@ -27,6 +29,8 @@ import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.model.User;
+import com.roa.foodonetv3.services.GetDataService;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -158,6 +162,12 @@ public class CommonMethods {
         return null;
     }
 
+    public static void getNewData(Context context){
+        Intent getDataIntent = new Intent(context, GetDataService.class);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+        context.startService(getDataIntent);
+    }
+
     /** returns a UUID */
     public static String getDeviceUUID(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(User.ACTIVE_DEVICE_DEV_UUID, null);
@@ -175,6 +185,12 @@ public class CommonMethods {
 
     public static String getMyUserPhone(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER, null);
+    }
+
+    public static LatLng getCurrentLocation(Context context){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return new LatLng(Double.valueOf(preferences.getString(CommonConstants.USER_LATITUDE,"-9999")),
+                Double.valueOf(preferences.getString(CommonConstants.USER_LONGITUDE,"-9999")));
     }
 
     /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */

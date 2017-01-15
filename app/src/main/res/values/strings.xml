@@ -98,5 +98,6 @@
     <string name="title_activity_fullscreen_image">FullscreenActivityImage</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="new_location">New location</string>
 
 </resources>

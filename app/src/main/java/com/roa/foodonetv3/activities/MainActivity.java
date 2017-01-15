@@ -32,6 +32,7 @@ import com.google.android.gms.iid.InstanceID;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.ActiveFragment;
@@ -98,17 +99,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         View hView =  navigationView.getHeaderView(0);
         CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
         TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
-        circleImageView.setImageResource(R.drawable.foodonet_image);
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (mFirebaseUser == null) {
-            // TODO: 24/11/2016 add logic?
-        } else {
-            String mUsername = mFirebaseUser.getDisplayName();
-            if (mFirebaseUser.getPhotoUrl() != null) {
-                String mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-                Glide.with(this).load(mPhotoUrl).into(circleImageView);
-                headerTxt.setText(mUsername);
-            }
+        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
+            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
+            headerTxt.setText(mFirebaseUser.getDisplayName());
         }
 
         /** set the view pager */
@@ -265,8 +259,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             activeDevice.put("remote_notification_token", token);
         }
         activeDevice.put("is_ios", false);
-        activeDevice.put("last_location_latitude", PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LATITUDE, null));
-        activeDevice.put("last_location_longitude", PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LONGITUDE,null));
+        activeDevice.put("last_location_latitude", PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LATITUDE, null));
+        activeDevice.put("last_location_longitude", PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LONGITUDE,null));
         activeDeviceRoot.put("active_device",activeDevice);
     } catch (JSONException e) {
         e.printStackTrace();

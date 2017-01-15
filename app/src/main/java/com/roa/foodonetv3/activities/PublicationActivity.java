@@ -80,8 +80,6 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
             headerTxt.setText(mFirebaseUser.getDisplayName());
-        }else {
-            circleImageView.setImageResource(R.drawable.foodonet_image);
         }
 
         /** get which fragment should be open from the intent, and open it */

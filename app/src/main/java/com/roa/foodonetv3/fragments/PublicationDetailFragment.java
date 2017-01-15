@@ -55,6 +55,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     private ReportsRecyclerAdapter adapter;
     private FoodonetReceiver receiver;
     private int countRegisteredUsers;
+    private long userID;
     private boolean isAdmin;
     private boolean isRegistered;
     private AlertDialog alertDialog;
@@ -68,7 +69,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         super.onCreate(savedInstanceState);
 
         /** get the user's ID */
-        long userID = CommonMethods.getMyUserID(getContext());
+        userID = CommonMethods.getMyUserID(getContext());
 
         /** get the publication from the intent */
         publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
@@ -191,7 +192,6 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
             case R.id.detail_delete:
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext())
                                 .setTitle("Are you sure?")
-//                                .setMessage()
                                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -200,6 +200,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                                         deleteIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_DELETE_PUBLICATION);
                                         deleteIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
                                         getContext().startService(deleteIntent);
+                                        PublicationsDBHandler handler = new PublicationsDBHandler(getContext());
+                                        handler.deletePublication(publication.getId());
+                                        getActivity().finish();
                                     }
                                 })
                                 .setNegativeButton(R.string.no, null);
@@ -264,7 +267,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     public void onClick(View v) {
         Intent i;
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if(user==null){
+        if(user == null || userID==-1){
             /** if the user is not signed in, all buttons are disabled, take him to the sign in activity */
             i = new Intent(getContext(), SignInActivity.class);
             startActivity(i);

@@ -117,6 +117,9 @@
 
         <service
             android:name=".services.GetDataService"
+            android:exported="false" />
+        <service
+            android:name=".services.SignOutService"
             android:exported="false"></service>
     </application>
 

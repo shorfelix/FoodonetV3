@@ -14,6 +14,9 @@ public class Publication implements Parcelable {
     public static final String PUBLICATION_KEY = "publication";
     public static final String PUBLICATION_COUNT_OF_REGISTER_USERS_KEY = "publicationCountOfRegisteredUsersKey";
 
+    public static final String PUBLICATION_ID = "publication_id";
+    public static final String PUBLICATION_VERSION = "publication_version";
+
     private static final String PUBLICATION_PUBLISHER_UUID_KEY = "active_device_dev_uuid";
     private static final String PUBLICATION_TITLE_KEY = "title";
     private static final String PUBLICATION_SUBTITLE_KEY = "subtitle";
@@ -105,15 +108,15 @@ public class Publication implements Parcelable {
         JSONObject publicationJsonRoot = new JSONObject();
         JSONObject publicationJson = new JSONObject();
         try {
-            publicationJson.put(PUBLICATION_LATITUDE_KEY, getLat());
-            publicationJson.put(PUBLICATION_LONGITUDE_KEY, getLng());
-            publicationJson.put(PUBLICATION_STARTING_DATE_KEY, getStartingDate());
+            publicationJson.put(PUBLICATION_TITLE_KEY, getTitle());
+            publicationJson.put(PUBLICATION_SUBTITLE_KEY, getSubtitle());
+            publicationJson.put(PUBLICATION_TYPE_OF_COLLECTION_KEY, getTypeOfCollecting()); // was +1
             publicationJson.put(PUBLICATION_ADDRESS_KEY, getAddress());
+            publicationJson.put(PUBLICATION_STARTING_DATE_KEY, getStartingDate());
             publicationJson.put(PUBLICATION_ENDING_DATE_KEY, getEndingDate());
             publicationJson.put(PUBLICATION_CONTACT_INFO_KEY, getContactInfo());
-            publicationJson.put(PUBLICATION_SUBTITLE_KEY, getSubtitle());
-            publicationJson.put(PUBLICATION_TITLE_KEY, getTitle());
-            publicationJson.put(PUBLICATION_TYPE_OF_COLLECTION_KEY, getTypeOfCollecting()); // was +1
+            publicationJson.put(PUBLICATION_LATITUDE_KEY, getLat());
+            publicationJson.put(PUBLICATION_LONGITUDE_KEY, getLng());
             publicationJson.put(PUBLICATION_IS_ON_AIR_KEY, isOnAir());
             publicationJson.put(PUBLICATION_PHOTO_URL, getPhotoURL());
             publicationJson.put(PUBLICATION_PUBLISHER_UUID_KEY, getActiveDeviceDevUUID());

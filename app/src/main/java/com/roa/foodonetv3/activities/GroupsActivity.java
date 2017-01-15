@@ -86,8 +86,6 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
             headerTxt.setText(mFirebaseUser.getDisplayName());
-        }else {
-            circleImageView.setImageResource(R.drawable.foodonet_image);
         }
 
         if(savedInstanceState== null){
@@ -209,8 +207,13 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                     switch (currentFrag){
                         case GROUPS_OVERVIEW_TAG:
                             /** pressed on create a new group - shows the dialog of creating a new group */
-                            newGroupDialog = new NewGroupDialog(this);
-                            newGroupDialog.show();
+                            if(CommonMethods.getMyUserID(this)==-1){
+                                Intent intent = new Intent(this,SignInActivity.class);
+                                startActivity(intent);
+                            } else{
+                                newGroupDialog = new NewGroupDialog(this);
+                                newGroupDialog.show();
+                            }
                             break;
                         case ADMIN_GROUP_TAG:
                             /** pressed on create a new user in a group the user is the admin of */

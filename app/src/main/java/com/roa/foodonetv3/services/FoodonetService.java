@@ -174,7 +174,7 @@ public class FoodonetService extends IntentService {
 
                             identityProviderUserName = publication.getString("identity_provider_user_name");
                             price = publication.getDouble("price");
-                            priceDescription = "price_description";
+                            priceDescription = publication.getString("price_description");
                             publications.add(new Publication(id, version, title, subtitle, address, typeOfCollecting, lat, lng, startingDate, endingDate, contactInfo, isOnAir,
                                     activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription));
                         }
@@ -188,6 +188,10 @@ public class FoodonetService extends IntentService {
 
                 case ReceiverConstants.ACTION_ADD_PUBLICATION:
                     // TODO: 27/11/2016 add logic to save the publication id to db
+                    Log.d(TAG,responseRoot);
+                    JSONObject rootAddPublication = new JSONObject(responseRoot);
+                    intent.putExtra(Publication.PUBLICATION_ID,rootAddPublication.getLong("id"));
+                    intent.putExtra(Publication.PUBLICATION_VERSION,rootAddPublication.getInt("version"));
                     break;
 
                 case ReceiverConstants.ACTION_EDIT_PUBLICATION: // not tested
@@ -205,7 +209,7 @@ public class FoodonetService extends IntentService {
                     /** declarations */
                     long reportId,publicationID,reportUserID;
                     int publicationVersion,rating;
-                    String active_device_dev_uuid,createdDate,updateDate,dateOfReport,reportUserName,reportContactInfo;
+                    String active_device_dev_uuid,dateOfReport,reportUserName,reportContactInfo;
                     short reportType;
 
                     for (int i = 0; i < rootGetReports.length(); i++) {
@@ -215,8 +219,6 @@ public class FoodonetService extends IntentService {
                         publicationVersion = report.getInt("publication_version");
                         reportType = (short) report.getInt("report");
                         active_device_dev_uuid = report.getString("active_device_dev_uuid");
-//                        createdDate = report.getString("created_at");
-//                        updateDate = report.getString("updated_at");
                         dateOfReport = report.getString("date_of_report");
                         reportUserName = "No user name";
                         if (report.getString("report_user_name") != null) {
@@ -277,28 +279,6 @@ public class FoodonetService extends IntentService {
                     }
                     RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(this);
                     registeredUsersDBHandler.replaceAllRegisteredUsers(registeredUsers);
-
-//                    LongSparseArray<Integer> registeredUsers = new LongSparseArray<>();
-//
-//                    PublicationsDBHandler publicationsDBHandler1 = new PublicationsDBHandler(this);
-//                    ArrayList<Long> publicationsIDs = publicationsDBHandler1.getPublicationsIDs();
-//
-//                    long currentPublicationID;
-//                    JSONArray root = new JSONArray(responseRoot);
-//                    for (int i = 0; i < root.length(); i++) {
-//                        JSONObject registeredUser = root.getJSONObject(i);
-//                        currentPublicationID = registeredUser.getInt("publication_id");
-//                        if(publicationsIDs.contains(currentPublicationID)){
-//                            if(registeredUsers.get(currentPublicationID)==null){
-//                                registeredUsers.put(currentPublicationID,1);
-//                            } else{
-//                                registeredUsers.put(currentPublicationID,registeredUsers.get(currentPublicationID)+1);
-//                            }
-//                        }
-//                    }
-//                    RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(this);
-//                    registeredUsersDBHandler.replaceAllRegisteredUsers(registeredUsers);
-
                     break;
 
                 case ReceiverConstants.ACTION_ADD_GROUP:
