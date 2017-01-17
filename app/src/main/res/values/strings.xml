@@ -102,5 +102,6 @@
     <string name="view_pager_tab_active">Active</string>
     <string name="view_pager_tab_recent">Recent</string>
     <string name="view_pager_tab_closest">Closest</string>
+    <string name="not_signed_in">Not signed in</string>
 
 </resources>
