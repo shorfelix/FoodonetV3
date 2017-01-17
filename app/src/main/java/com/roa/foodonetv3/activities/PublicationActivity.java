@@ -92,6 +92,9 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
             headerTxt.setText(mFirebaseUser.getDisplayName());
+        }else{
+            Glide.with(this).load(android.R.drawable.sym_def_app_icon).into(circleImageView);
+            headerTxt.setText(getResources().getString(R.string.not_signed_in));
         }
     }
 

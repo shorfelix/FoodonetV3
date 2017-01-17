@@ -142,9 +142,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         /** set drawer header and image */
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
+        if (mFirebaseUser != null && mFirebaseUser.getPhotoUrl() != null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
             headerTxt.setText(mFirebaseUser.getDisplayName());
+        } else {
+            Glide.with(this).load(android.R.drawable.sym_def_app_icon).into(circleImageView);
+            headerTxt.setText(getResources().getString(R.string.not_signed_in));
         }
     }
 
