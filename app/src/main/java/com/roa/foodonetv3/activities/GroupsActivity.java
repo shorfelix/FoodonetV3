@@ -22,7 +22,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.roa.foodonetv3.NewGroupDialog;
+import com.roa.foodonetv3.dialogs.NewGroupDialog;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
@@ -47,6 +47,8 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
 
     private String currentFrag;
     private NewGroupDialog newGroupDialog;
+    private CircleImageView circleImageView;
+    private TextView headerTxt;
 
     private FloatingActionButton fab;
     private FragmentManager fragmentManager;
@@ -75,18 +77,11 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
 
-        /** Initialize Firebase Auth */
-        FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser mFirebaseUser = mFirebaseAuth.getCurrentUser();
-
         /** set header imageView */
         View hView = navigationView.getHeaderView(0);
-        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
-        TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
-        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
-            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
-            headerTxt.setText(mFirebaseUser.getDisplayName());
-        }
+        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
+
 
         if(savedInstanceState== null){
             /** if new activity, open the overview group fragment */
@@ -95,9 +90,20 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        /** set drawer header and image */
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
+            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
+            headerTxt.setText(mFirebaseUser.getDisplayName());
+        }
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
-        /** dismiss the dialog */
+        /** dismiss the dialog if open*/
         if(newGroupDialog!= null){
             newGroupDialog.dismiss();
         }
@@ -199,6 +205,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         this.startService(intent);
     }
 
+    /** handles the floating action button presses from the different fragments of GroupsActivity */
     @Override
     public void onClick(View v) {
         switch (v.getId()){

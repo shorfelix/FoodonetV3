@@ -33,11 +33,13 @@ public class PlacesActivity extends AppCompatActivity implements AdapterView.OnI
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_places);
 
+        /** set the ListView */
         ListView recentPlacesList = (ListView) findViewById(R.id.recentPlacesList);
         recentPlacesList.setOnItemClickListener(this);
         TextView textLatestPicker = (TextView) findViewById(R.id.textLatestPicker);
         textLatestPicker.setOnClickListener(this);
 
+        /** load latest places from db, and make a new String[] for use of the ArrayAdapter */
         handler = new LatestPlacesDBHandler(this);
         places = handler.getAllPlaces();
         String[] placesNames = new String[places.size()];
@@ -53,17 +55,6 @@ public class PlacesActivity extends AppCompatActivity implements AdapterView.OnI
             placesNames[i] = address;
         }
         recentPlacesList.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, placesNames));
-
-//        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        recentPlacesList = (ListView) findViewById(R.id.recentPlacesList);
-//        places = new ArrayList<>();
-//        places.add("New location");
-//        while (counter<=4){
-//                places.add(preferences.getString("place_name" + counter, "test"));
-//            counter++;
-//        }
-//        recentPlacesList.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, places));
-//        recentPlacesList.setOnItemClickListener(this);
     }
 
     @Override
@@ -93,9 +84,11 @@ public class PlacesActivity extends AppCompatActivity implements AdapterView.OnI
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        /** if no address is in the clicked item, don't do anything */
         if(places.get(position)==null || places.get(position).getAddress()==null || places.get(position).getAddress().equals("")){
             return;
         }
+        /** return the clicked place to the AddEditPublicationFragment */
         SavedPlace place = places.get(position);
         intentForResult = new Intent();
         intentForResult.putExtra("place",place);
@@ -109,6 +102,7 @@ public class PlacesActivity extends AppCompatActivity implements AdapterView.OnI
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_PLACE_PICKER:
+                    /** returning from google widget, return the clicked place to the AddEditPublicationFragment after adding it to the db */
                     Place placeData = PlacePicker.getPlace(this, data);
                     SavedPlace place = new SavedPlace(String.valueOf(placeData.getAddress()),placeData.getLatLng().latitude,placeData.getLatLng().longitude);
                     handler.addLatestPlace(place);

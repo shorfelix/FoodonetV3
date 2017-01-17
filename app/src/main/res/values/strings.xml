@@ -99,5 +99,8 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="new_location">New location</string>
+    <string name="view_pager_tab_active">Active</string>
+    <string name="view_pager_tab_recent">Recent</string>
+    <string name="view_pager_tab_closest">Closest</string>
 
 </resources>

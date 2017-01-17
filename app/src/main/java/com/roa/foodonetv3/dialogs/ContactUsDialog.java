@@ -1,4 +1,4 @@
-package com.roa.foodonetv3;
+package com.roa.foodonetv3.dialogs;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Feedback;

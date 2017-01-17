@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
@@ -23,7 +22,6 @@ import com.roa.foodonetv3.db.FoodonetDBProvider;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.services.FoodonetService;
 import java.util.ArrayList;
 
 public class MyPublicationsFragment extends Fragment{
@@ -94,39 +92,13 @@ public class MyPublicationsFragment extends Fragment{
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
     }
 
+    /** receiver for reports got from the service */
     private class FoodonetReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            /** receiver for reports got from the service */
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE, -1);
             switch (action) {
-                /** get users publications from service */
-//                case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
-//                    /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
-//                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-//                        // TODO: 27/11/2016 add logic if fails
-//                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-//                    } else{
-//                        publications = intent.getParcelableArrayListExtra(Publication.PUBLICATION_KEY);
-//                        /** get number of registered users of each publication */
-//                        Intent getRegUsersIntent = new Intent(getContext(),FoodonetService.class);
-//                        getRegUsersIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS);
-//                        getContext().startService(getRegUsersIntent);
-//                    }
-//                    break;
-                /** got registered users */
-//                case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
-//                    // TODO: 20/12/2016 add logic to differentiate from the main publications
-//                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-//                        // TODO: 20/12/2016 add logic if fails
-//                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-//                    } else{
-//                        Toast.makeText(context, "got registered users", Toast.LENGTH_SHORT).show();
-//                        GetPubsRegUsersTask getPubsRegUsersTask = new GetPubsRegUsersTask(MyPublicationsFragment.this ,publications,
-//                                intent.getStringExtra(Publication.PUBLICATION_COUNT_OF_REGISTER_USERS_KEY));
-//                        getPubsRegUsersTask.execute();
-//                    }
-//                    break;
+                // TODO: 16/01/2017 delete?
             }
         }
     }

@@ -25,6 +25,8 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
+import com.roa.foodonetv3.services.GetDataService;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class WelcomeUserActivity extends AppCompatActivity {
@@ -167,9 +169,12 @@ public class WelcomeUserActivity extends AppCompatActivity {
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                 } else{
                     /** user successfully added, finish the activity*/
-                    Intent a = new Intent(WelcomeUserActivity.this, MainActivity.class);
-                    a.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(a);
+                    Intent getDataIntent = new Intent(WelcomeUserActivity.this, GetDataService.class);
+                    getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+                    startService(getDataIntent);
+                    Intent startActivityIntent = new Intent(WelcomeUserActivity.this, MainActivity.class);
+                    startActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(startActivityIntent);
                     finish();
                 }
             }

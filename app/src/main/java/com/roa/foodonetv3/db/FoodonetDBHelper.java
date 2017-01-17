@@ -6,11 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 
-public class FoodonetDBHelper extends SQLiteOpenHelper {
-    public static final int NUMBER_OF_LATEST_SEARCHES = 5;
+class FoodonetDBHelper extends SQLiteOpenHelper {
 
-    public FoodonetDBHelper(Context context) {
+    FoodonetDBHelper(Context context) {
         super(context, "foodonet.db", null, context.getResources().getInteger(R.integer.db_version));
     }
 
@@ -51,7 +51,7 @@ public class FoodonetDBHelper extends SQLiteOpenHelper {
 
         /** add the rows of the latest places, since they won't be inserted again */
         ContentValues values;
-        for (int i = 0; i < NUMBER_OF_LATEST_SEARCHES; i++) {
+        for (int i = 0; i < CommonConstants.NUMBER_OF_LATEST_SEARCHES; i++) {
             values = new ContentValues();
             /** initially, the positions are set as 0 - 4 */
             values.put(FoodonetDBProvider.LatestPlacesDB.POSITION_COLUMN,i);

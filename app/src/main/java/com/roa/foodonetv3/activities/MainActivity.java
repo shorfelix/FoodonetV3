@@ -38,22 +38,20 @@ import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
-import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.util.UUID;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "MainActivity";
 
+
     private ViewPager viewPager;
-    private ViewHolderAdapter adapter;
-    private TabLayout tabs;
-    private GoogleApiClient mGoogleApiClient;
     private SharedPreferences preferenceManager;
     private Button buttonTest;
+    private CircleImageView circleImageView;
+    private TextView headerTxt;
 
 
     @Override
@@ -68,20 +66,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         /** check if the app is initialized*/
         preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
-        // TODO: 21/12/2016  get the string from a static field or a resource string
-        if(!preferenceManager.getBoolean("initialized",false)){
-            init();
-        }
 
+        // TODO: 16/01/2017 remove this after finished testing the push notification user sign in
         buttonTest = (Button) findViewById(R.id.buttonTest);
+        // disabling the button for now
+        buttonTest.setVisibility(View.GONE);
         buttonTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 registerToPushNotification(MainActivity.this);
             }
         });
+
         /** set the google api ? */
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
@@ -97,23 +95,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         /** set the drawer */
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         View hView =  navigationView.getHeaderView(0);
-        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
-        TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
-        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
-            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
-            headerTxt.setText(mFirebaseUser.getDisplayName());
-        }
-
-        /** set the view pager */
-        tabs = (TabLayout) findViewById(R.id.tabs);
-
-        viewPager = (ViewPager) findViewById(R.id.viewPager);
-        adapter = new ViewHolderAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(adapter);
-        viewPager.setCurrentItem(0);
-        tabs.setOnTabSelectedListener(this);
-        tabs.setupWithViewPager(viewPager);
+        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -123,7 +106,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         navigationView.setNavigationItemSelectedListener(this);
 
-        /** set the floating action button, since it only serves one purpose, no need to animate or change the view */
+        /** set the view pager */
+        TabLayout tabs = (TabLayout) findViewById(R.id.tabs);
+
+        viewPager = (ViewPager) findViewById(R.id.viewPager);
+        ViewHolderAdapter adapter = new ViewHolderAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(adapter);
+        viewPager.setCurrentItem(0);
+        tabs.setOnTabSelectedListener(this);
+        tabs.setupWithViewPager(viewPager);
+
+
+        /** set the floating action button, since it only serves one fragment, no need to animate or change the view */
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,15 +137,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-
-    private void init(){
-        /** in first use, get a new UUID for the device and save it in the shared preferences */
-        SharedPreferences.Editor edit = preferenceManager.edit();
-        // TODO: 21/12/2016 get the string from a static field or a resource string
-        edit.putBoolean("initialized",true);
-        String deviceUUID = UUID.randomUUID().toString();
-        edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
-        Log.d("Got new device UUID",deviceUUID);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        /** set drawer header and image */
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
+            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
+            headerTxt.setText(mFirebaseUser.getDisplayName());
+        }
     }
 
     @Override
@@ -179,10 +173,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    /** handle the navigation actions in the common methods class */
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        /** handle the navigation actions in the common methods class */
         CommonMethods.navigationItemSelectedAction(this,item.getItemId());
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -205,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     //view pager adapter...
-    public static class ViewHolderAdapter extends FragmentPagerAdapter {
+    public class ViewHolderAdapter extends FragmentPagerAdapter {
 
         public ViewHolderAdapter(FragmentManager fm) {
             super(fm);
@@ -228,11 +222,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public CharSequence getPageTitle(int position) {
             switch (position){
                 case 0:
-                    return "Active";
+                    return getString(R.string.view_pager_tab_active);
                 case 1:
-                    return "Recent";
+                    return getString(R.string.view_pager_tab_recent);
                 case 2:
-                    return "Closest";
+                    return getString(R.string.view_pager_tab_closest);
             }
 
             return null;
@@ -244,10 +238,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    // TODO: 15/01/2017 THIS IS A TEST
     /** test - sign to notifications */
     public void registerToPushNotification(Context context){
-
-
     JSONObject activeDeviceRoot = new JSONObject();
     JSONObject activeDevice = new JSONObject();
     try {
@@ -271,6 +264,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     context.startService(intent);
     }
 
+    // TODO: 15/01/2017 TEST
     public void generateNotificationToken(){
         Thread t = new Thread() {
             @Override

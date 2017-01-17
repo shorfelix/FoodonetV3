@@ -19,6 +19,7 @@ public class RegisteredUsersDBHandler {
         this.context = context;
     }
 
+    /** gets all the registered users */
     public ArrayList<RegisteredUser> getAllRegisteredUsers(){
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.RegisteredUsersDB.CONTENT_URI,null,null,null,null);
         ArrayList<RegisteredUser> registeredUsers = new ArrayList<>();
@@ -37,6 +38,7 @@ public class RegisteredUsersDBHandler {
         return registeredUsers;
     }
 
+    /** @return an array with the publicationID as key and value of the number of registered users for that publication */
     public LongSparseArray<Integer> getAllRegisteredUsersCount(){
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.RegisteredUsersDB.CONTENT_URI,null,null,null,null);
         LongSparseArray<Integer> registeredUsers = new LongSparseArray<>();
@@ -58,6 +60,7 @@ public class RegisteredUsersDBHandler {
         return registeredUsers;
     }
 
+    /** @return the count of registered users the publication has */
     public int getRegisteredUsersCount(long publicationID){
         String[] projection = {FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN};
         String where = String.format("%1$s = ?",FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN);
@@ -74,6 +77,7 @@ public class RegisteredUsersDBHandler {
         return count;
     }
 
+    /** @return true if the user is registered to this publication */
     public boolean isUserRegistered(long publicationID){
         long userID = CommonMethods.getMyUserID(context);
         String[] projection = {FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN};
@@ -91,7 +95,9 @@ public class RegisteredUsersDBHandler {
         return found;
     }
 
+    /** replaces all registered users */
     public void replaceAllRegisteredUsers(ArrayList<RegisteredUser> registeredUsers){
+        /** first, delete all data */
         deleteAllRegisteredUsers();
 
         ContentResolver resolver = context.getContentResolver();
@@ -110,6 +116,7 @@ public class RegisteredUsersDBHandler {
         }
     }
 
+    /** deletes all registered users */
     public void deleteAllRegisteredUsers(){
         context.getContentResolver().delete(FoodonetDBProvider.RegisteredUsersDB.CONTENT_URI,null,null);
     }

@@ -19,7 +19,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.android.gms.maps.model.LatLng;
-import com.roa.foodonetv3.ContactUsDialog;
+import com.roa.foodonetv3.dialogs.ContactUsDialog;
 import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.AboutUsActivity;
@@ -56,8 +56,6 @@ public class CommonMethods {
                 intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainActivity)) {
-                    // TODO: 04/12/2016 roi, what's the point of running the method here?
-                    isGpsEnabled(context);
                     ((Activity) context).finish();
                 }
                 break;
@@ -187,7 +185,7 @@ public class CommonMethods {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER, null);
     }
 
-    public static LatLng getCurrentLocation(Context context){
+    public static LatLng getLastLocation(Context context){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         return new LatLng(Double.valueOf(preferences.getString(CommonConstants.USER_LATITUDE,"-9999")),
                 Double.valueOf(preferences.getString(CommonConstants.USER_LONGITUDE,"-9999")));
@@ -210,13 +208,12 @@ public class CommonMethods {
     }
 
 
-    /*
+    /**
      * Calculate distance between two points in latitude and longitude taking
      * into account height difference.
      * Uses Haversine method as its base. Distance in Meters
      */
-    public static double distance(double lat1, double lng1, double lat2,
-                                  double lng2) {
+    public static double distance(double lat1, double lng1, double lat2, double lng2) {
 
         final int R = 6371; // Radius of the earth
 
@@ -403,6 +400,7 @@ public class CommonMethods {
     }
 
 
+    // TODO: 17/01/2017 not tested yet
     public static boolean isInternetEnabled(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();

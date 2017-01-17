@@ -23,7 +23,6 @@ public class ReportsDBHandler {
         String where = String.format("%1$s = ?" ,FoodonetDBProvider.ReportsDB.PUBLICATION_ID_COLUMN);
         String[] whereArgs = {String.valueOf(publicationID)};
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.ReportsDB.CONTENT_URI,null,where,whereArgs,null);
-        /** declarations */
         long reportId, reportUserID;
         int publicationVersion, rating;
         short reportType;

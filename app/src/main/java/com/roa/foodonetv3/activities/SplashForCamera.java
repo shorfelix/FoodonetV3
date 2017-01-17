@@ -7,10 +7,10 @@ import android.os.Bundle;
 import android.view.Window;
 import android.widget.TextView;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 
 public class SplashForCamera extends AppCompatActivity {
     private static final String TAG = "SplashForCamera";
-    public static final int TIMER = 3000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +22,7 @@ public class SplashForCamera extends AppCompatActivity {
         /** set animation of message to rotate the phone to take the picture, and rotate the message */
         TextView textSplashMessageForCamera = (TextView) findViewById(R.id.textSplashMessageForCamera);
         ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(textSplashMessageForCamera,"rotation",90);
-        objectAnimator.setDuration(TIMER/2);
+        objectAnimator.setDuration(CommonConstants.SPLASH_CAMERA_TIME /2);
         objectAnimator.start();
 
         /** exit after timer ends */
@@ -31,6 +31,6 @@ public class SplashForCamera extends AppCompatActivity {
             public void run() {
                 finish();
             }
-        }, TIMER);
+        }, CommonConstants.SPLASH_CAMERA_TIME);
     }
 }

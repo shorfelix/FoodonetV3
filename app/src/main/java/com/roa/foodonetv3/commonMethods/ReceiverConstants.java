@@ -33,6 +33,7 @@ public class ReceiverConstants {
     /** Local types */
     public static final int ACTION_FAB_CLICK = 100;
     public static final int ACTION_GOT_DATA = 200;
+    public static final int ACTION_SIGN_OUT = 300;
 
     public static final String FAB_TYPE = "fab_type";
     public static final String PUBLICATION_REGISTERED_USERS = "publicationRegisteredUsers";

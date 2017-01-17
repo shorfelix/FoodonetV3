@@ -29,7 +29,6 @@ import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.activities.FullscreenActivityImage;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.adapters.ReportsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
@@ -331,8 +330,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
                 /** pressing on the publication image - open full screen view of the image */
                 case R.id.imagePicturePublication:
-                    i = new Intent(getContext(), FullscreenActivityImage.class);
-                    startActivity(i);
+                    // TODO: 16/01/2017 add image view logic
                     break;
             }
         }

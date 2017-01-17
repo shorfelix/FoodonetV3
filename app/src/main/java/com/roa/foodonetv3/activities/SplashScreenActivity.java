@@ -26,7 +26,6 @@ import java.util.UUID;
 
 public class SplashScreenActivity extends AppCompatActivity implements LocationListener {
     private LocationManager locationManager;
-    private String providerName;
     private static final int PERMISSION_REQUEST_NEW_LOCATION = 1;
     private static final int PERMISSION_REQUEST_UNREGISTER = 2;
     private static final String GOT_LOCATION = "gotLocation";
@@ -74,7 +73,7 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         // TODO: 21/12/2016 change the logic to be run from a different class, add common methods - getUserLocation method
         sharedPreferences.edit().putBoolean(GOT_LOCATION,false).apply();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        providerName = LocationManager.NETWORK_PROVIDER;
+        String providerName = LocationManager.NETWORK_PROVIDER;
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(providerName, 1000, 100, SplashScreenActivity.this);
@@ -107,8 +106,8 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
     }
     @Override
 
+    /** marshmallow and up, if location permission not allowed yet, run */
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        /** marshmallow and up, if location permission not allowed yet, run */
         switch (requestCode){
             case PERMISSION_REQUEST_NEW_LOCATION:
                 /** in case of a request */

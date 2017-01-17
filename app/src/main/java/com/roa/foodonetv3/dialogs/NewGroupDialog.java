@@ -1,9 +1,11 @@
-package com.roa.foodonetv3;
+package com.roa.foodonetv3.dialogs;
 
 import android.app.Dialog;
 import android.content.Context;
 import android.view.View;
 import android.widget.EditText;
+
+import com.roa.foodonetv3.R;
 
 public class NewGroupDialog extends Dialog implements View.OnClickListener {
     private EditText editGroupName;

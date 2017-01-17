@@ -17,11 +17,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.Editable;
 import android.text.InputFilter;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,8 +29,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -53,13 +48,12 @@ import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class AddEditPublicationFragment extends Fragment implements View.OnClickListener {
     public static final String TAG = "AddEditPublicationFrag";
     private static final int INTENT_TAKE_PICTURE = 1;
-    private static final int INTENT_PICK_PICTURE = 3;
+    private static final int INTENT_PICK_PICTURE = 2;
     public static final int TYPE_NEW_PUBLICATION = 1;
     public static final int TYPE_EDIT_PUBLICATION = 2;
     private EditText editTextTitleAddPublication, editTextPriceAddPublication, editTextDetailsAddPublication;
@@ -71,8 +65,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private SavedPlace place;
     private Publication publication;
     private boolean isEdit;
-    private static int savePrefCount = 0;
-    private SharedPreferences preferences;
     private ArrayList<Group> groups;
     private ArrayAdapter<String> spinnerAdapter;
 
@@ -93,6 +85,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         /** local image path that will be used for saving locally and uploading the file name to the server*/
         mCurrentPhotoPath = "";
 
+        receiver = new FoodonetReceiver();
         isEdit = getArguments().getInt(TAG, TYPE_NEW_PUBLICATION) != TYPE_NEW_PUBLICATION;
 
         if (isEdit) {
@@ -127,7 +120,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         editTextPriceAddPublication.setFilters(new InputFilter[] {new DecimalDigitsInputFilter(5,2)});
         v.findViewById(R.id.imageTakePictureAddPublication).setOnClickListener(this);
         imagePictureAddPublication = (ImageView) v.findViewById(R.id.imagePictureAddPublication);
-        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         return v;
     }
@@ -135,7 +127,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     @Override
     public void onResume() {
         super.onResume();
-        receiver = new FoodonetReceiver();
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
@@ -171,11 +162,11 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
     }
 
+    // TODO: 19/11/2016 not tested yet
     public void loadPublicationIntoViews() {
-        // TODO: 19/11/2016 not tested yet
         editTextTitleAddPublication.setText(publication.getTitle());
         textLocationAddPublication.setText(publication.getAddress());
-        // TODO: 29/12/2016 add logic to spinner?
+        // TODO: 29/12/2016 add logic to spinner
 //        spinnerShareWith.set
         editTextDetailsAddPublication.setText(publication.getSubtitle());
         editTextPriceAddPublication.setText(String.valueOf(publication.getPrice()));
@@ -199,7 +190,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                                         super.run();
                                         synchronized (getContext()) {
                                             try {
-                                                getContext().wait(SplashForCamera.TIMER);
+                                                getContext().wait(CommonConstants.SPLASH_CAMERA_TIME);
                                                 /** starts the image taking intent through the default app*/
                                                 dispatchTakePictureIntent();
                                             } catch (InterruptedException e) {
@@ -373,7 +364,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         }
     }
 
-    /*
+    /**
      * Begins to upload the file specified by the file path.
      */
     private void beginS3Upload(String filePath) {
@@ -404,13 +395,13 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE, -1);
             switch (action) {
                 case ReceiverConstants.ACTION_FAB_CLICK:
+                    /** button for uploading the publication to the server, if an image was taken,
+                     * start uploading to the s3 server as well, currently no listener for s3 finished upload*/
                     if (intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR, false)) {
                         // TODO: 18/12/2016 add logic if fails
                         Toast.makeText(context, "fab failed", Toast.LENGTH_SHORT).show();
                     } else {
                         if (intent.getIntExtra(ReceiverConstants.FAB_TYPE, -1) == ReceiverConstants.FAB_TYPE_SAVE_NEW_PUBLICATION) {
-                            /** button for uploading the publication to the server, if an image was taken,
-                             *  start uploading to the s3 server as well, currently no listener for s3 finished upload*/
                             uploadPublicationToServer();
                             if (!mCurrentPhotoPath.equals("")) {
                                 beginS3Upload("file:" + mCurrentPhotoPath);
@@ -422,6 +413,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                     break;
 
                 case ReceiverConstants.ACTION_ADD_PUBLICATION:
+                    /** gets the new publication's ID and version to be saved into the db */
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 20/12/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();

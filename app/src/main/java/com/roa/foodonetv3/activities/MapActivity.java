@@ -4,19 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -34,13 +26,9 @@ import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.FoodonetDBProvider;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.services.FoodonetService;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, MapPublicationRecyclerAdapter.OnImageAdapterClickListener {
 
@@ -50,7 +38,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private LatLng userLocation;
     private HashMap<String, Publication> hashMap;
     private FoodonetReceiver receiver;
-    private RecyclerView mapRecycler;
     private MapPublicationRecyclerAdapter adapter;
 
 
@@ -60,7 +47,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         setContentView(R.layout.activity_map);
 
         receiver = new FoodonetReceiver();
-        mapRecycler = (RecyclerView) findViewById(R.id.mapRecycler);
+        RecyclerView mapRecycler = (RecyclerView) findViewById(R.id.mapRecycler);
         mapRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         adapter = new MapPublicationRecyclerAdapter(this);
         mapRecycler.setAdapter(adapter);
@@ -70,15 +57,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onResume() {
         super.onResume();
-        userLocation = CommonMethods.getCurrentLocation(this);
+        /** get last known user location */
+        userLocation = CommonMethods.getLastLocation(this);
+
+        /** get non user publications from db */
         PublicationsDBHandler handler = new PublicationsDBHandler(this);
         publications = handler.getPublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_NON_USER_PUBLICATIONS);
         adapter.updatePublications(publications);
-        /** set the broadcast receiver for getting all publications from the server */
-        receiver = new FoodonetReceiver();
+
+        /** set the broadcast receiver for future stuff */
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
 
+        /** get to the onMapReady when done */
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if(mapFragment!=null) {
             mapFragment.getMapAsync(MapActivity.this);
@@ -105,13 +96,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-
         if(userLocation!=null){
             mMap.addMarker(new MarkerOptions().position(userLocation).title("You are here")
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 8));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 12));
         }
-        // Add a publications markers
+        /** Add a publications markers */
         for(int i = 0; i< publications.size(); i++){
             MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_xh));
             LatLng publicationTest = new LatLng(publications.get(i).getLat(), publications.get(i).getLng());
@@ -143,7 +133,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private class FoodonetReceiver extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context context, Intent intent) {
             // TODO: 15/01/2017 delete?

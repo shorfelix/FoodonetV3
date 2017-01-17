@@ -167,6 +167,7 @@ public class PublicationsDBHandler {
         }
     }
 
+    /** inserts a new publication into the db */
     public void insertPublication(Publication publication){
         ContentValues values = new ContentValues();
         values.put(FoodonetDBProvider.PublicationsDB.PUBLICATION_ID_COLUMN,publication.getId());
@@ -199,6 +200,7 @@ public class PublicationsDBHandler {
         context.getContentResolver().delete(FoodonetDBProvider.PublicationsDB.CONTENT_URI,null,null);
     }
 
+    /** deletes a specific publication */
     public void deletePublication(long publicationID){
         String where = String.format("%1$s = ?",FoodonetDBProvider.PublicationsDB.PUBLICATION_ID_COLUMN);
         String [] whereArgs = {String.valueOf(publicationID)};

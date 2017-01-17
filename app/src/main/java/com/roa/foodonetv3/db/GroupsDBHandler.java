@@ -21,7 +21,6 @@ public class GroupsDBHandler {
     public ArrayList<Group> getAllGroups(){
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,null,null,null);
         ArrayList<Group> groups = new ArrayList<>();
-        /** declarations */
         String groupName;
         long userID, groupID;
         while(c!=null && c.moveToNext()){
@@ -37,11 +36,11 @@ public class GroupsDBHandler {
         return groups;
     }
 
+    /** get all groups not including 0 - public */
     public ArrayList<Group> getAllGroupsWithPublic(){
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,null,null,null);
         ArrayList<Group> groups = new ArrayList<>();
         groups.add(new Group(context.getResources().getString(R.string.audience_public),-1,null,0));
-        /** declarations */
         String groupName;
         long userID, groupID;
         while(c!=null && c.moveToNext()){
@@ -73,12 +72,12 @@ public class GroupsDBHandler {
         return groupsIDs;
     }
 
+    /** replaces all groups in the db */
     public void replaceAllGroups(ArrayList<Group> groups){
         /** first, delete all current groups from db */
         deleteAllGroups();
 
         ContentResolver resolver = context.getContentResolver();
-        /** declarations */
         ContentValues values;
         Group group;
         for (int i = 0; i < groups.size(); i++) {

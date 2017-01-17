@@ -3,8 +3,6 @@ package com.roa.foodonetv3.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.util.LongSparseArray;
-import android.support.v4.util.SparseArrayCompat;
 import android.util.Log;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
@@ -17,7 +15,6 @@ import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.PublicationReport;
 import com.roa.foodonetv3.model.RegisteredUser;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,8 +26,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-
 import javax.net.ssl.HttpsURLConnection;
 
 /** main service to communicate with foodonet server */
@@ -38,8 +33,6 @@ public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
 
     private static final int TIMEOUT_TIME = 5000;
-
-    private int responseCode;
 
     public FoodonetService() {
         super("FoodonetService");
@@ -99,8 +92,8 @@ public class FoodonetService extends IntentService {
                     default:
                         serviceError = true;
                 }
-                responseCode = connection.getResponseCode();
-                if(responseCode!=HttpsURLConnection.HTTP_OK && responseCode != HttpsURLConnection.HTTP_CREATED){
+                int responseCode = connection.getResponseCode();
+                if(responseCode !=HttpsURLConnection.HTTP_OK && responseCode != HttpsURLConnection.HTTP_CREATED){
                     serviceError = true;
                 } else{
                     reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -134,7 +127,6 @@ public class FoodonetService extends IntentService {
 
     private Intent addResponseToIntent(int actionType, String responseRoot, Intent intent){
         try {
-            long userID = CommonMethods.getMyUserID(this);
             switch (actionType) {
                 case ReceiverConstants.ACTION_GET_PUBLICATIONS:
                     /** get the users groups id, as we don't care about the others */
@@ -292,7 +284,7 @@ public class FoodonetService extends IntentService {
                     JSONArray groupArray = new JSONArray(responseRoot);
                     /** declarations */
                     ArrayList<Group> groups = new ArrayList<>();
-                    long groupID,memberID;
+                    long groupID,memberID,userID;
                     String groupName,phoneNumber,memberName;
                     boolean isAdmin;
 

@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.model.SavedPlace;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class LatestPlacesDBHandler {
         this.context = context;
     }
 
-
+    /** get all latest saved places */
     public ArrayList<SavedPlace> getAllPlaces(){
         ArrayList<SavedPlace> savedPlaces = new ArrayList<>();
         String sortOrder = String.format("%1$s ASC",FoodonetDBProvider.LatestPlacesDB.POSITION_COLUMN);
@@ -37,13 +38,14 @@ public class LatestPlacesDBHandler {
         return savedPlaces;
     }
 
-    /** add a new savedPlace to the top of the list of last searched places */
+    /** add a new savedPlace to the top of the list of last searched places
+     * @param savedPlace the place to be saved into the db */
     public void addLatestPlace(SavedPlace savedPlace){
         ContentResolver resolver = context.getContentResolver();
         ContentValues values;
 
         /** change the position of each of the places, and change the values of the last one which will become the first with the data that we received */
-        int arraySize = FoodonetDBHelper.NUMBER_OF_LATEST_SEARCHES;
+        int arraySize = CommonConstants.NUMBER_OF_LATEST_SEARCHES;
 
         for (int i = arraySize -1; i >= -1 ; i--) {
             values = new ContentValues();
@@ -68,8 +70,8 @@ public class LatestPlacesDBHandler {
         ContentResolver resolver = context.getContentResolver();
         ContentValues values = new ContentValues();
         values.put(FoodonetDBProvider.LatestPlacesDB.ADDRESS_COLUMN,"");
-        values.put(FoodonetDBProvider.LatestPlacesDB.LAT_COLUMN,-9999);
-        values.put(FoodonetDBProvider.LatestPlacesDB.LNG_COLUMN,-9999);
+        values.put(FoodonetDBProvider.LatestPlacesDB.LAT_COLUMN,CommonConstants.LATLNG_ERROR);
+        values.put(FoodonetDBProvider.LatestPlacesDB.LNG_COLUMN,CommonConstants.LATLNG_ERROR);
 
         resolver.update(FoodonetDBProvider.LatestPlacesDB.CONTENT_URI,values,null,null);
     }

@@ -24,6 +24,9 @@ import com.roa.foodonetv3.activities.MainActivity;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.FoodonetDBProvider;
+import com.roa.foodonetv3.model.Publication;
+
+import java.util.ArrayList;
 
 public class ActiveFragment extends Fragment {
     private static final String TAG = "ActiveFragment";
@@ -40,8 +43,6 @@ public class ActiveFragment extends Fragment {
         super.onCreate(savedInstanceState);
         receiver = new FoodonetReceiver();
         setHasOptionsMenu(true);
-
-
     }
 
     @Override
@@ -59,8 +60,6 @@ public class ActiveFragment extends Fragment {
         return v;
     }
 
-
-
     @Override
     public void onResume() {
         super.onResume();
@@ -68,7 +67,6 @@ public class ActiveFragment extends Fragment {
         IntentFilter filter =  new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
-        // TODO: 12/01/2017 test db
         adapter.updatePublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_NON_USER_PUBLICATIONS);
     }
 
@@ -108,7 +106,6 @@ public class ActiveFragment extends Fragment {
             // TODO: 20/12/2016 should be moved to the activity
             switch (intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)){
                 case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
-                    // TODO: 20/12/2016 add logic to differentiate from the main publications
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 20/12/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();

@@ -30,8 +30,8 @@ import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+/** recycler adapter for publications */
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
-    /** recycler adapter for publications */
     private static final String TAG = "PubsRecyclerAdapter";
 
     private Context context;
@@ -47,21 +47,11 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         this.context = context;
         /** get the S3 utility */
         transferUtility = CommonMethods.getTransferUtility(context);
-//        setHasStableIds(true);
         userLatLng = new LatLng(Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LATITUDE,String.valueOf(LOCATION_NOT_FOUND))),
                 Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LONGITUDE,String.valueOf(LOCATION_NOT_FOUND))));
     }
 
-//    private int getNumberRegisteredUsers(long publicationID){
-//        int count = 0;
-//        for (int i = 0; i < registeredUsersArray.size(); i++) {
-//            if (registeredUsersArray.get(i).getPublicationID() == publicationID){
-//                count++;
-//            }
-//        }
-//        return count;
-//    }
-
+    /** updates the recycler */
     public void updatePublications(ArrayList<Publication> publications, LongSparseArray<Integer> registeredUsersArray){
         this.registeredUsersArray = registeredUsersArray;
         filteredPublications.clear();
@@ -70,6 +60,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         notifyDataSetChanged();
     }
 
+    /** updates the recycler */
     public void updatePublications(int typeFilter){
         if(publicationsDBHandler == null){
             publicationsDBHandler = new PublicationsDBHandler(context);

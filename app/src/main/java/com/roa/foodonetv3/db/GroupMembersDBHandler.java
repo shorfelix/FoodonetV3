@@ -22,7 +22,6 @@ public class GroupMembersDBHandler {
         ArrayList<GroupMember> members = new ArrayList<>();
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.MembersDB.CONTENT_URI,null,null,null,null);
 
-        /** declarations */
         long groupID, userID;
         String name, phoneNumber;
         boolean isAdmin;
@@ -47,7 +46,6 @@ public class GroupMembersDBHandler {
         deleteAllGroupsMembers();
 
         ContentResolver resolver = context.getContentResolver();
-        /** declarations */
         ContentValues values;
         GroupMember member;
         for (int i = 0; i < members.size(); i++) {
