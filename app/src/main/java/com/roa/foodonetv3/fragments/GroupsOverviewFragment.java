@@ -14,19 +14,21 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.widget.TextView;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.GroupsRecyclerAdapter;
-import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.db.GroupsDBHandler;
 import com.roa.foodonetv3.model.Group;
-import com.roa.foodonetv3.services.FoodonetService;
 import java.util.ArrayList;
 
 public class GroupsOverviewFragment extends Fragment {
     private static final String TAG = "GroupsOverviewFragment";
 
     private GroupsRecyclerAdapter adapter;
+    private TextView textInfo;
+    private View layoutInfo;
+
     private FoodonetReceiver receiver;
 
     public GroupsOverviewFragment() {
@@ -48,10 +50,17 @@ public class GroupsOverviewFragment extends Fragment {
         /** set title */
         getActivity().setTitle(R.string.drawer_groups);
 
+        /** set recycler for publications */
         RecyclerView recyclerGroupsOverview = (RecyclerView) v.findViewById(R.id.recyclerGroupsOverview);
         recyclerGroupsOverview.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GroupsRecyclerAdapter(getContext());
         recyclerGroupsOverview.setAdapter(adapter);
+
+        /** set info screen for when there are no groups */
+        layoutInfo = v.findViewById(R.id.layoutInfo);
+        layoutInfo.setVisibility(View.GONE);
+        textInfo = (TextView) v.findViewById(R.id.textInfo);
+        textInfo.setText(R.string.you_dont_have_any_groups_yet);
 
         return v;
     }
@@ -63,12 +72,15 @@ public class GroupsOverviewFragment extends Fragment {
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
-        /** temp, get all the user's groups from service */
-        Intent intent = new Intent(getContext(),FoodonetService.class);
-        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_GROUPS);
-        String[] args = new String[]{String.valueOf(CommonMethods.getMyUserID(getContext()))};
-        intent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-        getContext().startService(intent);
+        GroupsDBHandler handler = new GroupsDBHandler(getContext());
+        ArrayList<Group> groups = handler.getAllGroups();
+        if(groups.size() == 0){
+            layoutInfo.setVisibility(View.VISIBLE);
+            textInfo.setText(R.string.you_dont_have_any_groups_yet);
+        } else{
+            layoutInfo.setVisibility(View.GONE);
+            adapter.updateGroups(groups);
+        }
     }
 
     @Override
@@ -83,32 +95,7 @@ public class GroupsOverviewFragment extends Fragment {
             /** receiver for reports got from the service */
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             switch (action){
-                /** got user's groups */
-                case ReceiverConstants.ACTION_GET_GROUPS:
-                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-                        // TODO: 27/11/2016 add logic if fails
-                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-                    } else{
-                        ArrayList<Group> groups = intent.getParcelableArrayListExtra(Group.KEY);
-                        adapter.updateGroups(groups);
-                    }
-                    break;
-                /** the new group was added */
-                case ReceiverConstants.ACTION_ADD_GROUP:
-                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-                        // TODO: 27/11/2016 add logic if fails
-                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-                    } else {
-                        int groupID = intent.getIntExtra(Group.GROUP,-1);
-
-                        // TODO: 21/12/2016 test, should be through db and not running the service again
-                        Intent updateIntent = new Intent(getContext(),FoodonetService.class);
-                        updateIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_GROUPS);
-                        String[] args = new String[]{String.valueOf(CommonMethods.getMyUserID(getContext()))};
-                        updateIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-                        getContext().startService(updateIntent);
-                        break;
-                    }
+                // TODO: 16/01/2017 delete?
             }
         }
     }

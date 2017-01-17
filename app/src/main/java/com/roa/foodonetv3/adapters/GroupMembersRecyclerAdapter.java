@@ -12,6 +12,7 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.model.GroupMember;
 import java.util.ArrayList;
 
+/** recycler for groupsMembers */
 public class GroupMembersRecyclerAdapter extends RecyclerView.Adapter<GroupMembersRecyclerAdapter.MemberHolder>{
     private static final String TAG = "GroupMembersRecyclerAdapter";
 

@@ -20,38 +20,39 @@ public class PublicationReport implements Parcelable {
     private static final String REPORT_RATING = "rating";
     private static final String REPORT_REPORTER_USER_ID = "reporter_user_id";
 
-    private long reportId, publicationId;
-    private int publicationVersion, reportType, reportUserId, rating;
-    private String active_device_dev_uuid, createdDate, updateDate, dateOfReport, reportUserName,
-    reportContactInfo;
+    private long reportID, publicationID, reportUserID;
+    private int publicationVersion, rating;
+    private short reportType;
+    private String active_device_dev_uuid,dateOfReport, reportUserName, reportContactInfo;// createdDate, updateDate, ;
 
-    public PublicationReport(long reportId, long publicationId, int publicationVersion, int reportType, String active_device_dev_uuid,
-                             String createdDate, String updateDate, String dateOfReport, String reportUserName,
-                             String reportContactInfo, int reportUserId, int rating) {
+    public PublicationReport(long reportID, long publicationID, int publicationVersion, short reportType, String active_device_dev_uuid,
+                             //String createdDate, String updateDate,
+                             String dateOfReport, String reportUserName,
+                             String reportContactInfo, long reportUserID, int rating) {
         this.active_device_dev_uuid = active_device_dev_uuid;
-        this.createdDate = createdDate;
+//        this.createdDate = createdDate;
         this.dateOfReport = dateOfReport;
-        this.publicationId = publicationId;
+        this.publicationID = publicationID;
         this.publicationVersion = publicationVersion;
         this.rating = rating;
         this.reportContactInfo = reportContactInfo;
-        this.reportId = reportId;
+        this.reportID = reportID;
         this.reportType = reportType;
-        this.reportUserId = reportUserId;
+        this.reportUserID = reportUserID;
         this.reportUserName = reportUserName;
-        this.updateDate = updateDate;
+//        this.updateDate = updateDate;
     }
 
     protected PublicationReport(Parcel in) {
-        reportId = in.readLong();
-        publicationId = in.readLong();
+        reportID = in.readLong();
+        publicationID = in.readLong();
         publicationVersion = in.readInt();
-        reportType = in.readInt();
-        reportUserId = in.readInt();
+        reportType = (short) in.readInt();
+        reportUserID = in.readInt();
         rating = in.readInt();
         active_device_dev_uuid = in.readString();
-        createdDate = in.readString();
-        updateDate = in.readString();
+//        createdDate = in.readString();
+//        updateDate = in.readString();
         dateOfReport = in.readString();
         reportUserName = in.readString();
         reportContactInfo = in.readString();
@@ -75,7 +76,7 @@ public class PublicationReport implements Parcelable {
         JSONObject reportJsonRoot = new JSONObject();
         JSONObject reportJson = new JSONObject();
         try {
-            reportJson.put(REPORT_PUBLICATION_ID, getPublicationId());
+            reportJson.put(REPORT_PUBLICATION_ID, getPublicationID());
             reportJson.put(REPORT_PUBLICATION_VERSION, getPublicationVersion());
             reportJson.put(REPORT_REPORT, getReportType());
             reportJson.put(REPORT_DATE_OF_REPORT, getDateOfReport());
@@ -83,7 +84,7 @@ public class PublicationReport implements Parcelable {
             reportJson.put(REPORT_USER_NAME,getReportUserName());
             reportJson.put(REPORT_CONTACT_INFO,getReportContactInfo());
             reportJson.put(REPORT_RATING,getRating());
-            reportJson.put(REPORT_REPORTER_USER_ID,getReportUserId());
+            reportJson.put(REPORT_REPORTER_USER_ID,getReportUserID());
 
             reportJsonRoot.put(REPORT_KEY, reportJson);
         } catch (JSONException e) {
@@ -100,13 +101,13 @@ public class PublicationReport implements Parcelable {
         this.active_device_dev_uuid = active_device_dev_uuid;
     }
 
-    public String getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(String createdDate) {
-        this.createdDate = createdDate;
-    }
+//    public String getCreatedDate() {
+//        return createdDate;
+//    }
+//
+//    public void setCreatedDate(String createdDate) {
+//        this.createdDate = createdDate;
+//    }
 
     public String getDateOfReport() {
         return dateOfReport;
@@ -116,12 +117,12 @@ public class PublicationReport implements Parcelable {
         this.dateOfReport = dateOfReport;
     }
 
-    public long getPublicationId() {
-        return publicationId;
+    public long getPublicationID() {
+        return publicationID;
     }
 
-    public void setPublicationId(long publicationId) {
-        this.publicationId = publicationId;
+    public void setPublicationID(long publicationID) {
+        this.publicationID = publicationID;
     }
 
     public int getPublicationVersion() {
@@ -148,28 +149,28 @@ public class PublicationReport implements Parcelable {
         this.reportContactInfo = reportContactInfo;
     }
 
-    public long getReportId() {
-        return reportId;
+    public long getReportID() {
+        return reportID;
     }
 
-    public void setReportId(long reportId) {
-        this.reportId = reportId;
+    public void setReportID(long reportID) {
+        this.reportID = reportID;
     }
 
-    public int getReportType() {
+    public short getReportType() {
         return reportType;
     }
 
-    public void setReportType(int reportType) {
+    public void setReportType(short reportType) {
         this.reportType = reportType;
     }
 
-    public int getReportUserId() {
-        return reportUserId;
+    public long getReportUserID() {
+        return reportUserID;
     }
 
-    public void setReportUserId(int reportUserId) {
-        this.reportUserId = reportUserId;
+    public void setReportUserID(long reportUserID) {
+        this.reportUserID = reportUserID;
     }
 
     public String getReportUserName() {
@@ -180,13 +181,13 @@ public class PublicationReport implements Parcelable {
         this.reportUserName = reportUserName;
     }
 
-    public String getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(String updateDate) {
-        this.updateDate = updateDate;
-    }
+//    public String getUpdateDate() {
+//        return updateDate;
+//    }
+//
+//    public void setUpdateDate(String updateDate) {
+//        this.updateDate = updateDate;
+//    }
 
     @Override
     public int describeContents() {
@@ -195,15 +196,15 @@ public class PublicationReport implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(reportId);
-        dest.writeLong(publicationId);
+        dest.writeLong(reportID);
+        dest.writeLong(publicationID);
         dest.writeInt(publicationVersion);
         dest.writeInt(reportType);
-        dest.writeInt(reportUserId);
+        dest.writeLong(reportUserID);
         dest.writeInt(rating);
         dest.writeString(active_device_dev_uuid);
-        dest.writeString(createdDate);
-        dest.writeString(updateDate);
+//        dest.writeString(createdDate);
+//        dest.writeString(updateDate);
         dest.writeString(dateOfReport);
         dest.writeString(reportUserName);
         dest.writeString(reportContactInfo);

@@ -33,8 +33,10 @@ import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.adapters.ReportsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.db.PublicationsDBHandler;
+import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.model.RegistrationPublication;
+import com.roa.foodonetv3.model.RegisteredUser;
 import com.roa.foodonetv3.model.PublicationReport;
 import com.roa.foodonetv3.services.FoodonetService;
 import com.squareup.picasso.Picasso;
@@ -51,7 +53,10 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     private Publication publication;
     private ReportsRecyclerAdapter adapter;
     private FoodonetReceiver receiver;
+    private int countRegisteredUsers;
+    private long userID;
     private boolean isAdmin;
+    private boolean isRegistered;
     private AlertDialog alertDialog;
 
     public PublicationDetailFragment() {
@@ -62,15 +67,26 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        /** get the user's ID */
+        userID = CommonMethods.getMyUserID(getContext());
+
         /** get the publication from the intent */
         publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
 
         /** check if the user is the admin of the publication */
-        isAdmin = publication != null && publication.getPublisherID() == CommonMethods.getMyUserID(getContext());
+        isAdmin = publication != null && publication.getPublisherID() == userID;
+        RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(getContext());
         if(isAdmin) {
             /** if the user is the admin, show the menu for editing, deleting or taking the publication offline */
             setHasOptionsMenu(true);
+        } else{
+            /** the user is not the admin, check if he's a registered user for the publication */
+            // TODO: 13/01/2017 add db get
+
+            isRegistered = registeredUsersDBHandler.isUserRegistered(publication.getId());
         }
+        /** get the number of users registered for this publication */
+        countRegisteredUsers = registeredUsersDBHandler.getRegisteredUsersCount(publication.getId());
 
         receiver = new FoodonetReceiver();
     }
@@ -101,6 +117,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         textPublicationPrice = (TextView) v.findViewById(R.id.textPublicationPrice);
         textPublicationDetails = (TextView) v.findViewById(R.id.textPublicationDetails);
         imagePicturePublication = (ImageView) v.findViewById(R.id.imagePicturePublication);
+        imagePicturePublication.setOnClickListener(this);
         imagePublisherUser = (CircleImageView) v.findViewById(R.id.imagePublisherUser);
         imageActionPublicationJoin = (ImageView) v.findViewById(R.id.imageActionPublicationJoin);
         imageActionPublicationReport = (ImageView) v.findViewById(R.id.imageActionPublicationSMS);
@@ -174,7 +191,6 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
             case R.id.detail_delete:
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext())
                                 .setTitle("Are you sure?")
-//                                .setMessage()
                                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -183,6 +199,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                                         deleteIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_DELETE_PUBLICATION);
                                         deleteIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
                                         getContext().startService(deleteIntent);
+                                        PublicationsDBHandler handler = new PublicationsDBHandler(getContext());
+                                        handler.deletePublication(publication.getId());
+                                        getActivity().finish();
                                     }
                                 })
                                 .setNegativeButton(R.string.no, null);
@@ -208,9 +227,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
         String timeRemaining = String.format(Locale.US, "%1$s",
                 CommonMethods.getTimeDifference(getContext(),CommonMethods.getCurrentTimeSeconds(),Double.parseDouble(publication.getEndingDate())));
+
         textTimeRemaining.setText(timeRemaining);
-        // TODO: 13/11/2016 get number of users who have joined this publication, currently hard coded
-        textJoined.setText(String.format(Locale.US,"%1$s : %2$d",getResources().getString(R.string.joined),publication.getRegisteredUsersCount()));
+        textJoined.setText(String.format(Locale.US,"%1$s : %2$d",getResources().getString(R.string.joined),countRegisteredUsers));
         textTitlePublication.setText(publication.getTitle());
         textPublicationAddress.setText(publication.getAddress());
         // TODO: 13/11/2016 get rating through reports
@@ -247,7 +266,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     public void onClick(View v) {
         Intent i;
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if(user==null){
+        if(user == null || userID==-1){
             /** if the user is not signed in, all buttons are disabled, take him to the sign in activity */
             i = new Intent(getContext(), SignInActivity.class);
             startActivity(i);
@@ -256,10 +275,10 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 /** join publication */
                 case R.id.imageActionPublicationJoin:
                     // TODO: 21/12/2016 add logic for if the user is already signed to the publication
-                    RegistrationPublication registrationPublication = new RegistrationPublication(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
+                    RegisteredUser registeredUser = new RegisteredUser(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
                             CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),user.getDisplayName(),CommonMethods.getMyUserPhone(getContext()),
                             CommonMethods.getMyUserID(getContext()));
-                    String registration = registrationPublication.getJsonForRegistration().toString();
+                    String registration = registeredUser.getJsonForRegistration().toString();
                     String[] registrationArgs = {String.valueOf(publication.getId())};
                     i = new Intent(getContext(),FoodonetService.class);
                     i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION);
@@ -272,8 +291,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 case R.id.imageActionPublicationSMS:
                     // TODO: 14/11/2016 test for adding a report, hard coded
                     long currentTime = (long) CommonMethods.getCurrentTimeSeconds();
-                    PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(),3,CommonMethods.getDeviceUUID(getContext()),
-                            "","",String.valueOf(currentTime),user.getDisplayName(),
+                    PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(), (short) 3,CommonMethods.getDeviceUUID(getContext()),
+                            //"","",
+                            String.valueOf(currentTime),user.getDisplayName(),
                             CommonMethods.getMyUserPhone(getContext()),CommonMethods.getMyUserID(getContext()),4);
                     String reportJson = publicationReport.getAddReportJson().toString();
                     Log.d(TAG,"report json:"+reportJson);
@@ -306,6 +326,11 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                                 ));
                         startActivity(i);
                     }
+                    break;
+
+                /** pressing on the publication image - open full screen view of the image */
+                case R.id.imagePicturePublication:
+                    // TODO: 16/01/2017 add image view logic
                     break;
             }
         }

@@ -14,15 +14,18 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.model.User;
+
+import java.util.UUID;
 
 public class SplashScreenActivity extends AppCompatActivity implements LocationListener {
     private LocationManager locationManager;
-    private String providerName;
-    public static final String USER_LATITUDE = "user_latitude";
-    public static final String USER_LONGITUDE = "user_longitude";
     private static final int PERMISSION_REQUEST_NEW_LOCATION = 1;
     private static final int PERMISSION_REQUEST_UNREGISTER = 2;
     private static final String GOT_LOCATION = "gotLocation";
@@ -37,7 +40,13 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        if(!sharedPreferences.getBoolean("initialized",false)){
+            init();
+        }
         startGps();
+        CommonMethods.getNewData(this);
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -49,12 +58,22 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         }, 1000);
     }
 
+    private void init(){
+        /** in first use, get a new UUID for the device and save it in the shared preferences */
+        SharedPreferences.Editor edit = sharedPreferences.edit();
+        // TODO: 21/12/2016 get the string from a static field or a resource string
+        edit.putBoolean("initialized",true);
+        String deviceUUID = UUID.randomUUID().toString();
+        edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
+        Log.d("Got new device UUID",deviceUUID);
+    }
+
     public void startGps(){
         /** get a network based position (fastest, and accuracy is not an issue) so when the app starts it will have a reference to distances */
         // TODO: 21/12/2016 change the logic to be run from a different class, add common methods - getUserLocation method
         sharedPreferences.edit().putBoolean(GOT_LOCATION,false).apply();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        providerName = LocationManager.NETWORK_PROVIDER;
+        String providerName = LocationManager.NETWORK_PROVIDER;
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(providerName, 1000, 100, SplashScreenActivity.this);
@@ -65,8 +84,8 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
     public void onLocationChanged(Location location) {
         LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(USER_LATITUDE, String.valueOf(userLocation.latitude));
-        editor.putString(USER_LONGITUDE, String.valueOf(userLocation.longitude));
+        editor.putString(CommonConstants.USER_LATITUDE, String.valueOf(userLocation.latitude));
+        editor.putString(CommonConstants.USER_LONGITUDE, String.valueOf(userLocation.longitude));
         editor.putBoolean(GOT_LOCATION,true);
         editor.apply();
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
@@ -87,8 +106,8 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
     }
     @Override
 
+    /** marshmallow and up, if location permission not allowed yet, run */
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        /** marshmallow and up, if location permission not allowed yet, run */
         switch (requestCode){
             case PERMISSION_REQUEST_NEW_LOCATION:
                 /** in case of a request */

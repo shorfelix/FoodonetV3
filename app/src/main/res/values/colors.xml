@@ -6,4 +6,7 @@
     <color name="FooBlack">#FF000000</color>
     <color name="FooGreen">#4CAF50</color>
     <color name="FooLightBlue">#2196F3</color>
+    <color name="FooGrey">#707070</color>
+
+    <color name="black_overlay">#66000000</color>
 </resources>

@@ -57,8 +57,6 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         loginButton.setReadPermissions("email", "public_profile");
         loginButton.registerCallback(mCallbackManager,this);
 
-
-
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {

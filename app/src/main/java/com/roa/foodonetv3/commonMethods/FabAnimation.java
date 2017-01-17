@@ -13,7 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.animation.DecelerateInterpolator;
 
 public class FabAnimation {
-    /** animator method for floating action button */
+    /** static animator method for floating action button */
     public static void animateFAB(Context context, final FloatingActionButton fab, int y, long duration, int imageResource, int color, boolean toHide){
         /** in order of denying user input during animation, turn the clickable to false */
         fab.setClickable(false);

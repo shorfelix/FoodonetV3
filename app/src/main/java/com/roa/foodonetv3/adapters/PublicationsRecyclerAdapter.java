@@ -3,6 +3,7 @@ package com.roa.foodonetv3.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.preference.PreferenceManager;
+import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,8 +18,10 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PublicationActivity;
-import com.roa.foodonetv3.activities.SplashScreenActivity;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.db.PublicationsDBHandler;
+import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
 import com.squareup.picasso.Picasso;
 import java.io.File;
@@ -27,27 +30,44 @@ import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+/** recycler adapter for publications */
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
-    /** recycler adapter for publications */
     private static final String TAG = "PubsRecyclerAdapter";
 
     private Context context;
     private ArrayList<Publication> filteredPublications = new ArrayList<>();
     private ArrayList<Publication> publications = new ArrayList<>();
+    private LongSparseArray<Integer> registeredUsersArray = new LongSparseArray<>();
     private TransferUtility transferUtility;
     private LatLng userLatLng;
     private static final double LOCATION_NOT_FOUND = -9999;
+    private PublicationsDBHandler publicationsDBHandler;
 
     public PublicationsRecyclerAdapter(Context context) {
         this.context = context;
         /** get the S3 utility */
         transferUtility = CommonMethods.getTransferUtility(context);
-//        setHasStableIds(true);
-        userLatLng = new LatLng(Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LATITUDE,String.valueOf(LOCATION_NOT_FOUND))),
-                Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(SplashScreenActivity.USER_LONGITUDE,String.valueOf(LOCATION_NOT_FOUND))));
+        userLatLng = new LatLng(Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LATITUDE,String.valueOf(LOCATION_NOT_FOUND))),
+                Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LONGITUDE,String.valueOf(LOCATION_NOT_FOUND))));
     }
 
-    public void updatePublications(ArrayList<Publication> publications){
+    /** updates the recycler */
+    public void updatePublications(ArrayList<Publication> publications, LongSparseArray<Integer> registeredUsersArray){
+        this.registeredUsersArray = registeredUsersArray;
+        filteredPublications.clear();
+        filteredPublications.addAll(publications);
+        this.publications = publications;
+        notifyDataSetChanged();
+    }
+
+    /** updates the recycler */
+    public void updatePublications(int typeFilter){
+        if(publicationsDBHandler == null){
+            publicationsDBHandler = new PublicationsDBHandler(context);
+        }
+        RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(context);
+        ArrayList<Publication> publications = publicationsDBHandler.getPublications(typeFilter);
+        registeredUsersArray = registeredUsersDBHandler.getAllRegisteredUsersCount();
         filteredPublications.clear();
         filteredPublications.addAll(publications);
         this.publications = publications;
@@ -87,7 +107,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         return filteredPublications.size();
     }
 
-    class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener, View.OnClickListener, View.OnLongClickListener {
+    class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener, View.OnClickListener {
         private Publication publication;
         private ImageView imagePublicationGroup;
         private CircleImageView imagePublication;
@@ -106,7 +126,6 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             textPublicationUsers = (TextView) itemView.findViewById(R.id.textPublicationUsers);
             publicationImageSize = (int)context.getResources().getDimension(R.dimen.image_size_68);
             itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(this);
         }
 
         private void bindPublication(Publication publication) {
@@ -120,7 +139,11 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             } else{
                 textPublicationAddressDistance.setText("");
             }
-            String registeredUsers = String.format(Locale.US,"%1$d %2$s",publication.getRegisteredUsersCount(),context.getResources().getString(R.string.users_joined));
+            Integer numberRegisteredUsers = registeredUsersArray.get(publication.getId());
+            if(numberRegisteredUsers== null){
+                numberRegisteredUsers = 0;
+            }
+            String registeredUsers = String.format(Locale.US,"%1$d %2$s", numberRegisteredUsers,context.getResources().getString(R.string.users_joined));
             textPublicationUsers.setText(registeredUsers);
             //add photo here
             if(publication.getPhotoURL().equals("")){
@@ -186,16 +209,6 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.PUBLICATION_DETAIL_TAG);
             i.putExtra(Publication.PUBLICATION_KEY,publication);
             context.startActivity(i);
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            // TODO: 19/11/2016 test method to edit
-            Intent i = new Intent(context, PublicationActivity.class);
-            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.EDIT_PUBLICATION_TAG);
-            i.putExtra(Publication.PUBLICATION_KEY,publication);
-            context.startActivity(i);
-            return true;
         }
     }
 }

@@ -32,8 +32,6 @@ import com.roa.foodonetv3.model.Publication;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
-
-    // TODO: 12/11/2016 move two constants to different class
     private static final String TAG = "PublicationActivity";
 
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
@@ -44,6 +42,8 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
 
     private FloatingActionButton fab;
     private String currentFrag;
+    private CircleImageView circleImageView;
+    private TextView headerTxt;
 
     private FragmentManager fragmentManager;
 
@@ -72,25 +72,29 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
-        FirebaseUser mFirebaseUser = mFirebaseAuth.getCurrentUser();
         View hView = navigationView.getHeaderView(0);
-        CircleImageView circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
-        TextView headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
-        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
-            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
-            headerTxt.setText(mFirebaseUser.getDisplayName());
-        }else {
-            circleImageView.setImageResource(R.drawable.foodonet_image);
-        }
+        circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
+        headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
 
-        /** get which fragment should be open from the intent, and open it */
+        /** get which fragment should be opened from the intent, and open it */
         Intent intent = getIntent();
         String openFragType = intent.getStringExtra(ACTION_OPEN_PUBLICATION);
         if(savedInstanceState==null){
             openNewPublicationFrag(openFragType);
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        /** set drawer header and image */
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
+            Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
+            headerTxt.setText(mFirebaseUser.getDisplayName());
+        }
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -111,8 +115,10 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         return true;
     }
 
+    /** opens a new fragment and sets the fab */
     private void openNewPublicationFrag(String openFragType){
         /** get the values for the fab animation */
+        // TODO: 16/01/2017 debug and check dimensions
         long duration;
         if(currentFrag==null){
             /** if this is the first frag - don't make a long animation */
@@ -186,10 +192,15 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                             break;
                         case MY_PUBLICATIONS_TAG:
                             /** clicked on create new publication */
-                            // TODO: 18/12/2016 currently instantiating another activity just for the back press
-                            Intent newAddPublicationIntent = new Intent(this,PublicationActivity.class);
-                            newAddPublicationIntent.putExtra(ACTION_OPEN_PUBLICATION,ADD_PUBLICATION_TAG);
-                            startActivity(newAddPublicationIntent);
+                            if(CommonMethods.getMyUserID(this)==-1){
+                                Intent intent = new Intent(this,SignInActivity.class);
+                                startActivity(intent);
+                            } else{
+                                // TODO: 18/12/2016 currently instantiating another activity just for the back press
+                                Intent newAddPublicationIntent = new Intent(this,PublicationActivity.class);
+                                newAddPublicationIntent.putExtra(ACTION_OPEN_PUBLICATION,ADD_PUBLICATION_TAG);
+                                startActivity(newAddPublicationIntent);
+                            }
                     }
                     break;
                 }
