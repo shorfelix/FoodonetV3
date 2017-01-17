@@ -13,6 +13,7 @@ import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.model.Group;
 import java.util.ArrayList;
 
+/** recycler for groups */
 public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAdapter.GroupHolder> {
 
     private static final String TAG = "GroupsRecyclerAdapter";

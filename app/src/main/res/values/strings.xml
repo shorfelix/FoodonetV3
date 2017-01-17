@@ -16,8 +16,8 @@
 
     <string name="post_hint_what_would_you_like_to_share">What would you like to share?</string>
     <string name="post_hint_pickup_address">Pickup address</string>
-    <string name="post_hint_share_with">Share with</string>
-    <string name="post_hint_add_more_details">Add more details</string>
+    <string name="post_hint_share_with">Share with:</string>
+    <string name="post_hint_additional_details">Additional details</string>
     <string name="post_please_enter_all_fields">Please enter all fields</string>
     <string name="post_hint_choose_date_to_end">Choose date to end</string>
     <string name="post_hint_price">Price</string>
@@ -61,7 +61,7 @@
     <string name="rotate_the_phone">Rotate the phone</string>
     <string name="send">send</string>
     <string name="create">Create</string>
-    <string name="cancel">cancel</string>
+    <string name="cancel">Cancel</string>
 
     <string name="about_us_info">Foodonet is a social initiative aiming to reduce food waste.\nFoodonet develops a mobile platform that allows people to easily donate spare food to one another.\nFoodonet is connecting food producers directly to customers with no mediators and cutting food costs</string>
     <string name="prefs_profile_settings">Profile Settings</string>
@@ -88,5 +88,19 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="users_joined">users joined</string>
+    <string name="h_hours">h</string>
+    <string name="min_minutes">min</string>
+    <string name="day">day</string>
+    <string name="price">Price:</string>
+    <string name="you_dont_have_any_groups_yet">You don\'t have any groups yet</string>
+    <string name="hi_what_would_you_like_to_share">Hi,\nWhat would you like\n to share?</string>
+
+    <string name="title_activity_fullscreen_image">FullscreenActivityImage</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="new_location">New location</string>
+    <string name="view_pager_tab_active">Active</string>
+    <string name="view_pager_tab_recent">Recent</string>
+    <string name="view_pager_tab_closest">Closest</string>
 
 </resources>

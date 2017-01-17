@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.MenuItemCompat;
@@ -21,21 +20,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.Tasks.GetPubsRegUsersTask;
 import com.roa.foodonetv3.activities.MainActivity;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.db.FoodonetDBProvider;
 import com.roa.foodonetv3.model.Publication;
-import com.roa.foodonetv3.services.FoodonetService;
 
 import java.util.ArrayList;
 
-public class ActiveFragment extends Fragment implements GetPubsRegUsersTask.OnGetRegisteredUsersListener {
+public class ActiveFragment extends Fragment {
     private static final String TAG = "ActiveFragment";
 
     private PublicationsRecyclerAdapter adapter;
     private FoodonetReceiver receiver;
-    private ArrayList<Publication> publications;
 
     public ActiveFragment() {
         // Required empty public constructor
@@ -63,8 +60,6 @@ public class ActiveFragment extends Fragment implements GetPubsRegUsersTask.OnGe
         return v;
     }
 
-
-
     @Override
     public void onResume() {
         super.onResume();
@@ -72,15 +67,7 @@ public class ActiveFragment extends Fragment implements GetPubsRegUsersTask.OnGe
         IntentFilter filter =  new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
-        /** temp request publications update from the server on fragment resume */
-        // TODO: 21/12/2016 probably change to activity and get from db
-        Intent intent = new Intent(getContext(), FoodonetService.class);
-        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER);
-        getContext().startService(intent);
-        /** show that the list is being updated */
-        if(getView()!= null){
-            Snackbar.make(getView(), R.string.updating,Snackbar.LENGTH_SHORT).show();
-        }
+        adapter.updatePublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_NON_USER_PUBLICATIONS);
     }
 
     @Override
@@ -113,41 +100,18 @@ public class ActiveFragment extends Fragment implements GetPubsRegUsersTask.OnGe
         });
     }
 
-    /** interface from the asynctask that calculates how many users are logged in to the publications, it is the last step, so update after receiving */
-    @Override
-    public void onGetRegisteredUsers(ArrayList<Publication> publications) {
-        this.publications = publications;
-        adapter.updatePublications(publications);
-    }
-
     private class FoodonetReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
             // TODO: 20/12/2016 should be moved to the activity
             switch (intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1)){
-                case ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
-                    /** receiver for publications got from the service, temporary, as we'll want to move it to the activity probably */
-                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-                        // TODO: 20/12/2016 add logic if fails
-                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-                    } else{
-                        publications = intent.getParcelableArrayListExtra(Publication.PUBLICATION_KEY);
-                        /** get number of registered users of each publication */
-                        Intent getRegUsersIntent = new Intent(getContext(),FoodonetService.class);
-                        getRegUsersIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS);
-                        getContext().startService(getRegUsersIntent);
-                    }
-                    break;
                 case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
-                    // TODO: 20/12/2016 add logic to differentiate from the main publications
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 20/12/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        Toast.makeText(context, "got registered users", Toast.LENGTH_SHORT).show();
-                        GetPubsRegUsersTask getPubsRegUsersTask = new GetPubsRegUsersTask(ActiveFragment.this ,publications,
-                                intent.getStringExtra(Publication.PUBLICATION_COUNT_OF_REGISTER_USERS_KEY));
-                        getPubsRegUsersTask.execute();
+                        /** if getDataService finished, update the adapter as we received new groups, publications and registered users */
+                        adapter.updatePublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_NON_USER_PUBLICATIONS);
                     }
                     break;
             }

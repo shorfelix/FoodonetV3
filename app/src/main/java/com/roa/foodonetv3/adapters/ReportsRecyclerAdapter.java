@@ -12,6 +12,7 @@ import com.roa.foodonetv3.model.PublicationReport;
 import java.util.ArrayList;
 import java.util.Locale;
 
+/** recycler for publication reports */
 public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecyclerAdapter.ReportsHolder> {
     private static final String TAG = "ReportsRecyclerAdapter";
     private static final int REPORT_VIEW = 1;

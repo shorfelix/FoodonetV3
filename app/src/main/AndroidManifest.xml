@@ -54,28 +54,31 @@
         <activity
             android:name=".activities.MapActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait"
-            android:label="@string/title_activity_map" />
+            android:label="@string/title_activity_map"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activities.SplashForCamera"
             android:configChanges="orientation"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Dialog.Alert" />
-        <activity android:name=".activities.AboutUsActivity"
+        <activity
+            android:name=".activities.AboutUsActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".activities.PrefsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.PrefsActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".activities.PlacesActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.PlacesActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activities.GroupsActivity"
-            android:label="@string/title_activity_groups"
             android:configChanges="orientation"
+            android:label="@string/title_activity_groups"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -86,12 +89,19 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <provider
+            android:name=".db.FoodonetDBProvider"
+            android:authorities="com.roa.foodonetv3.db.FoodonetDBProvider"
+            android:exported="false" />
 
         <service
             android:name="com.amazonaws.mobileconnectors.s3.transferutility.TransferService"
             android:enabled="true" />
         <service
             android:name=".services.FoodonetService"
+            android:exported="false" />
+        <service
+            android:name=".services.GetDataService"
             android:exported="false" />
 
         <meta-data

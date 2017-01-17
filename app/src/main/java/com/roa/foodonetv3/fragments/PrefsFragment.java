@@ -1,33 +1,25 @@
 package com.roa.foodonetv3.fragments;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import com.google.firebase.auth.FirebaseAuth;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.model.User;
 
 public class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
-    private SharedPreferences preferences;
-    private Context context;
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.context = context;
-    }
+    private OnSignOutClickListener listener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_screen);
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        listener = (OnSignOutClickListener) getActivity();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        Preference button = (Preference)findPreference(getString(R.string.prefs_sign_out));
+        Preference button = findPreference(getString(R.string.prefs_sign_out));
         button.setOnPreferenceClickListener(this);
     }
 
@@ -39,13 +31,12 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
 
     @Override
     public boolean onPreferenceClick(Preference preference) {
-        // TODO: 05/12/2016 check if it is written as it should...
-        FirebaseAuth.getInstance().signOut();
-        /** remove user phone number and foodonet user ID from sharedPreferences */
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.remove(User.PHONE_NUMBER);
-        editor.remove(User.IDENTITY_PROVIDER_USER_ID);
-        editor.apply();
-        return false;
+
+        listener.onSignOutClick();
+        return true;
+    }
+
+    public interface OnSignOutClickListener{
+        void onSignOutClick();
     }
 }

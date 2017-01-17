@@ -7,17 +7,18 @@ import java.util.Locale;
 public class StartServiceMethods {
     private static final String TAG = "StartServiceMethods";
 
-    /** HTTP_TYPE */
+    /** HTTP_TYPES */
     public static final int HTTP_GET = 1;
     public static final int HTTP_POST = 2;
     public static final int HTTP_PUT = 3;
     public static final int HTTP_DELETE = 4;
 
 
-    /** SEND INTENTS: (putExtra)
-     * - all actions - add String ACTION_TYPE to intent
-     * - actions in post - add JSON_TO_SEND = (String) json data to intent
-     * - actions in put - add JSON_TO_SEND = (String) json data to intent
+    /** builds and handles the building of the required URL.
+     * actions in post - add JSON_TO_SEND = (String) json data to intent.
+     * actions in put - add JSON_TO_SEND = (String) json data to intent.
+     * @param actionType all actions - add String ACTION_TYPE to intent
+     * @param args
      * edit publication - add args[0] = (String) publication id
      * delete publication - add args[0] = (String) publication id
      * get reports - add args[0] = (String) publication id, args[1] = (String) publication version
@@ -26,7 +27,8 @@ public class StartServiceMethods {
      * get publication registered users - add args[0] = (String) publication id
      * add group - add args[0] = String group name
      * get groups - add args[0] = (String) user id
-     * add group member - add args[0] = (String) group id*/
+     * add group member - add args[0] = (String) group id
+     */
 
     public static String getUrlAddress(Context context, int actionType, String[] args) {
         /** prepares the url address according to the action intended */
@@ -35,8 +37,7 @@ public class StartServiceMethods {
         /** add the server to foodonet */
         builder.append(context.getResources().getString(R.string.foodonet_server));
         switch (actionType){
-            case ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
-            case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
+            case ReceiverConstants.ACTION_GET_PUBLICATIONS:
                 builder.append(context.getString(R.string.foodonet_publications));
                 break;
             case ReceiverConstants.ACTION_ADD_PUBLICATION:
@@ -105,11 +106,12 @@ public class StartServiceMethods {
         return builder.toString();
     }
 
+    /** gets the appropriate https type
+     * @value actionType - from ReceiverConstants
+     * @return int (GET,POST,DELETE,PUT)*/
     public static int getHTTPType(int actionType){
         switch (actionType){
-            case ReceiverConstants.ACTION_GET_PUBLICATIONS_EXCEPT_USER:
-                return HTTP_GET;
-            case ReceiverConstants.ACTION_GET_USER_PUBLICATIONS:
+            case ReceiverConstants.ACTION_GET_PUBLICATIONS:
                 return HTTP_GET;
             case ReceiverConstants.ACTION_ADD_PUBLICATION:
                 return HTTP_POST;

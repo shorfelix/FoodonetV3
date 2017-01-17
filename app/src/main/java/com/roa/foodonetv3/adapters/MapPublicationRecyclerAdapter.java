@@ -19,6 +19,7 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 
+/** recycler for horizontal overlay in the map of publication */
 public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPublicationRecyclerAdapter.PublicationHolder> {
 
     private static final String TAG = "MapPubsRecyclerAdapter";

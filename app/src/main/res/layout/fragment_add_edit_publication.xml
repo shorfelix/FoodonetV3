@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
@@ -19,15 +18,15 @@
         android:layout_below="@id/imagePictureAddPublication"/>
 
     <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
         app:srcCompat="@drawable/camera_xxh"
         android:id="@+id/imageTakePictureAddPublication"
         android:scaleType="fitCenter"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="126dp"
+        android:layout_marginTop="123dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp" />
 
@@ -43,7 +42,7 @@
         android:layout_marginEnd="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
         android:hint="@string/post_hint_what_would_you_like_to_share"
-        style="@style/FooMediumPlus"/>
+        style="@style/FooMedium"/>
 
     <TextView
         android:layout_width="match_parent"
@@ -56,53 +55,121 @@
         android:layout_marginEnd="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
         android:layout_marginTop="@dimen/margin_8"
-        android:layout_marginBottom="@dimen/margin_8"
         android:paddingLeft="@dimen/margin_4"
         android:paddingStart="@dimen/margin_4"
+        android:paddingRight="@dimen/margin_4"
+        android:paddingEnd="@dimen/margin_4"
         android:hint="@string/post_hint_pickup_address"
-        style="@style/FooMediumPlus" />
+        style="@style/FooMedium" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:id="@+id/divider1"
+        android:layout_below="@id/textLocationAddPublication"
+        android:background="@color/FooGrey"
+        android:layout_alignLeft="@id/textLocationAddPublication"
+        android:layout_alignStart="@id/textLocationAddPublication"
+        android:layout_alignRight="@id/textLocationAddPublication"
+        android:layout_alignEnd="@id/textLocationAddPublication"
+        android:layout_marginBottom="@dimen/margin_8"
+        android:layout_marginStart="@dimen/margin_4"
+        android:layout_marginLeft="@dimen/margin_4"
+        android:layout_marginEnd="@dimen/margin_4"
+        android:layout_marginRight="@dimen/margin_4"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textPriceHeader"
+        android:layout_below="@+id/divider1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:text="@string/price"
+        android:layout_marginStart="@dimen/margin_16"
+        android:layout_marginLeft="@dimen/margin_16"
+        android:paddingStart="@dimen/margin_4"
+        android:paddingLeft="@dimen/margin_4"
+        android:paddingRight="@dimen/margin_4"
+        android:paddingEnd="@dimen/margin_4"
+        style="@style/FooMedium"
+        />
 
     <EditText
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
-        android:ems="10"
-        android:layout_below="@+id/textLocationAddPublication"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
         android:id="@+id/editTextPriceAddPublication"
-        android:layout_marginEnd="@dimen/margin_16"
-        android:layout_marginStart="@dimen/margin_16"
-        android:hint="@string/post_hint_price"
-        style="@style/FooMediumPlus"/>
+        android:ems="5"
+        android:layout_alignBaseline="@+id/textPriceHeader"
+        android:layout_alignBottom="@+id/textPriceHeader"
+        android:layout_toRightOf="@+id/textPriceHeader"
+        android:layout_toEndOf="@+id/textPriceHeader"
+        android:layout_marginStart="@dimen/margin_8"
+        android:layout_marginLeft="@dimen/margin_8"
+        android:paddingLeft="@dimen/margin_8"
+        android:paddingStart="@dimen/margin_8"
+        android:paddingRight="@dimen/margin_8"
+        android:paddingEnd="@dimen/margin_8"
+        android:hint="@string/free"
+        style="@style/FooMedium"
+        />
 
-    <EditText
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:layout_below="@+id/editTextPriceAddPublication"
+        android:text="₪"
+        android:layout_alignBaseline="@id/textPriceHeader"
+        android:layout_alignBottom="@+id/textPriceHeader"
+        android:layout_toRightOf="@id/editTextPriceAddPublication"
+        android:layout_toEndOf="@id/editTextPriceAddPublication"
+        style="@style/FooSmall"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textPriceHeader"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/editTextShareWithAddPublication"
-        android:layout_marginEnd="@dimen/margin_16"
+        android:id="@+id/textShareWithAddPublication"
         android:layout_marginStart="@dimen/margin_16"
-        android:hint="@string/post_hint_share_with"
-        style="@style/FooMediumPlus"/>
+        android:layout_marginLeft="@dimen/margin_16"
+        android:layout_marginTop="@dimen/margin_8"
+        android:paddingStart="@dimen/margin_4"
+        android:paddingLeft="@dimen/margin_4"
+        android:paddingRight="@dimen/margin_4"
+        android:paddingEnd="@dimen/margin_4"
+        style="@style/FooMedium"
+        android:text="@string/post_hint_share_with"
+        />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerShareWith"
+        android:layout_above="@+id/editTextDetailsAddPublication"
+        android:layout_toRightOf="@+id/textShareWithAddPublication"
+        android:layout_toEndOf="@+id/textShareWithAddPublication"
+        android:layout_marginRight="@dimen/margin_16"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:gravity="center"
+        />
 
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
         android:ems="10"
-        android:layout_below="@+id/editTextShareWithAddPublication"
+        android:layout_below="@+id/textShareWithAddPublication"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:id="@+id/editTextDetailsAddPublication"
         android:layout_marginEnd="@dimen/margin_16"
         android:layout_marginStart="@dimen/margin_16"
-        android:hint="@string/post_hint_add_more_details"
-        style="@style/FooMediumPlus"/>
+        android:hint="@string/post_hint_additional_details"
+        style="@style/FooMedium"/>
 
 
 

@@ -3,6 +3,7 @@ package com.roa.foodonetv3.commonMethods;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -17,7 +18,8 @@ import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.roa.foodonetv3.ContactUsDialog;
+import com.google.android.gms.maps.model.LatLng;
+import com.roa.foodonetv3.dialogs.ContactUsDialog;
 import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.AboutUsActivity;
@@ -27,6 +29,8 @@ import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.model.User;
+import com.roa.foodonetv3.services.GetDataService;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -52,8 +56,6 @@ public class CommonMethods {
                 intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainActivity)) {
-                    // TODO: 04/12/2016 roi, what's the point of running the method here?
-                    isGpsEnabled(context);
                     ((Activity) context).finish();
                 }
                 break;
@@ -109,35 +111,44 @@ public class CommonMethods {
         }
     }
 
+    /** returns current epoch time in seconds(NOT MILLIS!) */
     public static double getCurrentTimeSeconds() {
-        /** returns current epoch time in seconds(NOT MILLIS!) */
         long currentTime = System.currentTimeMillis()/1000;
         return currentTime;
     }
 
-    public static String getTimeDifference(Context context, Double earlierTime, Double laterTime) {
-        /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the duration */
-        long timeDiff = (long) (laterTime - earlierTime) / 60; // minutes as start
-        String typeOfTime;
+    /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the duration */
+    public static String getTimeDifference(Context context, Double earlierTimeInSeconds, Double laterTimeInSeconds) {
+        long timeDiff = (long) (laterTimeInSeconds - earlierTimeInSeconds) / 60; // minutes as start
+        StringBuilder message = new StringBuilder();
         if (timeDiff < 0) {
             return "N/A";
-        } else if (timeDiff < 120) {
-            /** returns time in minutes */
-            typeOfTime = context.getResources().getString(R.string.minutes);
-        } else if (timeDiff / 60 < 48) {
-            /** returns time in hours */
-            typeOfTime = context.getResources().getString(R.string.hours);
-            timeDiff /= 60;
+        } else if(timeDiff < 1440){
+            /** hours, minutes */
+            if(timeDiff /60 != 0){
+                message.append(String.format(Locale.US,"%1$d%2$s ", timeDiff / 60 , context.getResources().getString(R.string.h_hours)));
+            }
+            message.append(String.format(Locale.US,"%1$d%2$s", timeDiff % 60, context.getResources().getString(R.string.min_minutes)));
         } else {
-            /** returns time in days */
-            typeOfTime = context.getResources().getString(R.string.days);
-            timeDiff /= 60 / 24;
+            /** days, hours */
+            long days = timeDiff / 1440;
+            String daysString;
+            if (days == 1) {
+                daysString = context.getResources().getString(R.string.day);
+            } else {
+                daysString = context.getResources().getString(R.string.days);
+            }
+            message.append(String.format(Locale.US, "%1$d %2$s ", days, daysString));
+            if (timeDiff < 10080) {
+                /** only add hours if the difference is less than a week, otherwise just show days */
+                message.append(String.format(Locale.US, "%1$d%2$s", (timeDiff % 1440) / 60, context.getResources().getString(R.string.h_hours)));
+            }
         }
-        return String.format(Locale.US, "%1$d %2$s", timeDiff, typeOfTime);
+        return message.toString();
     }
 
+    /** get the message according to the server specified report type */
     public static String getReportStringFromType(Context context, int typeOfReport) {
-        /** get the message according to the server specified report type */
         switch (typeOfReport) {
             case 1:
                 return context.getResources().getString(R.string.report_has_more_to_offer);
@@ -149,27 +160,39 @@ public class CommonMethods {
         return null;
     }
 
+    public static void getNewData(Context context){
+        Intent getDataIntent = new Intent(context, GetDataService.class);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+        context.startService(getDataIntent);
+    }
+
+    /** returns a UUID */
     public static String getDeviceUUID(Context context) {
-        /** returns a UUID */
         return PreferenceManager.getDefaultSharedPreferences(context).getString(User.ACTIVE_DEVICE_DEV_UUID, null);
     }
 
-    public static int getMyUserID(Context context) {
-        /** returns the userID from shared preferences */
-        return PreferenceManager.getDefaultSharedPreferences(context).getInt(User.IDENTITY_PROVIDER_USER_ID, -1);
+    /** returns the userID from shared preferences */
+    public static long getMyUserID(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getLong(User.IDENTITY_PROVIDER_USER_ID, -1);
     }
 
-    public static void setMyUserID(Context context, int userID) {
-        /** saves the userID to shared preferences */
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putInt(User.IDENTITY_PROVIDER_USER_ID, userID).apply();
+    /** saves the userID to shared preferences */
+    public static void setMyUserID(Context context, long userID) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(User.IDENTITY_PROVIDER_USER_ID, userID).apply();
     }
 
     public static String getMyUserPhone(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER, null);
     }
 
+    public static LatLng getLastLocation(Context context){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return new LatLng(Double.valueOf(preferences.getString(CommonConstants.USER_LATITUDE,"-9999")),
+                Double.valueOf(preferences.getString(CommonConstants.USER_LONGITUDE,"-9999")));
+    }
+
+    /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
     public static long getNewLocalPublicationID() {
-        /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
         //todo add a check for available negative id, currently hard coded
         return -1;
     }
@@ -184,13 +207,13 @@ public class CommonMethods {
         return df.format(num);
     }
 
-    /*
+
+    /**
      * Calculate distance between two points in latitude and longitude taking
      * into account height difference.
      * Uses Haversine method as its base. Distance in Meters
      */
-    public static double distance(double lat1, double lng1, double lat2,
-                                  double lng2) {
+    public static double distance(double lat1, double lng1, double lat2, double lng2) {
 
         final int R = 6371; // Radius of the earth
 
@@ -204,8 +227,8 @@ public class CommonMethods {
         return distance;
     }
 
+    /** Creates a local image file name for taking the picture with the camera */
     public static File createImageFile(Context context) throws IOException {
-        /** Creates a local image file name for taking the picture with the camera */
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -215,8 +238,8 @@ public class CommonMethods {
                 storageDir      /* directory */);
     }
 
+    /** Creates a local image file name for downloaded images from s3 server of a specific publication */
     public static File createImageFile(Context context, long publicationID) throws IOException {
-        /** Creates a local image file name for downloaded images from s3 server of a specific publication */
         String imageFileName = "PublicationID." + publicationID;
         File storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
 //        return File.createTempFile(
@@ -229,14 +252,14 @@ public class CommonMethods {
         return newFile;
     }
 
+    /** returns the file name without the path */
     public static String getFileNameFromPath(String path) {
-        /** returns the file name without the path */
         String[] segments = path.split("/");
         return segments[segments.length - 1];
     }
 
+    /** returns the file name without the path */
     public static String getPublicationIDFromFile(String path) {
-        /** returns the file name without the path */
         String[] segments = path.split(".");
         if (segments.length > 1) {
             return segments[segments.length - 2];
@@ -245,8 +268,8 @@ public class CommonMethods {
         }
     }
 
+    /** Creates a local image file name for downloaded images from s3 server of a specific publication */
     public static String getPhotoPathByID(Context context, long publicationID) {
-        /** Creates a local image file name for downloaded images from s3 server of a specific publication */
         String imageFileName = "PublicationID." + publicationID;
         String storageDir = (context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
 //        return File.createTempFile(
@@ -258,16 +281,17 @@ public class CommonMethods {
         return newFile;
     }
 
+    /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
+     * then, it will overwrite the local original one.
+     * returns true if successful*/
     public static boolean editOverwriteImage(String mCurrentPhotoPath, Bitmap sourceImage) {
-        /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
-         * then, it will overwrite the local original one.
-         * returns true if successful*/
         return compressImage(sourceImage,mCurrentPhotoPath);
     }
+
+    /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
+     * then, it will overwrite the local original one.
+     * returns true if successful*/
     public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath){
-        /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
-         * then, it will overwrite the local original one.
-         * returns true if successful*/
         try {
             Bitmap sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
             return compressImage(sourceBitmap,mCurrentPhotoPath);
@@ -376,6 +400,7 @@ public class CommonMethods {
     }
 
 
+    // TODO: 17/01/2017 not tested yet
     public static boolean isInternetEnabled(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
