@@ -199,7 +199,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     public void onNewGroupClick(String groupName){
         /** after a user creates a new group from the dialog, run the service to create the group */
-        Group newGroup = new Group(groupName, CommonMethods.getMyUserID(this),null,-1);
+        Group newGroup = new Group(groupName, CommonMethods.getMyUserID(this),-1);
         Intent intent = new Intent(this, FoodonetService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_GROUP);
         intent.putExtra(ReceiverConstants.JSON_TO_SEND,newGroup.getAddGroupJson().toString());

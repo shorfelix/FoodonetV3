@@ -22,19 +22,16 @@ public class Group implements Parcelable {
 
     private String groupName;
     private long userID, groupID;
-    private ArrayList<GroupMember> members;
 
-    public Group(String groupName, long userID, ArrayList<GroupMember> members, long groupID) {
+    public Group(String groupName, long userID, long groupID) {
         this.groupName = groupName;
         this.userID = userID;
-        this.members = members;
         this.groupID = groupID;
     }
 
     protected Group(Parcel in) {
         groupName = in.readString();
         userID = in.readLong();
-        members = in.createTypedArrayList(GroupMember.CREATOR);
     }
 
     public static final Creator<Group> CREATOR = new Creator<Group>() {
@@ -48,10 +45,6 @@ public class Group implements Parcelable {
             return new Group[size];
         }
     };
-
-    public void addToMembers(GroupMember member){
-        members.add(member);
-    }
 
     /** creates a json object to be sent to the server */
     public JSONObject getAddGroupJson(){
@@ -69,8 +62,7 @@ public class Group implements Parcelable {
     }
 
     /** creates a json object to be sent to the server */
-    public JSONObject getAddGroupMembersJson(){
-        ArrayList<GroupMember> members = getMembers();
+    public JSONObject getAddGroupMembersJson(ArrayList<GroupMember> members){
         JSONObject groupMembersRoot = new JSONObject();
         JSONArray groupMembersArray = new JSONArray();
         GroupMember member;
@@ -103,14 +95,6 @@ public class Group implements Parcelable {
         this.userID = userID;
     }
 
-    public ArrayList<GroupMember> getMembers() {
-        return members;
-    }
-
-    public void setMembers(ArrayList<GroupMember> members) {
-        this.members = members;
-    }
-
     public long getGroupID() {
         return groupID;
     }
@@ -129,6 +113,5 @@ public class Group implements Parcelable {
         dest.writeString(groupName);
         dest.writeLong(userID);
         dest.writeLong(groupID);
-        dest.writeTypedList(members);
     }
 }

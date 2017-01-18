@@ -7,6 +7,7 @@ import android.util.Log;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.db.GroupMembersDBHandler;
 import com.roa.foodonetv3.db.GroupsDBHandler;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
@@ -284,6 +285,7 @@ public class FoodonetService extends IntentService {
                     JSONArray groupArray = new JSONArray(responseRoot);
                     /** declarations */
                     ArrayList<Group> groups = new ArrayList<>();
+                    ArrayList<GroupMember> members = new ArrayList<>();
                     long groupID,memberID,userID;
                     String groupName,phoneNumber,memberName;
                     boolean isAdmin;
@@ -293,7 +295,6 @@ public class FoodonetService extends IntentService {
                         userID = group.getInt(Group.USER_ID);
                         groupID = group.getInt(Group.GROUP_ID);
                         groupName = group.getString(Group.GET_GROUP_NAME);
-                        ArrayList<GroupMember> members = new ArrayList<>();
                         JSONArray membersArray = group.getJSONArray(Group.MEMBERS);
                         for (int j = 0; j < membersArray.length(); j++) {
                             JSONObject member = membersArray.getJSONObject(j);
@@ -303,10 +304,12 @@ public class FoodonetService extends IntentService {
                             isAdmin = member.getBoolean(GroupMember.IS_ADMIN);
                             members.add(new GroupMember(groupID,memberID,phoneNumber,memberName,isAdmin));
                         }
-                        groups.add(new Group(groupName,userID,members,groupID));
+                        groups.add(new Group(groupName,userID,groupID));
                     }
                     GroupsDBHandler groupsDBHandler = new GroupsDBHandler(this);
                     groupsDBHandler.replaceAllGroups(groups);
+                    GroupMembersDBHandler groupMembersDBHandler = new GroupMembersDBHandler(this);
+                    groupMembersDBHandler.replaceAllGroupsMembers(members);
 
                     Intent getDataIntent1 = new Intent(this,GetDataService.class);
                     getDataIntent1.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_PUBLICATIONS);

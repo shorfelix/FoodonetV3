@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.db.GroupMembersDBHandler;
 import com.roa.foodonetv3.model.GroupMember;
 import java.util.ArrayList;
 
@@ -23,8 +24,9 @@ public class GroupMembersRecyclerAdapter extends RecyclerView.Adapter<GroupMembe
         this.context = context;
     }
 
-    public void updateMembers(ArrayList<GroupMember> members){
-        this.members = members;
+    public void updateMembers(long groupID){
+        GroupMembersDBHandler handler = new GroupMembersDBHandler(context);
+        this.members = handler.getGroupMembers(groupID);
         notifyDataSetChanged();
     }
 
