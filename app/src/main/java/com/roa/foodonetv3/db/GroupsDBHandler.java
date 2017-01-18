@@ -28,7 +28,7 @@ public class GroupsDBHandler {
             groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));
             userID = c.getLong(c.getColumnIndex(FoodonetDBProvider.GroupsDB.ADMIN_ID_COLUMN));
 
-            groups.add(new Group(groupName,userID,null,groupID));
+            groups.add(new Group(groupName,userID,groupID));
         }
         if(c!=null){
             c.close();
@@ -40,7 +40,7 @@ public class GroupsDBHandler {
     public ArrayList<Group> getAllGroupsWithPublic(){
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,null,null,null);
         ArrayList<Group> groups = new ArrayList<>();
-        groups.add(new Group(context.getResources().getString(R.string.audience_public),-1,null,0));
+        groups.add(new Group(context.getResources().getString(R.string.audience_public),-1,0));
         String groupName;
         long userID, groupID;
         while(c!=null && c.moveToNext()){
@@ -48,7 +48,7 @@ public class GroupsDBHandler {
             groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));
             userID = c.getLong(c.getColumnIndex(FoodonetDBProvider.GroupsDB.ADMIN_ID_COLUMN));
 
-            groups.add(new Group(groupName,userID,null,groupID));
+            groups.add(new Group(groupName,userID,groupID));
         }
         if(c!=null){
             c.close();
