@@ -7,8 +7,13 @@ import android.content.IntentFilter;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -16,6 +21,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -30,7 +36,7 @@ import com.roa.foodonetv3.model.Publication;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback, MapPublicationRecyclerAdapter.OnImageAdapterClickListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, MapPublicationRecyclerAdapter.OnImageAdapterClickListener, View.OnClickListener {
 
     private GoogleMap mMap;
     private ArrayList<Publication> publications = new ArrayList<>();
@@ -40,7 +46,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private FoodonetReceiver receiver;
     private MapPublicationRecyclerAdapter adapter;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +53,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         receiver = new FoodonetReceiver();
         RecyclerView mapRecycler = (RecyclerView) findViewById(R.id.mapRecycler);
+        // TODO: 18/01/2017 imageview does not show up for some reason, temp button
+        ImageView imageMyLocation = (ImageView) findViewById(R.id.imageMyLocation);
+        imageMyLocation.setOnClickListener(this);
+        imageMyLocation.bringToFront();
+
         mapRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         adapter = new MapPublicationRecyclerAdapter(this);
         mapRecycler.setAdapter(adapter);
@@ -97,6 +107,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mMap = googleMap;
 
         if(userLocation!=null){
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation,8));
             mMap.addMarker(new MarkerOptions().position(userLocation).title("You are here")
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 12));
@@ -130,6 +141,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         if(mMap!=null){
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
         }
+    }
+
+    @Override
+    public void onClick(View view) {
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 12));
     }
 
     private class FoodonetReceiver extends BroadcastReceiver {
