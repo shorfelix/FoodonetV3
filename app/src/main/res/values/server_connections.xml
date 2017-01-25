@@ -2,27 +2,28 @@
 <resources>
     <!-- preview server -->
     <string name="foodonet_server">https://prv-fd-server.herokuapp.com</string>
+    <string name="amazon_publications_bucket">foodcollectordev</string>
+    <string name="amazon_users_bucket">foodonetusersdev</string>
     <!-- final server -->
     <!--<string name="foodonet_server">https://fd-server.herokuapp.com</string>-->
-
-
-    <string name="amazon_base_url_for_images">https://s3.amazonaws.com/foodcollectordev</string>
-    <string name="amazon_url_for_user_avatar">https://s3.amazonaws.com/foodonetusersdev</string>
-    <string name="amazon_sub_path_publication_images">foodcollectordev</string>
-    <string name="amazon_sub_path_user_images">foodonetusersdev</string>
-    <string name="amazon_user_avatar_image_name">fduser{0}.jpg</string>
+    <!--<string name="amazon_publications_bucket">foodcollector</string>-->
+    <!--<string name="amazon_users_bucket">foodonetusers</string>-->
 
     <string name="foodonet_publications">/publications</string>
     <string name="foodonet_reports_version">/publication_reports?publication_version=</string>
     <string name="foodonet_publication_reports">/publication_reports.json</string>
     <string name="foodonet_feedback">/feedbacks</string>
     <string name="foodonet_groups">/groups</string>
-    <string name="foodonet_registered_user_for_publications">/registered_user_for_publications.json</string>
+    <string name="foodonet_registered_user_for_publications">/registered_user_for_publications</string>
     <string name="foodonet_users">/users</string>
     <string name="foodonet_active_devices">/active_devices.json</string>
+    <string name="foodonet_publication_version">publication_version=</string>
+    <string name="foodonet_active_device_dev_uuid">active_device_dev_uuid</string>
     <string name=".json">.json</string>
 
-    <string name="amazon_bucket">foodonet</string>
-    <string name="amazon_pool_id">eu-west-1:007b7059-b8d5-4067-b57d-ddadcf36f2d5</string>
+    <string name="amazon_aws_account_id">458352772906</string>
+    <string name="amazon_pool_id">us-east-1:ec4b269f-88a9-471d-b548-7886e1f9f2d7</string>
+    <string name="amazon_unauthorized">arn:aws:iam::458352772906:role/Cognito_food_collector_poolUnauth_DefaultRole</string>
+    <string name="amazon_authorized">arn:aws:iam::458352772906:role/Cognito_food_collector_poolAuth_DefaultRole</string>
 
 </resources>

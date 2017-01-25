@@ -137,8 +137,9 @@ public class AdminGroupFragment extends Fragment {
             handler.insertMemberToGroup(group.getGroupID(),member);
             Intent addMemberIntent = new Intent(getContext(), FoodonetService.class);
             addMemberIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
-            ArrayList<GroupMember> members = handler.getGroupMembers(group.getGroupID());
-            addMemberIntent.putExtra(ReceiverConstants.JSON_TO_SEND,group.getAddGroupMembersJson(members).toString());
+            ArrayList<GroupMember> members = new ArrayList<>();
+            members.add(member);
+            addMemberIntent.putExtra(ReceiverConstants.JSON_TO_SEND,Group.getAddGroupMembersJson(members).toString());
             String[] args = {String.valueOf(group.getGroupID())};
             addMemberIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
             getContext().startService(addMemberIntent);
