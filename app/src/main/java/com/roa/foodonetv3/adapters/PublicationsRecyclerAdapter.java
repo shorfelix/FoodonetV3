@@ -146,36 +146,19 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             String registeredUsers = String.format(Locale.US,"%1$d %2$s", numberRegisteredUsers,context.getResources().getString(R.string.users_joined));
             textPublicationUsers.setText(registeredUsers);
             //add photo here
-            if(publication.getPhotoURL().equals("")){
-                /** no image saved, display default image */
-                Picasso.with(context)
-                        .load(R.drawable.foodonet_image)
-                        .resize(publicationImageSize,publicationImageSize)
-                        .centerCrop()
-                        .into(imagePublication);
-                // TODO: 10/11/2016 display default image
-
-            }else{
-                /** there is an image available to download or is currently on the device */
-                // TODO: 10/11/2016 check version of the publication as well
-                /** check if the image is already saved on the device */
-                mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId()));
-                if (mCurrentPhotoFile.isFile()) {
-                    /** image was found and is the same as the publication id */
-
+            mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId(),publication.getVersion()));
+            if(mCurrentPhotoFile.isFile()){
                     Picasso.with(context)
                             .load(mCurrentPhotoFile)
                             .resize(publicationImageSize,publicationImageSize)
                             .centerCrop()
                             .into(imagePublication);
-                } else {
-                    /** image ready to download, not on the device */
-                        TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_bucket),
-                                publication.getPhotoURL(), mCurrentPhotoFile
-                        );
+            } else{
+                String imagePath = CommonMethods.getFileNameFromPublicationID(publication.getId(),publication.getVersion());
+                TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_publications_bucket),
+                        imagePath, mCurrentPhotoFile);
                         observer.setTransferListener(this);
                         observerId = observer.getId();
-                }
             }
         }
 

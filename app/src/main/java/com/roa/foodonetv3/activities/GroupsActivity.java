@@ -1,6 +1,9 @@
 package com.roa.foodonetv3.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -32,6 +35,7 @@ import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.GroupsOverviewFragment;
 import com.roa.foodonetv3.fragments.AdminGroupFragment;
 import com.roa.foodonetv3.model.Group;
+import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.services.FoodonetService;
 import java.util.ArrayList;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -52,6 +56,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
 
     private FloatingActionButton fab;
     private FragmentManager fragmentManager;
+    private FoodonetReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,8 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        receiver = new FoodonetReceiver();
 
         /** set the fragment manager */
         fragmentManager = getSupportFragmentManager();
@@ -92,6 +99,10 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     protected void onResume() {
         super.onResume();
+        /** register receiver */
+        IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
+
         /** set drawer header and image */
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
@@ -106,6 +117,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     protected void onPause() {
         super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         /** dismiss the dialog if open*/
         if(newGroupDialog!= null){
             newGroupDialog.dismiss();
@@ -238,6 +250,40 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                     }
                 }
                 break;
+        }
+    }
+
+    private class FoodonetReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            /** receiver for reports got from the service */
+            int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
+            switch (action){
+                /** response from service of adding a new group */
+                case ReceiverConstants.ACTION_ADD_GROUP:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 14/12/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        long groupID = intent.getLongExtra(Group.GROUP_ID,-1);
+                        if(groupID!=-1){
+                            String[] args = {String.valueOf(groupID)};
+                            ArrayList<GroupMember> userAdmin = new ArrayList<>();
+                            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                            userAdmin.add(new GroupMember(groupID,CommonMethods.getMyUserID(GroupsActivity.this),
+                                    CommonMethods.getMyUserPhone(GroupsActivity.this),firebaseUser.getDisplayName(),true));
+                            String newAdminJson = Group.getAddGroupMembersJson(userAdmin).toString();
+                            Intent addAdminIntent = new Intent(GroupsActivity.this,FoodonetService.class);
+                            addAdminIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
+                            addAdminIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+                            addAdminIntent.putExtra(ReceiverConstants.JSON_TO_SEND,newAdminJson);
+                            GroupsActivity.this.startService(addAdminIntent);
+                        } else{
+                            // TODO: 22/01/2017 do something
+                        }
+
+                    }
+            }
         }
     }
 }

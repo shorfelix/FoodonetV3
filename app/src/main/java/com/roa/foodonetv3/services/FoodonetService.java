@@ -2,8 +2,13 @@ package com.roa.foodonetv3.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.commonMethods.StartServiceMethods;
@@ -21,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -33,6 +39,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
 
+    private long requestIdentifier;
+    private ArrayList<Parcelable> data;
     private static final int TIMEOUT_TIME = 5000;
 
     public FoodonetService() {
@@ -47,6 +55,8 @@ public class FoodonetService extends IntentService {
             boolean serviceError = false;
             int actionType = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             String[] args = intent.getStringArrayExtra(ReceiverConstants.ADDRESS_ARGS);
+            requestIdentifier = intent.getLongExtra(ReceiverConstants.REQUEST_IDENTIFIER,-1);
+            data = intent.getParcelableArrayListExtra(ReceiverConstants.DATA);
             String urlAddress = StartServiceMethods.getUrlAddress(this,actionType, args);
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
@@ -59,9 +69,9 @@ public class FoodonetService extends IntentService {
                 // TODO: 28/11/2016 add logic for timeout
                 int httpType = StartServiceMethods.getHTTPType(actionType);
                 switch (httpType){
-                    case StartServiceMethods.HTTP_GET:
+                    case CommonConstants.HTTP_GET:
                         break;
-                    case StartServiceMethods.HTTP_POST:
+                    case CommonConstants.HTTP_POST:
                         connection.setRequestMethod("POST");
                         connection.addRequestProperty("Accept","application/json");
                         connection.addRequestProperty("Content-Type","application/json");
@@ -74,7 +84,7 @@ public class FoodonetService extends IntentService {
                         postWriter.close();
                         postOs.close();
                         break;
-                    case StartServiceMethods.HTTP_PUT:
+                    case CommonConstants.HTTP_PUT:
                         connection.setRequestMethod("PUT");
                         connection.addRequestProperty("Accept","application/json");
                         connection.addRequestProperty("Content-Type","application/json");
@@ -87,7 +97,7 @@ public class FoodonetService extends IntentService {
                         putWriter.close();
                         putOs.close();
                         break;
-                    case StartServiceMethods.HTTP_DELETE:
+                    case CommonConstants.HTTP_DELETE:
                         connection.setRequestMethod("DELETE");
                         break;
                     default:
@@ -180,11 +190,38 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case ReceiverConstants.ACTION_ADD_PUBLICATION:
-                    // TODO: 27/11/2016 add logic to save the publication id to db
                     Log.d(TAG,responseRoot);
                     JSONObject rootAddPublication = new JSONObject(responseRoot);
-                    intent.putExtra(Publication.PUBLICATION_ID,rootAddPublication.getLong("id"));
-                    intent.putExtra(Publication.PUBLICATION_VERSION,rootAddPublication.getInt("version"));
+                    long addPublicationID = rootAddPublication.getLong("id");
+                    int addPublicationVersion = rootAddPublication.getInt("version");
+                    intent.putExtra(Publication.PUBLICATION_ID,addPublicationID);
+                    intent.putExtra(Publication.PUBLICATION_VERSION,addPublicationVersion);
+                    intent.putExtra(ReceiverConstants.REQUEST_IDENTIFIER,requestIdentifier);
+                    if(data!= null){
+                        Publication addPublication = (Publication) data.get(0);
+                        addPublication.setId(addPublicationID);
+                        addPublication.setVersion(addPublicationVersion);
+                        PublicationsDBHandler publicationsDBHandler1 = new PublicationsDBHandler(this);
+                        publicationsDBHandler1.insertPublication(addPublication);
+                        /** instantiate the transfer utility for the s3*/
+                        TransferUtility transferUtility = CommonMethods.getTransferUtility(this);
+                        /** if there is an image to upload */
+                        if(addPublication.getPhotoURL()!=null){
+                            String[] split = addPublication.getPhotoURL().split(":");
+                            File file = new File(split[1]);
+                            File destFile = new File(CommonMethods.getPhotoPathByID(this,addPublicationID,addPublicationVersion));
+                            Log.d(TAG,"pre"+file.getPath());
+                            String s3Name = CommonMethods.getFileNameFromPublicationID(addPublicationID,addPublicationVersion);
+                            boolean renamed = file.renameTo(destFile);
+                            Log.d(TAG,"post"+destFile.getPath());
+                            if(renamed){
+                                transferUtility.upload(getResources().getString(R.string.amazon_publications_bucket),s3Name,destFile);
+                            }else{
+                                Log.d(TAG,"Rename failed");
+                            }
+                            // TODO: 25/01/2017 currently not checking if the upload was successful or not
+                        }
+                    }
                     break;
 
                 case ReceiverConstants.ACTION_EDIT_PUBLICATION: // not tested
@@ -274,11 +311,15 @@ public class FoodonetService extends IntentService {
                     registeredUsersDBHandler.replaceAllRegisteredUsers(registeredUsers);
                     break;
 
+                case ReceiverConstants.ACTION_UNREGISTER_FROM_PUBLICATION:
+                    Log.d(TAG,responseRoot);
+                    break;
+
                 case ReceiverConstants.ACTION_ADD_GROUP:
                     // TODO: 06/12/2016 add logic according to what we receive
                     JSONObject rootAddGroup = new JSONObject(responseRoot);
                     long newGroupID = rootAddGroup.getLong("id");
-                    intent.putExtra(Group.KEY,newGroupID);
+                    intent.putExtra(Group.GROUP_ID,newGroupID);
                     break;
 
                 case ReceiverConstants.ACTION_GET_GROUPS:

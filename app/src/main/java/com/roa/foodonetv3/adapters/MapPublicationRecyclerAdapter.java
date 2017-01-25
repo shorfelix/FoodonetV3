@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPublicationRecyclerAdapter.PublicationHolder> {
 
     private static final String TAG = "MapPubsRecyclerAdapter";
+    // TODO: 25/01/2017 move to static class
     private static final int publicationImageSize = 120;
     private Context context;
     private ArrayList<Publication> publications = new ArrayList<>();
@@ -60,7 +61,7 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
         return publications.size();
     }
 
-    class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener {
+    class PublicationHolder extends RecyclerView.ViewHolder {
 
         private ImageView mapRecyclerImageView;
         private File mCurrentPhotoFile;
@@ -78,64 +79,50 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
         }
 
         void bindPublication(Publication publication){
-            //add photo here
-            if(publication.getPhotoURL().equals("")){
-                /** no image saved, display default image */
+            File mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId(),publication.getVersion()));
+            if(mCurrentPhotoFile.isFile()){
+                /** there's an image path, try to load from file */
+                Log.d(TAG,"layout size: "+mapRecyclerImageView.getWidth()+","+mapRecyclerImageView.getHeight());
+                // TODO: 13/11/2016 can't get width and height
+                Picasso.with(context)
+                        .load(mCurrentPhotoFile)
+                        .resize(publicationImageSize,publicationImageSize)
+                        .centerCrop()
+                        .into(mapRecyclerImageView);
+            } else{
+                /** load default image */
                 Picasso.with(context)
                         .load(R.drawable.foodonet_image)
                         .resize(publicationImageSize,publicationImageSize)
                         .centerCrop()
                         .into(mapRecyclerImageView);
-                // TODO: 10/11/2016 display default image
-
-            }else{
-                /** there is an image available to download or is currently on the device */
-                // TODO: 10/11/2016 check version of the publication as well
-                /** check if the image is already saved on the device */
-                mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId()));
-                if (mCurrentPhotoFile.isFile()) {
-                    /** image was found and is the same as the publication id */
-
-                    Picasso.with(context)
-                            .load(mCurrentPhotoFile)
-                            .resize(publicationImageSize,publicationImageSize)
-                            .centerCrop()
-                            .into(mapRecyclerImageView);
-                } else {
-                    /** image ready to download, not on the device */
-                    TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_bucket),
-                            publication.getPhotoURL(), mCurrentPhotoFile
-                    );
-                    observer.setTransferListener(this);
-                    observerId = observer.getId();
-                }
             }
         }
 
-        @Override
-        public void onStateChanged(int id, TransferState state) {
-            /** listener for the s3 server download, needs to be class wide since it's currently keeps using the same image in different layout */
-            // TODO: 09/11/2016 check picasso adapter for the images and using the s3 observer on an adapter scale
-            Log.d(TAG,"amazon onStateChanged " + id + " "  + state.toString());
-            if(state == TransferState.COMPLETED){
-                if(observerId==id){
-                    Picasso.with(context)
-                            .load(mCurrentPhotoFile)
-                            .resize(publicationImageSize,publicationImageSize)
-                            .centerCrop()
-                            .into(mapRecyclerImageView);
-                }
-
-            }
-        }
-
-        @Override
-        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-        }
-        @Override
-        public void onError(int id, Exception ex) {
-            Log.d(TAG,"amazon onError" + id + " " + ex.toString());
-        }
+//        @Override
+//        public void onStateChanged(int id, TransferState state) {
+//            /** listener for the s3 server download, needs to be class wide since it's currently keeps using the same image in different layout */
+//            // TODO: 09/11/2016 check picasso adapter for the images and using the s3 observer on an adapter scale
+//            Log.d(TAG,"amazon onStateChanged " + id + " "  + state.toString());
+//            if(state == TransferState.COMPLETED){
+//                if(observerId==id){
+//                    Picasso.with(context)
+//                            .load(mCurrentPhotoFile)
+//                            .resize(publicationImageSize,publicationImageSize)
+//                            .centerCrop()
+//                            .into(mapRecyclerImageView);
+//                }
+//
+//            }
+//        }
+//
+//        @Override
+//        public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+//        }
+//        @Override
+//        public void onError(int id, Exception ex) {
+//            Log.d(TAG,"amazon onError" + id + " " + ex.toString());
+//        }
 
     }
     public interface OnImageAdapterClickListener{

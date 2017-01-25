@@ -150,11 +150,11 @@ public class CommonMethods {
     /** get the message according to the server specified report type */
     public static String getReportStringFromType(Context context, int typeOfReport) {
         switch (typeOfReport) {
-            case 1:
+            case CommonConstants.REPORT_TYPE_HAS_MORE:
                 return context.getResources().getString(R.string.report_has_more_to_offer);
-            case 3:
+            case CommonConstants.REPORT_TYPE_TOOK_ALL:
                 return context.getResources().getString(R.string.report_took_all);
-            case 5:
+            case CommonConstants.REPORT_TYPE_NOTHING_THERE:
                 return context.getResources().getString(R.string.report_found_nothing_there);
         }
         return null;
@@ -252,6 +252,12 @@ public class CommonMethods {
         return newFile;
     }
 
+    /** @return file name from publicationID */
+    public static String getFileNameFromPublicationID(long publicationID,int version){
+        return String.format(Locale.US,"%1$d.%2$d.jpg",
+                publicationID,version);
+    }
+
     /** returns the file name without the path */
     public static String getFileNameFromPath(String path) {
         String[] segments = path.split("/");
@@ -269,14 +275,10 @@ public class CommonMethods {
     }
 
     /** Creates a local image file name for downloaded images from s3 server of a specific publication */
-    public static String getPhotoPathByID(Context context, long publicationID) {
-        String imageFileName = "PublicationID." + publicationID;
+    public static String getPhotoPathByID(Context context, long publicationID, int version) {
+        String imageFileName = getFileNameFromPublicationID(publicationID,version);
         String storageDir = (context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
-//        return File.createTempFile(
-//                imageFileName,  /* prefix */
-//                ".jpg",         /* suffix */
-//                storageDir      /* directory */);
-        String newFile = storageDir + "/" + imageFileName + ".jpg";
+        String newFile = storageDir + "/" + imageFileName;
         Log.d(TAG, "newFile = " + newFile);
         return newFile;
     }
@@ -363,11 +365,24 @@ public class CommonMethods {
         if (sCredProvider == null) {
             sCredProvider = new CognitoCachingCredentialsProvider(
                     context.getApplicationContext(),
+                    context.getResources().getString(R.string.amazon_aws_account_id),
                     context.getResources().getString(R.string.amazon_pool_id),
-                    Regions.EU_WEST_1);
+                    context.getResources().getString(R.string.amazon_unauthorized),
+                    context.getResources().getString(R.string.amazon_authorized),
+                    Regions.US_EAST_1);
         }
         return sCredProvider;
     }
+    // old as backup
+//    private static CognitoCachingCredentialsProvider getCredProvider(Context context) {
+//        if (sCredProvider == null) {
+//            sCredProvider = new CognitoCachingCredentialsProvider(
+//                    context.getApplicationContext(),
+//                    context.getResources().getString(R.string.amazon_pool_id),
+//                    Regions.EU_WEST_1);
+//        }
+//        return sCredProvider;
+//    }
 
     /**
      * Gets an instance of a S3 client which is constructed using the given

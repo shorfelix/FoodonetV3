@@ -118,7 +118,8 @@ public class Publication implements Parcelable {
             publicationJson.put(PUBLICATION_LATITUDE_KEY, getLat());
             publicationJson.put(PUBLICATION_LONGITUDE_KEY, getLng());
             publicationJson.put(PUBLICATION_IS_ON_AIR_KEY, isOnAir());
-            publicationJson.put(PUBLICATION_PHOTO_URL, getPhotoURL());
+//            publicationJson.put(PUBLICATION_PHOTO_URL, getPhotoURL()); // to be in sync with the ios team, not saving photo url
+            publicationJson.put(PUBLICATION_PHOTO_URL,"");
             publicationJson.put(PUBLICATION_PUBLISHER_UUID_KEY, getActiveDeviceDevUUID());
             publicationJson.put(PUBLICATION_JSON_SEND_PUBLISHER_USER_NAME_KEY, getIdentityProviderUserName());
             publicationJson.put(PUBLICATION_PUBLISHER_ID_KEY, getPublisherID());

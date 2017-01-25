@@ -7,10 +7,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -28,11 +28,12 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PlacesActivity;
+import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SplashForCamera;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
@@ -67,11 +68,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private boolean isEdit;
     private ArrayList<Group> groups;
     private ArrayAdapter<String> spinnerAdapter;
+    private long requestIdentifier = -1;
 
     private FoodonetReceiver receiver;
 
-    /** The TransferUtility is the primary class for managing transfer to S3 */
-    private TransferUtility transferUtility;
+//    /** The TransferUtility is the primary class for managing transfer to S3 */
+//    private TransferUtility transferUtility;
 
     public AddEditPublicationFragment() {
         // Required empty public constructor
@@ -80,8 +82,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        /** instantiate the transfer utility for the s3*/
-        transferUtility = CommonMethods.getTransferUtility(getContext());
+//        /** instantiate the transfer utility for the s3*/
+//        transferUtility = CommonMethods.getTransferUtility(getContext());
         /** local image path that will be used for saving locally and uploading the file name to the server*/
         mCurrentPhotoPath = "";
 
@@ -335,7 +337,14 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         } else {
             localPublicationID = publication.getId();
         }
-        if (title.equals("") || location.equals("") || place.getLat()== CommonConstants.LATLNG_ERROR || place.getLng()==CommonConstants.LATLNG_ERROR) {
+        String photoPath;
+        if(mCurrentPhotoPath==null || mCurrentPhotoPath.equals("")){
+            photoPath = null;
+        } else{
+            photoPath = "file:"+mCurrentPhotoPath;
+        }
+        if (title.equals("") || location.equals("") || place.getLat()== CommonConstants.LATLNG_ERROR || place.getLng()==CommonConstants.LATLNG_ERROR
+                || photoPath == null) {
             Toast.makeText(getContext(), R.string.post_please_enter_all_fields, Toast.LENGTH_SHORT).show();
         } else {
             double price;
@@ -352,40 +361,24 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             }
 
             // TODO: 08/11/2016 currently some fields are hard coded for testing
+
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, place.getLat(), place.getLng(),
                     String.valueOf(startingDate), String.valueOf(endingDate), contactInfo, true, CommonMethods.getDeviceUUID(getContext()),
-                    CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()),
+                    //CommonMethods.getFileNameFromPath(mCurrentPhotoPath),
+                    photoPath,
+                    CommonMethods.getMyUserID(getContext()),
                     groups.get(spinnerShareWith.getSelectedItemPosition()).getGroupID() , user.getDisplayName(), price, "");
+            ArrayList<Parcelable> data = new ArrayList<>();
+            data.add(publication);
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
+            requestIdentifier = System.currentTimeMillis();
             Intent i = new Intent(getContext(), FoodonetService.class);
             i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_PUBLICATION);
+            i.putExtra(ReceiverConstants.REQUEST_IDENTIFIER,requestIdentifier);
             i.putExtra(ReceiverConstants.JSON_TO_SEND, publication.getPublicationJson().toString());
+            i.putExtra(ReceiverConstants.DATA,data);
             getContext().startService(i);
         }
-    }
-
-    /**
-     * Begins to upload the file specified by the file path.
-     */
-    private void beginS3Upload(String filePath) {
-        /** upload the file to the S3 server */
-        if (filePath == null) {
-            Toast.makeText(getContext(), "Could not find the filepath of the selected file",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        String[] split = filePath.split(":");
-        File file = new File(split[1]);
-        transferUtility.upload(getResources().getString(R.string.amazon_bucket), file.getName(), file);
-        // TODO: 09/11/2016 add logic to completion or failure of upload image
-        /*
-         * Note that usually we set the transfer listener after initializing the
-         * transfer. However it isn't required in this sample app. The flow is
-         * click upload button -> start an activity for image selection
-         * startActivityForResult -> onActivityResult -> beginS3Upload -> onResume
-         * -> set listeners to in progress transfers.
-         */
-        // observer.setTransferListener(new UploadListener());
     }
 
     private class FoodonetReceiver extends BroadcastReceiver {
@@ -395,46 +388,24 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE, -1);
             switch (action) {
                 case ReceiverConstants.ACTION_FAB_CLICK:
-                    /** button for uploading the publication to the server, if an image was taken,
-                     * start uploading to the s3 server as well, currently no listener for s3 finished upload*/
+                    /** button for uploading the publication to the server */
                     if (intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR, false)) {
                         // TODO: 18/12/2016 add logic if fails
                         Toast.makeText(context, "fab failed", Toast.LENGTH_SHORT).show();
                     } else {
                         if (intent.getIntExtra(ReceiverConstants.FAB_TYPE, -1) == ReceiverConstants.FAB_TYPE_SAVE_NEW_PUBLICATION) {
                             uploadPublicationToServer();
-                            if (!mCurrentPhotoPath.equals("")) {
-                                beginS3Upload("file:" + mCurrentPhotoPath);
-                            } else {
-                                Toast.makeText(getContext(), "no photo path", Toast.LENGTH_SHORT).show();
-                            }
                         }
                     }
                     break;
 
                 case ReceiverConstants.ACTION_ADD_PUBLICATION:
-                    /** gets the new publication's ID and version to be saved into the db */
-                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-                        // TODO: 20/12/2016 add logic if fails
-                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-                    } else{
-                        long publicationID = intent.getLongExtra(Publication.PUBLICATION_ID,-1);
-                        int publicationVersion = intent.getIntExtra(Publication.PUBLICATION_VERSION,-1);
-                        if(publicationID==-1 || publicationVersion == -1){
-                            // TODO: 15/01/2017 change
-                            Toast.makeText(context, "failed to add publication", Toast.LENGTH_SHORT).show();
-                        } else{
-                            publication.setId(publicationID);
-                            publication.setVersion(publicationVersion);
-                            // TODO: 15/01/2017 add logic to check that the publication is the same one
-                            PublicationsDBHandler handler = new PublicationsDBHandler(getContext());
-                            handler.insertPublication(publication);
-                            getActivity().finish();
-                        }
-                    }
+                    /** added new publication */
+                    Intent i = new Intent(getContext(), PublicationActivity.class);
+                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION,PublicationActivity.MY_PUBLICATIONS_TAG);
+                    getActivity().startActivity(i);
             }
         }
     }
-
-
 }

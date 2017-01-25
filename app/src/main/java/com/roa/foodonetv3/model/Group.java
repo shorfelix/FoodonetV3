@@ -62,7 +62,7 @@ public class Group implements Parcelable {
     }
 
     /** creates a json object to be sent to the server */
-    public JSONObject getAddGroupMembersJson(ArrayList<GroupMember> members){
+    public static JSONObject getAddGroupMembersJson(ArrayList<GroupMember> members){
         JSONObject groupMembersRoot = new JSONObject();
         JSONArray groupMembersArray = new JSONArray();
         GroupMember member;

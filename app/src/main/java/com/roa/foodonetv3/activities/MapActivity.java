@@ -4,24 +4,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -53,10 +48,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         receiver = new FoodonetReceiver();
         RecyclerView mapRecycler = (RecyclerView) findViewById(R.id.mapRecycler);
-        // TODO: 18/01/2017 imageview does not show up for some reason, temp button
         ImageView imageMyLocation = (ImageView) findViewById(R.id.imageMyLocation);
         imageMyLocation.setOnClickListener(this);
-        imageMyLocation.bringToFront();
 
         mapRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         adapter = new MapPublicationRecyclerAdapter(this);
