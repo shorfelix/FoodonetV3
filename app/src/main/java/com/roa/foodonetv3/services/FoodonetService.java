@@ -39,7 +39,6 @@ import javax.net.ssl.HttpsURLConnection;
 public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
 
-    private long requestIdentifier;
     private ArrayList<Parcelable> data;
     private static final int TIMEOUT_TIME = 5000;
 
@@ -55,7 +54,6 @@ public class FoodonetService extends IntentService {
             boolean serviceError = false;
             int actionType = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             String[] args = intent.getStringArrayExtra(ReceiverConstants.ADDRESS_ARGS);
-            requestIdentifier = intent.getLongExtra(ReceiverConstants.REQUEST_IDENTIFIER,-1);
             data = intent.getParcelableArrayListExtra(ReceiverConstants.DATA);
             String urlAddress = StartServiceMethods.getUrlAddress(this,actionType, args);
             HttpsURLConnection connection = null;
@@ -196,7 +194,6 @@ public class FoodonetService extends IntentService {
                     int addPublicationVersion = rootAddPublication.getInt("version");
                     intent.putExtra(Publication.PUBLICATION_ID,addPublicationID);
                     intent.putExtra(Publication.PUBLICATION_VERSION,addPublicationVersion);
-                    intent.putExtra(ReceiverConstants.REQUEST_IDENTIFIER,requestIdentifier);
                     if(data!= null){
                         Publication addPublication = (Publication) data.get(0);
                         addPublication.setId(addPublicationID);

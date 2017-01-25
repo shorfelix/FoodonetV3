@@ -112,5 +112,6 @@
     <string name="deleted">Deleted</string>
     <string name="you_can_only_report_once">You can only report once</string>
     <string name="unregister">Unregister</string>
+    <string name="start_sharing_by_adding_an_image_of_the_food_you_wish_to_share">Start sharing by adding\n an image of the food\n you wish to share</string>
 
 </resources>

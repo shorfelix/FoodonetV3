@@ -11,11 +11,11 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.model.Publication;
-import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -83,19 +83,10 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
             if(mCurrentPhotoFile.isFile()){
                 /** there's an image path, try to load from file */
                 Log.d(TAG,"layout size: "+mapRecyclerImageView.getWidth()+","+mapRecyclerImageView.getHeight());
-                // TODO: 13/11/2016 can't get width and height
-                Picasso.with(context)
-                        .load(mCurrentPhotoFile)
-                        .resize(publicationImageSize,publicationImageSize)
-                        .centerCrop()
-                        .into(mapRecyclerImageView);
+                Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(mapRecyclerImageView);
             } else{
                 /** load default image */
-                Picasso.with(context)
-                        .load(R.drawable.foodonet_image)
-                        .resize(publicationImageSize,publicationImageSize)
-                        .centerCrop()
-                        .into(mapRecyclerImageView);
+                Glide.with(context).load(R.drawable.foodonet_image).centerCrop().into(mapRecyclerImageView);
             }
         }
 

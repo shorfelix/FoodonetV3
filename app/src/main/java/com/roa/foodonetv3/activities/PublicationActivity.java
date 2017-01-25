@@ -150,7 +150,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 bundle.putInt(AddEditPublicationFragment.TAG,AddEditPublicationFragment.TYPE_NEW_PUBLICATION);
                 addPublicationFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, addPublicationFragment, "addEditPublicationFrag").commit();
-                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.FooGreen),false);
+                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
                 break;
             case EDIT_PUBLICATION_TAG:
                 publication = getIntent().getParcelableExtra(Publication.PUBLICATION_KEY);
@@ -160,7 +160,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 bundle.putParcelable(Publication.PUBLICATION_KEY,publication);
                 editPublicationFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, editPublicationFragment, "addEditPublicationFrag").commit();
-                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.FooGreen),false);
+                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
                 break;
             case PUBLICATION_DETAIL_TAG:
                 publication = getIntent().getParcelableExtra(Publication.PUBLICATION_KEY);
@@ -169,11 +169,11 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 bundle.putParcelable(Publication.PUBLICATION_KEY,publication);
                 publicationDetailFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, publicationDetailFragment, "publicationDetailFrag").commit();
-                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.FooGreen),true);
+                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.fooGreen),true);
                 break;
             case MY_PUBLICATIONS_TAG:
                 fragmentManager.beginTransaction().add(R.id.container_publication, new MyPublicationsFragment(), "my_publications").commit();
-                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.FooGreen),false);
+                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
                 break;
         }
     }

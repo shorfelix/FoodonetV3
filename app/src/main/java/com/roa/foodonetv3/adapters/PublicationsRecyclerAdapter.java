@@ -15,6 +15,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PublicationActivity;
@@ -23,7 +24,6 @@ import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
-import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -148,11 +148,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             //add photo here
             mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId(),publication.getVersion()));
             if(mCurrentPhotoFile.isFile()){
-                    Picasso.with(context)
-                            .load(mCurrentPhotoFile)
-                            .resize(publicationImageSize,publicationImageSize)
-                            .centerCrop()
-                            .into(imagePublication);
+                Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
             } else{
                 String imagePath = CommonMethods.getFileNameFromPublicationID(publication.getId(),publication.getVersion());
                 TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_publications_bucket),
@@ -169,11 +165,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             Log.d(TAG,"amazon onStateChanged " + id + " "  + state.toString());
             if(state == TransferState.COMPLETED){
                 if(observerId==id){
-                Picasso.with(context)
-                        .load(mCurrentPhotoFile)
-                        .resize(publicationImageSize,publicationImageSize)
-                        .centerCrop()
-                        .into(imagePublication);
+                    Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
                 }
 
             }

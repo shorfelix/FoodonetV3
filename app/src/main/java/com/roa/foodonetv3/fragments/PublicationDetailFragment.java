@@ -26,6 +26,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -41,7 +43,6 @@ import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.RegisteredUser;
 import com.roa.foodonetv3.model.PublicationReport;
 import com.roa.foodonetv3.services.FoodonetService;
-import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -272,18 +273,11 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         File mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(getContext(),publication.getId(),publication.getVersion()));
         if(mCurrentPhotoFile.isFile()){
             /** there's an image path, try to load from file */
-            Log.d(TAG,"layout size: "+imagePicturePublication.getWidth()+","+imagePicturePublication.getHeight());
             // TODO: 13/11/2016 can't get width and height
-            Picasso.with(getContext())
-                    .load(mCurrentPhotoFile)
-//                    .resize(imagePicturePublication.getWidth(),imagePicturePublication.getHeight())
-//                    .centerCrop()
-                    .into(imagePicturePublication);
+            Glide.with(this).load(mCurrentPhotoFile).centerCrop().into(imagePicturePublication);
         } else{
             /** load default image */
-            Picasso.with(getContext())
-                    .load(R.drawable.foodonet_image)
-                    .into(imagePicturePublication);
+            Glide.with(this).load(R.drawable.foodonet_image).centerCrop().into(imagePicturePublication);
         }
     }
 

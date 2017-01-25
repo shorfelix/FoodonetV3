@@ -188,7 +188,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                 adminGroupFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().replace(R.id.containerGroups, adminGroupFragment, ADMIN_GROUP_TAG).commit();
                 // TODO: 19/12/2016 change the image for the fab
-                FabAnimation.animateFAB(this,fab,normalFabY, duration,R.drawable.user,getResources().getColor(R.color.FooGreen),false);
+                FabAnimation.animateFAB(this,fab,normalFabY, duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
                 break;
             case OPEN_GROUP_TAG:
                 // TODO: 13/12/2016 add fragment
