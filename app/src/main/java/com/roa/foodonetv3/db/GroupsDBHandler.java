@@ -56,6 +56,22 @@ public class GroupsDBHandler {
         return groups;
     }
 
+    public String getGroupName(long groupID) {
+        String groupName = null;
+        String[] projection = {FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN};
+        String where = String.format("%1$s =?",
+                FoodonetDBProvider.GroupsDB.GROUP_ID_COLUMN);
+        String[] whereArgs = {String.valueOf(groupID)};
+        Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,projection,where,whereArgs,null);
+        if(c!=null && c.moveToNext()){
+            groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));
+        }
+        if(c!=null){
+            c.close();
+        }
+        return groupName;
+    }
+
     /** get all groups IDs */
     public ArrayList<Long> getGroupsIDs(){
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,null,null,null);
@@ -95,4 +111,5 @@ public class GroupsDBHandler {
     public void deleteAllGroups(){
         context.getContentResolver().delete(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,null);
     }
+
 }

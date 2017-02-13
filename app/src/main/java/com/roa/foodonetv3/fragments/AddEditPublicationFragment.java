@@ -29,6 +29,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -40,13 +41,11 @@ import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.DecimalDigitsInputFilter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.GroupsDBHandler;
-import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.SavedPlace;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
-import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,19 +60,16 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private Spinner spinnerShareWith;
     private TextView textLocationAddPublication;
     private long endingDate;
-    private String mCurrentPhotoPath;
+    private String mCurrentPhotoPath, pickPhotoPath;
     private ImageView imagePictureAddPublication;
     private SavedPlace place;
     private Publication publication;
     private boolean isEdit;
     private ArrayList<Group> groups;
     private ArrayAdapter<String> spinnerAdapter;
-    private long requestIdentifier = -1;
-
     private FoodonetReceiver receiver;
+    private View layoutInfo;
 
-//    /** The TransferUtility is the primary class for managing transfer to S3 */
-//    private TransferUtility transferUtility;
 
     public AddEditPublicationFragment() {
         // Required empty public constructor
@@ -123,6 +119,13 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         v.findViewById(R.id.imageTakePictureAddPublication).setOnClickListener(this);
         imagePictureAddPublication = (ImageView) v.findViewById(R.id.imagePictureAddPublication);
 
+        layoutInfo = v.findViewById(R.id.layoutInfo);
+        layoutInfo.setBackgroundColor(getResources().getColor(R.color.fooLightGrey));
+        layoutInfo.setVisibility(View.GONE);
+        TextView textInfo = (TextView) v.findViewById(R.id.textInfo);
+        textInfo.setText(R.string.start_sharing_by_adding_an_image_of_the_food_you_wish_to_share);
+        textInfo.setTextSize(getResources().getDimension(R.dimen.text_size_12));
+
         return v;
     }
 
@@ -144,13 +147,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         }
         spinnerAdapter.addAll(groupsNames);
 
-        if (mCurrentPhotoPath == null) {
-            /** check if there is no path yet, if not, load the default image */
-            // TODO: 13/11/2016 fix image size error
-            Picasso.with(getContext()).load(R.drawable.foodonet_image)
-                    //                .resize(imagePictureAddPublication.getWidth(),imagePictureAddPublication.getHeight())
-                    //                .centerCrop()
-                    .into(imagePictureAddPublication);
+        if (mCurrentPhotoPath == null|| mCurrentPhotoPath.equals("")) {
+            layoutInfo.setVisibility(View.VISIBLE);
+            imagePictureAddPublication.setVisibility(View.GONE);
+        } else{
+            layoutInfo.setVisibility(View.GONE);
+            imagePictureAddPublication.setVisibility(View.VISIBLE);
         }
         if (isEdit) {
             loadPublicationIntoViews();
@@ -230,8 +232,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             File photoFile = null;
             try {
                 photoFile = CommonMethods.createImageFile(getContext());
-                mCurrentPhotoPath = photoFile.getPath();
-                Log.d(TAG, "photo path: " + mCurrentPhotoPath);
+                pickPhotoPath = photoFile.getPath();
             } catch (IOException ex) {
                 // Error occurred while creating the File
                 Log.e(TAG, ex.getMessage());
@@ -261,8 +262,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         File photoFile = null;
         try {
             photoFile = CommonMethods.createImageFile(getContext());
-            mCurrentPhotoPath = photoFile.getPath();
-            Log.d(TAG, "photo path: " + mCurrentPhotoPath);
+            pickPhotoPath = photoFile.getPath();
+            Log.d(TAG, "photo path: " + pickPhotoPath);
             startActivityForResult(chooserIntent, INTENT_PICK_PICTURE);
         } catch (IOException ex) {
             // Error occurred while creating the File
@@ -274,6 +275,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
+            mCurrentPhotoPath = pickPhotoPath;
             switch (requestCode) {
 
                 /** an image was successfully taken, since we have the path already,
@@ -281,12 +283,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                  *  returns true if successful*/
                 case INTENT_TAKE_PICTURE:
                     if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath)) {
-                        /** let picasso handle the caching and scaling to the imageView */
-                        Picasso.with(getContext())
-                                .load("file:" + mCurrentPhotoPath)
-                                .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
-                                .centerCrop()
-                                .into(imagePictureAddPublication);
+                        /** let glide handle the caching and scaling to the imageView */
+                        Glide.with(this).load(mCurrentPhotoPath).centerCrop().into(imagePictureAddPublication);
                     }
                     break;
                 /** an image was successfully picked, since we have the path already,
@@ -298,12 +296,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                     try {
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
                         if (CommonMethods.editOverwriteImage(mCurrentPhotoPath,bitmap)) {
-                            /** let picasso handle the caching and scaling to the imageView */
-                            Picasso.with(getContext())
-                                    .load("file:" + mCurrentPhotoPath)
-                                    .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
-                                    .centerCrop()
-                                    .into(imagePictureAddPublication);
+                            /** let glide handle the caching and scaling to the imageView */
+                            Glide.with(this).load(mCurrentPhotoPath).centerCrop().into(imagePictureAddPublication);
                         }
                     } catch (IOException e) {
                         Log.e(TAG,e.getMessage());
@@ -371,10 +365,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             ArrayList<Parcelable> data = new ArrayList<>();
             data.add(publication);
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
-            requestIdentifier = System.currentTimeMillis();
             Intent i = new Intent(getContext(), FoodonetService.class);
             i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_PUBLICATION);
-            i.putExtra(ReceiverConstants.REQUEST_IDENTIFIER,requestIdentifier);
             i.putExtra(ReceiverConstants.JSON_TO_SEND, publication.getPublicationJson().toString());
             i.putExtra(ReceiverConstants.DATA,data);
             getContext().startService(i);

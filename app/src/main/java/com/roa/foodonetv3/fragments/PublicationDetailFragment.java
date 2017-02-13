@@ -26,6 +26,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
@@ -33,15 +35,15 @@ import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.adapters.ReportsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.OnFabChangeListener;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
-import com.roa.foodonetv3.db.PublicationsDBHandler;
+import com.roa.foodonetv3.db.GroupsDBHandler;
 import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.dialogs.ReportDialog;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.RegisteredUser;
 import com.roa.foodonetv3.model.PublicationReport;
 import com.roa.foodonetv3.services.FoodonetService;
-import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -49,22 +51,32 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PublicationDetailFragment extends Fragment implements View.OnClickListener, ReportDialog.OnReportCreateListener{
     private static final String TAG = "PublicationDetailFrag";
-    private TextView textCategory,textTimeRemaining,textJoined,textTitlePublication,textPublicationAddress,textPublicationRating,textPublisherName,textPublicationPrice,textPublicationDetails;
-    private ImageView imagePicturePublication,imageActionPublicationJoin,imageActionPublicationReport,imageActionPublicationPhone,imageActionPublicationMap;
+    private TextView textCategory,textTimeRemaining,textJoined,textTitlePublication,textPublicationAddress,textPublicationRating,
+            textPublisherName,textPublicationPrice,textPublicationDetails;
+    private ImageView imagePicturePublication,imageActionPublicationJoin, imageActionPublicationSMS,imageActionPublicationPhone,
+            imageActionPublicationMap,imageActionAdminShareFacebook,imageActionAdminShareTwitter,imageActionAdminSMS,imageActionAdminPhone;
     private CircleImageView imagePublisherUser;
+    private View layoutAdminDetails, layoutRegisteredDetails;
     private Publication publication;
     private ReportsRecyclerAdapter adapter;
     private FoodonetReceiver receiver;
     private int countRegisteredUsers;
     private long userID;
-    private boolean isAdmin;
-    private boolean isRegistered;
+    private boolean isAdmin,isRegistered;
     private ArrayList<PublicationReport> reports;
     private AlertDialog alertDialog;
     private ReportDialog reportDialog;
+    private RegisteredUsersDBHandler registeredUsersDBHandler;
+    private OnFabChangeListener onFabChangeListener;
 
     public PublicationDetailFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        onFabChangeListener = (OnFabChangeListener) context;
     }
 
     @Override
@@ -79,20 +91,12 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
         /** check if the user is the admin of the publication */
         isAdmin = publication != null && publication.getPublisherID() == userID;
-        RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(getContext());
-        if(isAdmin) {
-            /** if the user is the admin, show the menu for editing, deleting or taking the publication offline */
-            setHasOptionsMenu(true);
-        } else{
+        registeredUsersDBHandler = new RegisteredUsersDBHandler(getContext());
+        if(!isAdmin){
             /** the user is not the admin, check if he's a registered user for the publication */
-            // TODO: 13/01/2017 add db get
-
             isRegistered = registeredUsersDBHandler.isUserRegistered(publication.getId());
-            /** if the user is registered to the publication, show menu for unregistering */
-            if(isRegistered){
-                setHasOptionsMenu(true);
-            }
         }
+        setHasOptionsMenu(true);
         /** get the number of users registered for this publication */
         countRegisteredUsers = registeredUsersDBHandler.getRegisteredUsersCount(publication.getId());
 
@@ -115,6 +119,8 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         recyclerPublicationReport.setAdapter(adapter);
 
         /** set views */
+        layoutAdminDetails = v.findViewById(R.id.layoutAdminDetails);
+        layoutRegisteredDetails = v.findViewById(R.id.layoutRegisteredDetails);
         textCategory = (TextView) v.findViewById(R.id.textCategory);
         textTimeRemaining = (TextView) v.findViewById(R.id.textTimeRemaining);
         textJoined = (TextView) v.findViewById(R.id.textJoined);
@@ -125,24 +131,17 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         textPublicationPrice = (TextView) v.findViewById(R.id.textPublicationPrice);
         textPublicationDetails = (TextView) v.findViewById(R.id.textPublicationDetails);
         imagePicturePublication = (ImageView) v.findViewById(R.id.imagePicturePublication);
-        imagePicturePublication.setOnClickListener(this);
         imagePublisherUser = (CircleImageView) v.findViewById(R.id.imagePublisherUser);
         imageActionPublicationJoin = (ImageView) v.findViewById(R.id.imageActionPublicationJoin);
-        imageActionPublicationReport = (ImageView) v.findViewById(R.id.imageActionPublicationSMS);
+        imageActionPublicationSMS = (ImageView) v.findViewById(R.id.imageActionPublicationSMS);
         imageActionPublicationPhone = (ImageView) v.findViewById(R.id.imageActionPublicationPhone);
         imageActionPublicationMap = (ImageView) v.findViewById(R.id.imageActionPublicationMap);
-        /** if the user is the admin, don't show the communication buttons */
-        if (isAdmin) {
-            imageActionPublicationJoin.setVisibility(View.GONE);
-            imageActionPublicationReport.setVisibility(View.GONE);
-            imageActionPublicationPhone.setVisibility(View.GONE);
-            imageActionPublicationMap.setVisibility(View.GONE);
-        } else {
-            imageActionPublicationJoin.setOnClickListener(this);
-            imageActionPublicationReport.setOnClickListener(this);
-            imageActionPublicationPhone.setOnClickListener(this);
-            imageActionPublicationMap.setOnClickListener(this);
-        }
+        imageActionAdminShareFacebook = (ImageView) v.findViewById(R.id.imageActionAdminShareFacebook);
+        imageActionAdminShareTwitter = (ImageView) v.findViewById(R.id.imageActionAdminShareTwitter);
+        imageActionAdminSMS = (ImageView) v.findViewById(R.id.imageActionAdminSMS);
+        imageActionAdminPhone = (ImageView) v.findViewById(R.id.imageActionAdminPhone);
+
+        imagePicturePublication.setOnClickListener(this);
 
         return v;
     }
@@ -182,12 +181,12 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         super.onCreateOptionsMenu(menu, inflater);
         if(isAdmin){
             inflater.inflate(R.menu.detail_options_admin,menu);
-        } else{
+        } else {
             inflater.inflate(R.menu.detail_options_registered,menu);
         }
     }
 
-    /** menu for a publication the user is the admin of */
+    /** menu for a publication */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
@@ -210,30 +209,29 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                                 deleteIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_DELETE_PUBLICATION);
                                 deleteIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
                                 getContext().startService(deleteIntent);
-                                PublicationsDBHandler handler = new PublicationsDBHandler(getContext());
-                                handler.deletePublication(publication.getId());
-                                getActivity().finish();
                             }
                         })
                         .setNegativeButton(R.string.no, null);
                 alertDialog = alertDialogDeletePublication.show();
                 return true;
             case R.id.detail_unregister:
-                AlertDialog.Builder alertDialogUnregisterPublication = new AlertDialog.Builder(getContext())
-                        .setTitle("Are you sure?")
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                String[] args = {String.valueOf(publication.getId()),String.valueOf(publication.getVersion()),
-                                        String.valueOf(CommonMethods.getDeviceUUID(getContext()))};
-                                Intent unregisterIntent = new Intent(getContext(),FoodonetService.class);
-                                unregisterIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_UNREGISTER_FROM_PUBLICATION);
-                                unregisterIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-                                getContext().startService(unregisterIntent);
-                            }
-                        })
-                        .setNegativeButton(R.string.no, null);
-                alertDialog = alertDialogUnregisterPublication.show();
+                if(isRegistered){
+                    AlertDialog.Builder alertDialogUnregisterPublication = new AlertDialog.Builder(getContext())
+                            .setTitle("Are you sure?")
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    String[] args = {String.valueOf(publication.getId()),String.valueOf(publication.getVersion()),
+                                            String.valueOf(CommonMethods.getDeviceUUID(getContext()))};
+                                    Intent unregisterIntent = new Intent(getContext(),FoodonetService.class);
+                                    unregisterIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_UNREGISTER_FROM_PUBLICATION);
+                                    unregisterIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+                                    getContext().startService(unregisterIntent);
+                                }
+                            })
+                            .setNegativeButton(R.string.no, null);
+                    alertDialog = alertDialogUnregisterPublication.show();
+                }
                 return true;
         }
         return false;
@@ -241,13 +239,73 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
     /** set the views */
     private void initViews(){
+//        if(isAdmin) {
+//            /** if the user is the admin, show the menu for editing, deleting or taking the publication offline */
+//            setHasOptionsMenu(true);
+//        } else{
+//            /** the user is not the admin, check if he's a registered user for the publication */
+//            // TODO: 13/01/2017 add db get
+//
+//            isRegistered = registeredUsersDBHandler.isUserRegistered(publication.getId());
+//            /** if the user is registered to the publication, show menu for unregistering */
+//            if(isRegistered){
+//                setHasOptionsMenu(true);
+//            }
+//        }
+//
+//        if(isAdmin){
+//            imageActionPublicationJoin.setVisibility(View.GONE);
+//            imageActionPublicationSMS.setVisibility(View.GONE);
+//            imageActionPublicationPhone.setVisibility(View.GONE);
+//            imageActionPublicationMap.setVisibility(View.GONE);
+//        } else{
+//            if(isRegistered){
+//                imageActionPublicationJoin.setVisibility(View.VISIBLE);
+//                imageActionPublicationSMS.setVisibility(View.VISIBLE);
+//                imageActionPublicationPhone.setVisibility(View.VISIBLE);
+//                imageActionPublicationMap.setVisibility(View.VISIBLE);
+//            } else{
+//                imageActionPublicationJoin.setVisibility(View.VISIBLE);
+//                imageActionPublicationSMS.setVisibility(View.GONE);
+//                imageActionPublicationPhone.setVisibility(View.GONE);
+//                imageActionPublicationMap.setVisibility(View.GONE);
+//            }
+//        }
+//        if(!isAdmin && !isRegistered){
+//            onFabChangeListener.onFabChange(PublicationActivity.PUBLICATION_DETAIL_TAG,true);
+//        } else{
+//            onFabChangeListener.onFabChange(PublicationActivity.PUBLICATION_DETAIL_TAG,false);
+//        }
+        /** if the user is the admin, registered user, or a non registered user, show different layouts */
+        if (isAdmin) {
+            layoutAdminDetails.setVisibility(View.VISIBLE);
+            layoutRegisteredDetails.setVisibility(View.GONE);
+            imageActionAdminShareFacebook.setOnClickListener(this);
+            imageActionAdminShareTwitter.setOnClickListener(this);
+            imageActionAdminSMS.setOnClickListener(this);
+            imageActionAdminPhone.setOnClickListener(this);
+        } else if(isRegistered) {
+            layoutAdminDetails.setVisibility(View.GONE);
+            layoutRegisteredDetails.setVisibility(View.VISIBLE);
+            imageActionPublicationJoin.setOnClickListener(this);
+            imageActionPublicationSMS.setOnClickListener(this);
+            imageActionPublicationPhone.setOnClickListener(this);
+            imageActionPublicationMap.setOnClickListener(this);
+        } else{
+            layoutAdminDetails.setVisibility(View.GONE);
+            layoutRegisteredDetails.setVisibility(View.GONE);
+        }
+        onFabChangeListener.onFabChange(PublicationActivity.PUBLICATION_DETAIL_TAG,!isAdmin && !isRegistered);
+
         if(publication.getAudience()==0){
             /** audience is public */
             textCategory.setText(getResources().getString(R.string.audience_public));
         } else{
             /** audience is a specific group */
+            GroupsDBHandler groupsDBHandler = new GroupsDBHandler(getContext());
+            String groupName = groupsDBHandler.getGroupName(publication.getAudience());
             // TODO: 13/11/2016 get group name through the server 
-            textCategory.setText("test group");
+            textCategory.setText(groupName);
             Drawable group = getResources().getDrawable(R.drawable.group);
             // TODO: 13/11/2016 check if this code works 
             textCategory.setCompoundDrawables(group,null,null,null);
@@ -272,18 +330,11 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         File mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(getContext(),publication.getId(),publication.getVersion()));
         if(mCurrentPhotoFile.isFile()){
             /** there's an image path, try to load from file */
-            Log.d(TAG,"layout size: "+imagePicturePublication.getWidth()+","+imagePicturePublication.getHeight());
             // TODO: 13/11/2016 can't get width and height
-            Picasso.with(getContext())
-                    .load(mCurrentPhotoFile)
-//                    .resize(imagePicturePublication.getWidth(),imagePicturePublication.getHeight())
-//                    .centerCrop()
-                    .into(imagePicturePublication);
+            Glide.with(this).load(mCurrentPhotoFile).centerCrop().into(imagePicturePublication);
         } else{
             /** load default image */
-            Picasso.with(getContext())
-                    .load(R.drawable.foodonet_image)
-                    .into(imagePicturePublication);
+            Glide.with(this).load(R.drawable.foodonet_image).centerCrop().into(imagePicturePublication);
         }
     }
 
@@ -326,7 +377,6 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                                 reportDialog.show();
                             }
                         }
-
                     }
                     /** if the user is not registered, the button is to join the publication */
                     else{
@@ -346,8 +396,15 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
                 /** send SMS with message body*/
                 case R.id.imageActionPublicationSMS:
-                    // TODO: 23/01/2017 add SMS intent
-
+                    String message = String.format("%1$s%2$s%3$s%4$s",
+                            getResources().getString(R.string.sms_part1),
+                            publication.getTitle(),
+                            getResources().getString(R.string.sms_part2),
+                            user.getDisplayName());
+                    Uri uri = Uri.parse(String.format("smsto:%1$s",publication.getContactInfo()));
+                    i = new Intent(Intent.ACTION_SENDTO,uri);
+                    i.putExtra("sms_body",message);
+                    startActivity(i);
                     break;
 
                 /** simple intent to put the phone number in the phone's default dialer */
@@ -377,6 +434,22 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 case R.id.imagePicturePublication:
                     // TODO: 16/01/2017 add image view logic
                     break;
+
+                case R.id.imageActionAdminShareFacebook:
+                    // TODO: 13/02/2017 add facebook share
+                    break;
+
+                case R.id.imageActionAdminShareTwitter:
+                    // TODO: 13/02/2017 add twitter share
+                    break;
+
+                case R.id.imageActionAdminSMS:
+                    // TODO: 13/02/2017 check what this button needs to do and implement
+                    break;
+
+                case R.id.imageActionAdminPhone:
+                    // TODO: 13/02/2017 check what this button needs to do and implement
+                    break;
             }
         }
     }
@@ -405,6 +478,32 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
             /** receiver for reports got from the service */
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             switch (action){
+                /** click on fab, register to publication */
+                case ReceiverConstants.ACTION_FAB_CLICK:
+                    if(intent.getIntExtra(ReceiverConstants.FAB_TYPE,-1) == ReceiverConstants.FAB_TYPE_REGISTER_TO_PUBLICATION){
+                        Intent i;
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        if(user == null || userID==-1) {
+                            /** if the user is not signed in take him to the sign in activity */
+                            i = new Intent(getContext(), SignInActivity.class);
+                            startActivity(i);
+                        } else{
+                            RegisteredUser registeredUser = new RegisteredUser(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
+                                    CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),user.getDisplayName(),CommonMethods.getMyUserPhone(getContext()),
+                                    CommonMethods.getMyUserID(getContext()));
+                            String registration = registeredUser.getJsonForRegistration().toString();
+                            String[] registrationArgs = {String.valueOf(publication.getId())};
+                            i = new Intent(getContext(),FoodonetService.class);
+                            i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION);
+                            i.putExtra(ReceiverConstants.ADDRESS_ARGS,registrationArgs);
+                            i.putExtra(ReceiverConstants.JSON_TO_SEND,registration);
+                            getContext().startService(i);
+                            isRegistered = true;
+                        }
+                    }
+
+                    break;
+
                 /** got reports */
                 case ReceiverConstants.ACTION_GET_REPORTS:
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
@@ -430,6 +529,17 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                     } else{
                         /** registered successfully */
                         Snackbar.make(imagePicturePublication,getResources().getString(R.string.successfully_registered),Snackbar.LENGTH_LONG).show();
+                        isRegistered = true;
+                        initViews();
+                    }
+                    break;
+
+                /** unregistered from a publication */
+                case ReceiverConstants.ACTION_UNREGISTER_FROM_PUBLICATION:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 28/01/2017 add logic
+                        Toast.makeText(context, getResources().getString(R.string.unregistered), Toast.LENGTH_SHORT).show();
+                        initViews();
                     }
                     break;
 
@@ -439,9 +549,8 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                         // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        /** registered successfully */
+                        /** report registered successfully */
                         Snackbar.make(imagePicturePublication,getResources().getString(R.string.report_added),Snackbar.LENGTH_LONG).show();
-                        // TODO: 23/01/2017 add logic to limit
                     }
                     break;
 
@@ -456,7 +565,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                         Toast.makeText(context, getResources().getString(R.string.deleted), Toast.LENGTH_SHORT).show();
                         Intent openMyPublicationsIntent = new Intent(getContext(), PublicationActivity.class);
                         openMyPublicationsIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        getContext().startActivity(openMyPublicationsIntent);
+                        getActivity().finish();
                     }
                     break;
             }

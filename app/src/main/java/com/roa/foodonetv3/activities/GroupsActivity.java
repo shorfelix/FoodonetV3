@@ -163,12 +163,12 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         } else{
             duration = CommonConstants.FAB_ANIM_DURATION;
         }
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        int height = size.y;
-        final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + CommonConstants.FAB_SIZE*2);
+//        Display display = getWindowManager().getDefaultDisplay();
+//        Point size = new Point();
+//        display.getSize(size);
+//        int width = size.x;
+//        int height = size.y;
+//        final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + CommonConstants.FAB_SIZE*2);
 
         /** set the current frag to be the new one */
         currentFrag = openFragType;
@@ -178,7 +178,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
             case GROUPS_OVERVIEW_TAG:
                 GroupsOverviewFragment groupsOverviewFragment = new GroupsOverviewFragment();
                 fragmentManager.beginTransaction().replace(R.id.containerGroups,groupsOverviewFragment, GROUPS_OVERVIEW_TAG).commit();
-                FabAnimation.animateFAB(this,fab,normalFabY, duration,R.drawable.white_plus,getResources().getColor(R.color.colorPrimary),false);
+                FabAnimation.animateFAB(this,fab, duration,R.drawable.white_plus,getResources().getColor(R.color.colorPrimary),false);
                 break;
             case ADMIN_GROUP_TAG:
                 AdminGroupFragment adminGroupFragment = new AdminGroupFragment();
@@ -188,7 +188,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                 adminGroupFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().replace(R.id.containerGroups, adminGroupFragment, ADMIN_GROUP_TAG).commit();
                 // TODO: 19/12/2016 change the image for the fab
-                FabAnimation.animateFAB(this,fab,normalFabY, duration,R.drawable.user,getResources().getColor(R.color.FooGreen),false);
+                FabAnimation.animateFAB(this,fab, duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
                 break;
             case OPEN_GROUP_TAG:
                 // TODO: 13/12/2016 add fragment

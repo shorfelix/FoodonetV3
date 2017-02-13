@@ -8,72 +8,80 @@
     tools:context="com.roa.foodonetv3.activities.WelcomeUserActivity">
 
     <TextView
-        android:text="המשך ללא רישים"
+        android:text="@string/welcome_to_foodonet"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="32dp"
-        android:id="@+id/withoutRegisterationTxt" />
-
-    <Button
-        android:text="התחילו לשתף"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/withoutRegisterationTxt"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="51dp"
-        android:id="@+id/finishRegisterationButton"
-        android:layout_width="200dp" />
-
-    <EditText
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:layout_above="@+id/finishRegisterationButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="11dp"
-        android:id="@+id/userPhoneNumberTxt"
-        android:hint="טלפון"
-        android:inputType="number" />
-
-    <TextView
-        android:text="ברוכים הבאים ל-Foodonet"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="@dimen/margin_22"
         android:id="@+id/textView3"
-        android:textSize="25sp"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        style="@style/FooBlueLarge"/>
 
     <TextView
         android:text="TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_32"
         android:layout_below="@+id/textView3"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="54dp"
-        android:id="@+id/userNameTxt"
-        android:textSize="20sp" />
-
-    <TextView
-        android:text="שלב אחרון להתחלה"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView4"
-        android:textSize="20sp"
-        android:layout_below="@+id/circleImage"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp" />
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/circleImage"
-        app:srcCompat="@drawable/common_google_signin_btn_icon_dark_focused"
-        android:layout_marginTop="14dp"
-        android:layout_height="120dp"
-        android:layout_width="120dp"
-        android:layout_below="@+id/userNameTxt"
+        android:id="@+id/textUserName"
+        style="@style/FooBoldMedium"
         android:layout_centerHorizontal="true" />
 
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/circleImageUser"
+        app:srcCompat="@drawable/common_google_signin_btn_icon_dark_focused"
+        android:layout_marginTop="@dimen/margin_16"
+        android:layout_height="@dimen/image_size_height_120"
+        android:layout_width="@dimen/image_size_height_120"
+        android:layout_below="@+id/textUserName"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:text="@string/last_step"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/circleImageUser"
+        android:layout_marginTop="@dimen/margin_24"
+        android:id="@+id/textView4"
+        style="@style/FooMedium"
+        android:layout_centerHorizontal="true"
+        />
+
+    <EditText
+        android:hint="@string/phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="phone"
+        android:ems="10"
+        android:layout_above="@+id/buttonFinishRegistration"
+        android:layout_marginBottom="@dimen/margin_16"
+        android:layout_marginLeft="@dimen/margin_32"
+        android:layout_marginStart="@dimen/margin_32"
+        android:layout_marginRight="@dimen/margin_32"
+        android:layout_marginEnd="@dimen/margin_32"
+        android:id="@+id/editUserPhoneNumber"
+        />
+
+    <Button
+        android:text="@string/start_sharing"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textWithoutRegistration"
+        android:layout_marginBottom="@dimen/margin_32"
+        android:layout_marginLeft="@dimen/margin_32"
+        android:layout_marginStart="@dimen/margin_32"
+        android:layout_marginRight="@dimen/margin_32"
+        android:layout_marginEnd="@dimen/margin_32"
+        android:id="@+id/buttonFinishRegistration"
+        />
+
+    <TextView
+        android:text="@string/continue_without_registration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
+        android:id="@+id/textWithoutRegistration"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
