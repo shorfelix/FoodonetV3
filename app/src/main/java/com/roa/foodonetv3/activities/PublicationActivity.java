@@ -24,6 +24,7 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.FabAnimation;
+import com.roa.foodonetv3.commonMethods.OnFabChangeListener;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.AddEditPublicationFragment;
 import com.roa.foodonetv3.fragments.MyPublicationsFragment;
@@ -31,7 +32,7 @@ import com.roa.foodonetv3.fragments.PublicationDetailFragment;
 import com.roa.foodonetv3.model.Publication;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, OnFabChangeListener{
     private static final String TAG = "PublicationActivity";
 
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
@@ -121,7 +122,6 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
     /** opens a new fragment and sets the fab */
     private void openNewPublicationFrag(String openFragType){
         /** get the values for the fab animation */
-        // TODO: 16/01/2017 debug and check dimensions
         long duration;
         if(currentFrag==null){
             /** if this is the first frag - don't make a long animation */
@@ -129,12 +129,6 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         } else{
             duration = CommonConstants.FAB_ANIM_DURATION;
         }
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        int height = size.y;
-        final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + CommonConstants.FAB_SIZE*2);
 
         /** set the current frag to be the new one */
         currentFrag = openFragType;
@@ -150,7 +144,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 bundle.putInt(AddEditPublicationFragment.TAG,AddEditPublicationFragment.TYPE_NEW_PUBLICATION);
                 addPublicationFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, addPublicationFragment, "addEditPublicationFrag").commit();
-                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
+                animateFab(openFragType,true,duration);
                 break;
             case EDIT_PUBLICATION_TAG:
                 publication = getIntent().getParcelableExtra(Publication.PUBLICATION_KEY);
@@ -160,7 +154,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 bundle.putParcelable(Publication.PUBLICATION_KEY,publication);
                 editPublicationFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, editPublicationFragment, "addEditPublicationFrag").commit();
-                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
+                animateFab(openFragType,true,duration);
                 break;
             case PUBLICATION_DETAIL_TAG:
                 publication = getIntent().getParcelableExtra(Publication.PUBLICATION_KEY);
@@ -169,13 +163,38 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                 bundle.putParcelable(Publication.PUBLICATION_KEY,publication);
                 publicationDetailFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().add(R.id.container_publication, publicationDetailFragment, "publicationDetailFrag").commit();
-                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.fooGreen),true);
+                animateFab(openFragType,true,duration);
                 break;
             case MY_PUBLICATIONS_TAG:
                 fragmentManager.beginTransaction().add(R.id.container_publication, new MyPublicationsFragment(), "my_publications").commit();
-                FabAnimation.animateFAB(this,fab,normalFabY,duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
+                animateFab(openFragType,true,duration);
                 break;
         }
+    }
+
+    private void animateFab(String fragmentTag, boolean setVisible, long duration){
+        int imgResource = -1;
+        int color = -1;
+        // TODO: 13/02/2017 add different fab icons and colors
+        switch (fragmentTag){
+            case ADD_PUBLICATION_TAG:
+                imgResource = R.drawable.user;
+                color = getResources().getColor(R.color.fooGreen);
+                break;
+            case EDIT_PUBLICATION_TAG:
+                imgResource = R.drawable.user;
+                color = getResources().getColor(R.color.fooGreen);
+                break;
+            case PUBLICATION_DETAIL_TAG:
+                imgResource = R.drawable.user;
+                color = getResources().getColor(R.color.fooGreen);
+                break;
+            case MY_PUBLICATIONS_TAG:
+                imgResource = R.drawable.user;
+                color = getResources().getColor(R.color.fooGreen);
+                break;
+        }
+        FabAnimation.animateFAB(this,fab,duration,imgResource,color,setVisible);
     }
 
     @Override
@@ -193,6 +212,7 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                             fabClickIntent.putExtra(ReceiverConstants.FAB_TYPE,ReceiverConstants.FAB_TYPE_SAVE_NEW_PUBLICATION);
                             LocalBroadcastManager.getInstance(this).sendBroadcast(fabClickIntent);
                             break;
+
                         case MY_PUBLICATIONS_TAG:
                             /** clicked on create new publication */
                             if(CommonMethods.getMyUserID(this)==-1){
@@ -204,9 +224,23 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
                                 newAddPublicationIntent.putExtra(ACTION_OPEN_PUBLICATION,ADD_PUBLICATION_TAG);
                                 startActivity(newAddPublicationIntent);
                             }
+                            break;
+
+                        case PUBLICATION_DETAIL_TAG:
+                            Intent registerToPublicationIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
+                            registerToPublicationIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_FAB_CLICK);
+                            registerToPublicationIntent.putExtra(ReceiverConstants.SERVICE_ERROR,false);
+                            registerToPublicationIntent.putExtra(ReceiverConstants.FAB_TYPE,ReceiverConstants.FAB_TYPE_REGISTER_TO_PUBLICATION);
+                            LocalBroadcastManager.getInstance(this).sendBroadcast(registerToPublicationIntent);
+                            break;
                     }
                     break;
                 }
         }
+    }
+
+    @Override
+    public void onFabChange(String fragmentTag, boolean setVisible) {
+        animateFab(fragmentTag,setVisible,1);
     }
 }

@@ -4,8 +4,8 @@ import android.content.Context;
 import com.roa.foodonetv3.R;
 import java.util.Locale;
 
-public class StartServiceMethods {
-    private static final String TAG = "StartServiceMethods";
+public class StartFoodonetServiceMethods {
+    private static final String TAG = "StartFoodonetServiceMethods";
 
     /** builds and handles the building of the required URL.
      * actions in post - add JSON_TO_SEND = (String) json data to intent.

@@ -11,7 +11,7 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
-import com.roa.foodonetv3.commonMethods.StartServiceMethods;
+import com.roa.foodonetv3.commonMethods.StartFoodonetServiceMethods;
 import com.roa.foodonetv3.db.GroupMembersDBHandler;
 import com.roa.foodonetv3.db.GroupsDBHandler;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
@@ -40,6 +40,7 @@ public class FoodonetService extends IntentService {
     private static final String TAG = "FoodonetService";
 
     private ArrayList<Parcelable> data;
+    private String[] args;
     private static final int TIMEOUT_TIME = 5000;
 
     public FoodonetService() {
@@ -53,9 +54,9 @@ public class FoodonetService extends IntentService {
             Intent finishedIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
             boolean serviceError = false;
             int actionType = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
-            String[] args = intent.getStringArrayExtra(ReceiverConstants.ADDRESS_ARGS);
+            args = intent.getStringArrayExtra(ReceiverConstants.ADDRESS_ARGS);
             data = intent.getParcelableArrayListExtra(ReceiverConstants.DATA);
-            String urlAddress = StartServiceMethods.getUrlAddress(this,actionType, args);
+            String urlAddress = StartFoodonetServiceMethods.getUrlAddress(this,actionType, args);
             HttpsURLConnection connection = null;
             BufferedReader reader = null;
             URL url;
@@ -65,25 +66,17 @@ public class FoodonetService extends IntentService {
                 connection = (HttpsURLConnection) url.openConnection();
                 connection.setConnectTimeout(TIMEOUT_TIME);
                 // TODO: 28/11/2016 add logic for timeout
-                int httpType = StartServiceMethods.getHTTPType(actionType);
+                int httpType = StartFoodonetServiceMethods.getHTTPType(actionType);
                 switch (httpType){
                     case CommonConstants.HTTP_GET:
                         break;
+
                     case CommonConstants.HTTP_POST:
                         connection.setRequestMethod("POST");
-                        connection.addRequestProperty("Accept","application/json");
-                        connection.addRequestProperty("Content-Type","application/json");
-                        connection.setDoOutput(true);
-                        OutputStream postOs = connection.getOutputStream();
-                        BufferedWriter postWriter = new BufferedWriter(new OutputStreamWriter(postOs,"utf-8"));
-                        String postJsonToSend = intent.getStringExtra(ReceiverConstants.JSON_TO_SEND);
-                        postWriter.write(postJsonToSend);
-                        postWriter.flush();
-                        postWriter.close();
-                        postOs.close();
-                        break;
                     case CommonConstants.HTTP_PUT:
-                        connection.setRequestMethod("PUT");
+                        if(httpType==CommonConstants.HTTP_PUT){
+                            connection.setRequestMethod("PUT");
+                        }
                         connection.addRequestProperty("Accept","application/json");
                         connection.addRequestProperty("Content-Type","application/json");
                         connection.setDoOutput(true);
@@ -95,6 +88,7 @@ public class FoodonetService extends IntentService {
                         putWriter.close();
                         putOs.close();
                         break;
+
                     case CommonConstants.HTTP_DELETE:
                         connection.setRequestMethod("DELETE");
                         break;
@@ -136,15 +130,18 @@ public class FoodonetService extends IntentService {
 
     private Intent addResponseToIntent(int actionType, String responseRoot, Intent intent){
         try {
+            PublicationsDBHandler publicationsDBHandler;
+            GroupsDBHandler groupsDBHandler;
+            RegisteredUsersDBHandler registeredUsersDBHandler;
             switch (actionType) {
                 case ReceiverConstants.ACTION_GET_PUBLICATIONS:
                     /** get the users groups id, as we don't care about the others */
-                    GroupsDBHandler groupsDBHandler1 = new GroupsDBHandler(this);
-                    ArrayList<Long> groupsIDs = groupsDBHandler1.getGroupsIDs();
+                    groupsDBHandler = new GroupsDBHandler(this);
+                    ArrayList<Long> groupsIDs = groupsDBHandler.getGroupsIDs();
                     ArrayList<Publication> publications = new ArrayList<>();
                     JSONArray rootGetPublications;
                     rootGetPublications = new JSONArray(responseRoot);
-                    /** declarations */
+
                     long id,audience;
                     String title,subtitle,address,startingDate,endingDate,contactInfo,activeDeviceDevUUID,photoURL,identityProviderUserName,priceDescription;
                     short typeOfCollecting;
@@ -180,7 +177,7 @@ public class FoodonetService extends IntentService {
                                     activeDeviceDevUUID, photoURL, publisherID, audience, identityProviderUserName, price, priceDescription));
                         }
                     }
-                    PublicationsDBHandler publicationsDBHandler = new PublicationsDBHandler(this);
+                    publicationsDBHandler = new PublicationsDBHandler(this);
                     publicationsDBHandler.replaceAllPublications(publications);
                     Intent getDataIntent2 = new Intent(this,GetDataService.class);
                     getDataIntent2.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS);
@@ -198,8 +195,8 @@ public class FoodonetService extends IntentService {
                         Publication addPublication = (Publication) data.get(0);
                         addPublication.setId(addPublicationID);
                         addPublication.setVersion(addPublicationVersion);
-                        PublicationsDBHandler publicationsDBHandler1 = new PublicationsDBHandler(this);
-                        publicationsDBHandler1.insertPublication(addPublication);
+                        publicationsDBHandler = new PublicationsDBHandler(this);
+                        publicationsDBHandler.insertPublication(addPublication);
                         /** instantiate the transfer utility for the s3*/
                         TransferUtility transferUtility = CommonMethods.getTransferUtility(this);
                         /** if there is an image to upload */
@@ -226,6 +223,8 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case ReceiverConstants.ACTION_DELETE_PUBLICATION:
+                    publicationsDBHandler = new PublicationsDBHandler(this);
+                    publicationsDBHandler.deletePublication(Long.parseLong(args[0]));
                     Log.d(TAG,responseRoot);
                     break;
 
@@ -233,7 +232,7 @@ public class FoodonetService extends IntentService {
                     ArrayList<PublicationReport> reports = new ArrayList<>();
                     JSONArray rootGetReports;
                     rootGetReports = new JSONArray(responseRoot);
-                    /** declarations */
+
                     long reportId,publicationID,reportUserID;
                     int publicationVersion,rating;
                     String active_device_dev_uuid,dateOfReport,reportUserName,reportContactInfo;
@@ -275,7 +274,8 @@ public class FoodonetService extends IntentService {
                     break;
 
                 case ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION:
-                    // TODO: 27/11/2016 update
+                    Log.d(TAG,responseRoot);
+
                     break;
 
                 case ReceiverConstants.ACTION_GET_PUBLICATION_REGISTERED_USERS:
@@ -287,8 +287,8 @@ public class FoodonetService extends IntentService {
                 case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
                     ArrayList<RegisteredUser> registeredUsers = new ArrayList<>();
 
-                    PublicationsDBHandler publicationsDBHandler1 = new PublicationsDBHandler(this);
-                    ArrayList<Long> publicationsIDs = publicationsDBHandler1.getPublicationsIDs();
+                    publicationsDBHandler = new PublicationsDBHandler(this);
+                    ArrayList<Long> publicationsIDs = publicationsDBHandler.getPublicationsIDs();
 
                     long currentPublicationID, collectorUserID;
                     int publicationVersion1;
@@ -304,7 +304,7 @@ public class FoodonetService extends IntentService {
                             registeredUsers.add(new RegisteredUser(currentPublicationID,-1,null,publicationVersion1,null,null,collectorUserID));
                         }
                     }
-                    RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(this);
+                    registeredUsersDBHandler = new RegisteredUsersDBHandler(this);
                     registeredUsersDBHandler.replaceAllRegisteredUsers(registeredUsers);
                     break;
 
@@ -321,7 +321,7 @@ public class FoodonetService extends IntentService {
 
                 case ReceiverConstants.ACTION_GET_GROUPS:
                     JSONArray groupArray = new JSONArray(responseRoot);
-                    /** declarations */
+
                     ArrayList<Group> groups = new ArrayList<>();
                     ArrayList<GroupMember> members = new ArrayList<>();
                     long groupID,memberID,userID;
@@ -344,7 +344,7 @@ public class FoodonetService extends IntentService {
                         }
                         groups.add(new Group(groupName,userID,groupID));
                     }
-                    GroupsDBHandler groupsDBHandler = new GroupsDBHandler(this);
+                    groupsDBHandler = new GroupsDBHandler(this);
                     groupsDBHandler.replaceAllGroups(groups);
                     GroupMembersDBHandler groupMembersDBHandler = new GroupMembersDBHandler(this);
                     groupMembersDBHandler.replaceAllGroupsMembers(members);

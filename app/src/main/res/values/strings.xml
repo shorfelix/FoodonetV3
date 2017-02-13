@@ -93,7 +93,7 @@
     <string name="day">day</string>
     <string name="price">Price:</string>
     <string name="you_dont_have_any_groups_yet">You don\'t have any groups yet</string>
-    <string name="hi_what_would_you_like_to_share">Hi,\nWhat would you like\n to share?</string>
+    <string name="hi_what_would_you_like_to_share">Hi,\nWhat would you like\nto share?</string>
 
     <string name="title_activity_fullscreen_image">FullscreenActivityImage</string>
     <string name="dummy_button">Dummy Button</string>
@@ -113,5 +113,14 @@
     <string name="you_can_only_report_once">You can only report once</string>
     <string name="unregister">Unregister</string>
     <string name="start_sharing_by_adding_an_image_of_the_food_you_wish_to_share">Start sharing by adding\n an image of the food\n you wish to share</string>
+    <string name="sms_part1">Hi, about your event in Foodonet:\n</string>
+    <string name="sms_part2">, can I come and pick it up?\nthanks,\n</string>
+
+    <string name="welcome_to_foodonet">Welcome to Foodonet</string>
+    <string name="last_step">Last step</string>
+    <string name="phone">Phone</string>
+    <string name="start_sharing">Start sharing</string>
+    <string name="continue_without_registration">Continue without registration</string>
+    <string name="unregistered">Unregistered</string>
 
 </resources>

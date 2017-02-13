@@ -50,10 +50,10 @@ public class WelcomeUserActivity extends AppCompatActivity {
 
         setTitle(R.string.foodonet);
 
-        finishRegisterationButton = (Button) findViewById(R.id.finishRegisterationButton);
-        userNameTxt = (TextView) findViewById(R.id.userNameTxt);
-        userPhoneNumber = (EditText) findViewById(R.id.userPhoneNumberTxt);
-        circleImageView = (CircleImageView) findViewById(R.id.circleImage);
+        finishRegisterationButton = (Button) findViewById(R.id.buttonFinishRegistration);
+        userNameTxt = (TextView) findViewById(R.id.textUserName);
+        userPhoneNumber = (EditText) findViewById(R.id.editUserPhoneNumber);
+        circleImageView = (CircleImageView) findViewById(R.id.circleImageUser);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Initialize Firebase Auth

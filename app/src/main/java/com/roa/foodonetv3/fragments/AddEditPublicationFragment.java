@@ -58,7 +58,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     public static final int TYPE_EDIT_PUBLICATION = 2;
     private EditText editTextTitleAddPublication, editTextPriceAddPublication, editTextDetailsAddPublication;
     private Spinner spinnerShareWith;
-    private TextView textLocationAddPublication, textInfo;
+    private TextView textLocationAddPublication;
     private long endingDate;
     private String mCurrentPhotoPath, pickPhotoPath;
     private ImageView imagePictureAddPublication;
@@ -122,7 +122,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         layoutInfo = v.findViewById(R.id.layoutInfo);
         layoutInfo.setBackgroundColor(getResources().getColor(R.color.fooLightGrey));
         layoutInfo.setVisibility(View.GONE);
-        textInfo = (TextView) v.findViewById(R.id.textInfo);
+        TextView textInfo = (TextView) v.findViewById(R.id.textInfo);
         textInfo.setText(R.string.start_sharing_by_adding_an_image_of_the_food_you_wish_to_share);
         textInfo.setTextSize(getResources().getDimension(R.dimen.text_size_12));
 
