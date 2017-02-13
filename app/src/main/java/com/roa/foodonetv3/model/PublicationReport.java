@@ -6,6 +6,8 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 public class PublicationReport implements Parcelable {
     private static final String TAG = "PublicationReport";
 
@@ -91,6 +93,17 @@ public class PublicationReport implements Parcelable {
             Log.e(TAG,e.getMessage());
         }
         return reportJsonRoot;
+    }
+
+    public static float getRatingFromReports(ArrayList<PublicationReport> reports){
+        if(reports.size()==0){
+            return -1;
+        }
+        int sum = 0;
+        for (int i = 0; i < reports.size(); i++) {
+            sum+= reports.get(i).getRating();
+        }
+        return sum/(float)reports.size();
     }
 
     public String getActive_device_dev_uuid() {

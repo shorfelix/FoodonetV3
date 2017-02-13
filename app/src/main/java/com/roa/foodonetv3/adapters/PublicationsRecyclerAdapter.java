@@ -15,6 +15,7 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PublicationActivity;
@@ -23,7 +24,6 @@ import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
-import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -146,36 +146,15 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             String registeredUsers = String.format(Locale.US,"%1$d %2$s", numberRegisteredUsers,context.getResources().getString(R.string.users_joined));
             textPublicationUsers.setText(registeredUsers);
             //add photo here
-            if(publication.getPhotoURL().equals("")){
-                /** no image saved, display default image */
-                Picasso.with(context)
-                        .load(R.drawable.foodonet_image)
-                        .resize(publicationImageSize,publicationImageSize)
-                        .centerCrop()
-                        .into(imagePublication);
-                // TODO: 10/11/2016 display default image
-
-            }else{
-                /** there is an image available to download or is currently on the device */
-                // TODO: 10/11/2016 check version of the publication as well
-                /** check if the image is already saved on the device */
-                mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId()));
-                if (mCurrentPhotoFile.isFile()) {
-                    /** image was found and is the same as the publication id */
-
-                    Picasso.with(context)
-                            .load(mCurrentPhotoFile)
-                            .resize(publicationImageSize,publicationImageSize)
-                            .centerCrop()
-                            .into(imagePublication);
-                } else {
-                    /** image ready to download, not on the device */
-                        TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_bucket),
-                                publication.getPhotoURL(), mCurrentPhotoFile
-                        );
+            mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId(),publication.getVersion()));
+            if(mCurrentPhotoFile.isFile()){
+                Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
+            } else{
+                String imagePath = CommonMethods.getFileNameFromPublicationID(publication.getId(),publication.getVersion());
+                TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_publications_bucket),
+                        imagePath, mCurrentPhotoFile);
                         observer.setTransferListener(this);
                         observerId = observer.getId();
-                }
             }
         }
 
@@ -186,11 +165,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             Log.d(TAG,"amazon onStateChanged " + id + " "  + state.toString());
             if(state == TransferState.COMPLETED){
                 if(observerId==id){
-                Picasso.with(context)
-                        .load(mCurrentPhotoFile)
-                        .resize(publicationImageSize,publicationImageSize)
-                        .centerCrop()
-                        .into(imagePublication);
+                    Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
                 }
 
             }

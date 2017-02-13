@@ -19,7 +19,7 @@
 
     <style name="FooBlackXL">
         <item name="android:textSize">@dimen/text_size_36</item>
-        <item name="android:textColor">@color/FooBlack</item>
+        <item name="android:textColor">@color/fooBlack</item>
     </style>
 
     <style name="FooXL">
@@ -32,7 +32,12 @@
 
     <style name="FooBlackLarge">
         <item name="android:textSize">@dimen/text_size_26</item>
-        <item name="android:textColor">@color/FooBlack</item>
+        <item name="android:textColor">@color/fooBlack</item>
+    </style>
+
+    <style name="FooBlueLarge">
+        <item name="android:textSize">@dimen/text_size_26</item>
+        <item name="android:textColor">@color/fooLightBlue</item>
     </style>
 
     <style name="FooMediumPlus">
@@ -45,27 +50,31 @@
 
     <style name="FooBlackMedium">
         <item name="android:textSize">@dimen/text_size_20</item>
-        <item name="android:textColor">@color/FooBlack</item>
+        <item name="android:textColor">@color/fooBlack</item>
     </style>
 
     <style name="FooBlackBoldMedium">
         <item name="android:textSize">@dimen/text_size_20</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/FooBlack</item>
+        <item name="android:textColor">@color/fooBlack</item>
     </style>
 
+    <style name="FooBoldMedium">
+        <item name="android:textSize">@dimen/text_size_20</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 
     <style name="FooBlueIndentMedium">
         <item name="android:textSize">@dimen/text_size_20</item>
         <item name="android:textStyle">italic</item>
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/fooLightBlue</item>
     </style>
 
 
     <style name="FooBlackBoldSmall">
         <item name="android:textSize">@dimen/text_size_16</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/FooBlack</item>
+        <item name="android:textColor">@color/fooBlack</item>
     </style>
 
     <style name="FooSmall">
@@ -74,7 +83,7 @@
 
     <style name="FooBlackSmall">
         <item name="android:textSize">@dimen/text_size_16</item>
-        <item name="android:textColor">@color/FooBlack</item>
+        <item name="android:textColor">@color/fooBlack</item>
     </style>
 
     <style name="FooXS">
@@ -83,7 +92,7 @@
 
     <style name="FooBlueXS">
         <item name="android:textSize">@dimen/text_size_12</item>
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/fooLightBlue</item>
     </style>
 
     <style name="FullscreenTheme" parent="AppTheme">
