@@ -103,8 +103,6 @@ public class StartFoodonetServiceMethods {
                 builder.append(context.getResources().getString(R.string.foodonet_feedback));
                 break;
             case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
-//                builder.append(context.getResources().getString(R.string.foodonet_groups));
-//                builder.append(String.format(Locale.US,"/%1$s",args[0]));
                 builder.append(context.getResources().getString(R.string.foodonet_group_members));
                 break;
             case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:

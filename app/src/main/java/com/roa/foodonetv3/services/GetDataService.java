@@ -49,7 +49,7 @@ public class GetDataService extends IntentService {
                 case ReceiverConstants.ACTION_GET_GROUPS:
                     /** get groups */
                     long userID = CommonMethods.getMyUserID(this);
-                    if (userID != -1) {
+                    if (userID != (long)-1) {
                         getDataIntent = new Intent(this,FoodonetService.class);
                         getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_GROUPS);
                         String[] args = new String[]{String.valueOf(userID)};

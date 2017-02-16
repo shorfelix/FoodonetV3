@@ -90,6 +90,9 @@ public class FoodonetDBProvider extends ContentProvider {
         static final String PUBLICATION_ID_COLUMN = "publication_id";
         static final String PUBLICATION_VERSION_COLUMN = "publication_version";
         static final String REGISTERED_USER_ID_COLUMN = "registered_user_id";
+        static final String REGISTERED_USER_ACTIVE_DEVICE_UUID = "registered_user_device_uuid";
+        static final String REGISTERED_USER_PHONE = "registered_user_phone";
+        static final String REGISTERED_USER_NAME = "registered_user_name";
         static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+"/"+TABLE_NAME);
     }
 

@@ -1,6 +1,5 @@
 package com.roa.foodonetv3.fragments;
 
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,10 +22,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -53,8 +52,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     private static final String TAG = "PublicationDetailFrag";
     private TextView textCategory,textTimeRemaining,textJoined,textTitlePublication,textPublicationAddress,textPublicationRating,
             textPublisherName,textPublicationPrice,textPublicationDetails;
-    private ImageView imagePicturePublication,imageActionPublicationJoin, imageActionPublicationSMS,imageActionPublicationPhone,
-            imageActionPublicationMap,imageActionAdminShareFacebook,imageActionAdminShareTwitter,imageActionAdminSMS,imageActionAdminPhone;
+    private ImageView imagePicturePublication;
     private CircleImageView imagePublisherUser;
     private View layoutAdminDetails, layoutRegisteredDetails;
     private Publication publication;
@@ -97,8 +95,6 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
             isRegistered = registeredUsersDBHandler.isUserRegistered(publication.getId());
         }
         setHasOptionsMenu(true);
-        /** get the number of users registered for this publication */
-        countRegisteredUsers = registeredUsersDBHandler.getRegisteredUsersCount(publication.getId());
 
         receiver = new FoodonetReceiver();
     }
@@ -131,17 +127,16 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         textPublicationPrice = (TextView) v.findViewById(R.id.textPublicationPrice);
         textPublicationDetails = (TextView) v.findViewById(R.id.textPublicationDetails);
         imagePicturePublication = (ImageView) v.findViewById(R.id.imagePicturePublication);
-        imagePublisherUser = (CircleImageView) v.findViewById(R.id.imagePublisherUser);
-        imageActionPublicationJoin = (ImageView) v.findViewById(R.id.imageActionPublicationJoin);
-        imageActionPublicationSMS = (ImageView) v.findViewById(R.id.imageActionPublicationSMS);
-        imageActionPublicationPhone = (ImageView) v.findViewById(R.id.imageActionPublicationPhone);
-        imageActionPublicationMap = (ImageView) v.findViewById(R.id.imageActionPublicationMap);
-        imageActionAdminShareFacebook = (ImageView) v.findViewById(R.id.imageActionAdminShareFacebook);
-        imageActionAdminShareTwitter = (ImageView) v.findViewById(R.id.imageActionAdminShareTwitter);
-        imageActionAdminSMS = (ImageView) v.findViewById(R.id.imageActionAdminSMS);
-        imageActionAdminPhone = (ImageView) v.findViewById(R.id.imageActionAdminPhone);
-
         imagePicturePublication.setOnClickListener(this);
+        imagePublisherUser = (CircleImageView) v.findViewById(R.id.imagePublisherUser);
+        v.findViewById(R.id.imageActionPublicationReport).setOnClickListener(this);
+        v.findViewById(R.id.imageActionPublicationSMS).setOnClickListener(this);
+        v.findViewById(R.id.imageActionPublicationPhone).setOnClickListener(this);
+        v.findViewById(R.id.imageActionPublicationMap).setOnClickListener(this);
+        v.findViewById(R.id.imageActionAdminShareFacebook).setOnClickListener(this);
+        v.findViewById(R.id.imageActionAdminShareTwitter).setOnClickListener(this);
+        v.findViewById(R.id.imageActionAdminSMS).setOnClickListener(this);
+        v.findViewById(R.id.imageActionAdminPhone).setOnClickListener(this);
 
         return v;
     }
@@ -239,58 +234,15 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
     /** set the views */
     private void initViews(){
-//        if(isAdmin) {
-//            /** if the user is the admin, show the menu for editing, deleting or taking the publication offline */
-//            setHasOptionsMenu(true);
-//        } else{
-//            /** the user is not the admin, check if he's a registered user for the publication */
-//            // TODO: 13/01/2017 add db get
-//
-//            isRegistered = registeredUsersDBHandler.isUserRegistered(publication.getId());
-//            /** if the user is registered to the publication, show menu for unregistering */
-//            if(isRegistered){
-//                setHasOptionsMenu(true);
-//            }
-//        }
-//
-//        if(isAdmin){
-//            imageActionPublicationJoin.setVisibility(View.GONE);
-//            imageActionPublicationSMS.setVisibility(View.GONE);
-//            imageActionPublicationPhone.setVisibility(View.GONE);
-//            imageActionPublicationMap.setVisibility(View.GONE);
-//        } else{
-//            if(isRegistered){
-//                imageActionPublicationJoin.setVisibility(View.VISIBLE);
-//                imageActionPublicationSMS.setVisibility(View.VISIBLE);
-//                imageActionPublicationPhone.setVisibility(View.VISIBLE);
-//                imageActionPublicationMap.setVisibility(View.VISIBLE);
-//            } else{
-//                imageActionPublicationJoin.setVisibility(View.VISIBLE);
-//                imageActionPublicationSMS.setVisibility(View.GONE);
-//                imageActionPublicationPhone.setVisibility(View.GONE);
-//                imageActionPublicationMap.setVisibility(View.GONE);
-//            }
-//        }
-//        if(!isAdmin && !isRegistered){
-//            onFabChangeListener.onFabChange(PublicationActivity.PUBLICATION_DETAIL_TAG,true);
-//        } else{
-//            onFabChangeListener.onFabChange(PublicationActivity.PUBLICATION_DETAIL_TAG,false);
-//        }
         /** if the user is the admin, registered user, or a non registered user, show different layouts */
         if (isAdmin) {
             layoutAdminDetails.setVisibility(View.VISIBLE);
             layoutRegisteredDetails.setVisibility(View.GONE);
-            imageActionAdminShareFacebook.setOnClickListener(this);
-            imageActionAdminShareTwitter.setOnClickListener(this);
-            imageActionAdminSMS.setOnClickListener(this);
-            imageActionAdminPhone.setOnClickListener(this);
+
         } else if(isRegistered) {
             layoutAdminDetails.setVisibility(View.GONE);
             layoutRegisteredDetails.setVisibility(View.VISIBLE);
-            imageActionPublicationJoin.setOnClickListener(this);
-            imageActionPublicationSMS.setOnClickListener(this);
-            imageActionPublicationPhone.setOnClickListener(this);
-            imageActionPublicationMap.setOnClickListener(this);
+
         } else{
             layoutAdminDetails.setVisibility(View.GONE);
             layoutRegisteredDetails.setVisibility(View.GONE);
@@ -315,10 +267,14 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 CommonMethods.getTimeDifference(getContext(),CommonMethods.getCurrentTimeSeconds(),Double.parseDouble(publication.getEndingDate())));
 
         textTimeRemaining.setText(timeRemaining);
+        /** get the number of users registered for this publication */
+        countRegisteredUsers = registeredUsersDBHandler.getPublicationRegisteredUsersCount(publication.getId());
         textJoined.setText(String.format(Locale.US,"%1$s : %2$d",getResources().getString(R.string.joined),countRegisteredUsers));
         textTitlePublication.setText(publication.getTitle());
         textPublicationAddress.setText(publication.getAddress());
         textPublisherName.setText(publication.getIdentityProviderUserName());
+
+
         String priceS;
         if(publication.getPrice()==0){
             priceS = getResources().getString(R.string.free);
@@ -340,78 +296,61 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-        Intent i;
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        Intent intent;
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if(user == null || userID==-1){
             /** if the user is not signed in, all buttons are disabled, take him to the sign in activity */
-            i = new Intent(getContext(), SignInActivity.class);
-            startActivity(i);
+            intent = new Intent(getContext(), SignInActivity.class);
+            startActivity(intent);
         } else{
             switch (v.getId()){
                 /** join publication */
-                case R.id.imageActionPublicationJoin:
-                    /** if the user is registered to the publication the button is a report button */
-                    if(isRegistered){
-                        /** if reports is null, we haven't received the reports yet and therefor, can't add a new report yet, since the user might have already sent one */
-                        if(reports== null){
-                            Toast.makeText(getContext(), getResources().getString(R.string.please_wait), Toast.LENGTH_SHORT).show();
-                        }
-                        /** if the reports were received, check if the user has previously added a report, only allow to send a new one if the user hasn't before */
-                        else{
-                            boolean found = false;
-                            PublicationReport report;
-                            for (int j = 0; j < reports.size(); j++) {
-                                report = reports.get(j);
-                                if(userID == report.getReportUserID()){
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            /** the user has reported previously */
-                            if(found){
-                                Toast.makeText(getContext(), getResources().getString(R.string.you_can_only_report_once), Toast.LENGTH_SHORT).show();
-                            }
-                            /** the user can add a new report */
-                            else{
-                                reportDialog = new ReportDialog(getContext(),this,publication.getTitle());
-                                reportDialog.show();
-                            }
-                        }
+                case R.id.imageActionPublicationReport:
+                    /** if reports is null, we haven't received the reports yet and therefor, can't add a new report yet, since the user might have already sent one */
+                    if(reports== null){
+                        Toast.makeText(getContext(), getResources().getString(R.string.please_wait), Toast.LENGTH_SHORT).show();
                     }
-                    /** if the user is not registered, the button is to join the publication */
+                    /** if the reports were received, check if the user has previously added a report, only allow to send a new one if the user hasn't before */
                     else{
-                        RegisteredUser registeredUser = new RegisteredUser(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
-                                CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),user.getDisplayName(),CommonMethods.getMyUserPhone(getContext()),
-                                CommonMethods.getMyUserID(getContext()));
-                        String registration = registeredUser.getJsonForRegistration().toString();
-                        String[] registrationArgs = {String.valueOf(publication.getId())};
-                        i = new Intent(getContext(),FoodonetService.class);
-                        i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION);
-                        i.putExtra(ReceiverConstants.ADDRESS_ARGS,registrationArgs);
-                        i.putExtra(ReceiverConstants.JSON_TO_SEND,registration);
-                        getContext().startService(i);
-                        isRegistered = true;
+                        boolean found = false;
+                        PublicationReport report;
+                        for (int i = 0; i < reports.size(); i++) {
+                            report = reports.get(i);
+                            if(userID == report.getReportUserID()){
+                                found = true;
+                                break;
+                            }
+                        }
+                        /** the user has reported previously */
+                        if(found){
+                            Toast.makeText(getContext(), getResources().getString(R.string.you_can_only_report_once), Toast.LENGTH_SHORT).show();
+                        }
+                        /** the user can add a new report */
+                        else{
+                            reportDialog = new ReportDialog(getContext(),this,publication.getTitle());
+                            reportDialog.show();
+                        }
                     }
                     break;
 
                 /** send SMS with message body*/
                 case R.id.imageActionPublicationSMS:
                     String message = String.format("%1$s%2$s%3$s%4$s",
-                            getResources().getString(R.string.sms_part1),
+                            getResources().getString(R.string.sms_to_publisher_part1),
                             publication.getTitle(),
-                            getResources().getString(R.string.sms_part2),
+                            getResources().getString(R.string.sms_to_publisher_part2),
                             user.getDisplayName());
                     Uri uri = Uri.parse(String.format("smsto:%1$s",publication.getContactInfo()));
-                    i = new Intent(Intent.ACTION_SENDTO,uri);
-                    i.putExtra("sms_body",message);
-                    startActivity(i);
+                    intent = new Intent(Intent.ACTION_SENDTO,uri);
+                    intent.putExtra("sms_body",message);
+                    startActivity(intent);
                     break;
 
                 /** simple intent to put the phone number in the phone's default dialer */
                 case R.id.imageActionPublicationPhone:
                     if (publication.getContactInfo().matches("[0-9]+") && publication.getContactInfo().length() > 2) {
-                        i = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" + publication.getContactInfo()));
-                        startActivity(i);
+                        intent = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" + publication.getContactInfo()));
+                        startActivity(intent);
                     }
                     break;
 
@@ -419,20 +358,15 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 case R.id.imageActionPublicationMap:
                     // TODO: 22/11/2016 fix to allow both waze and google maps to work
                     if(publication.getLat()!=0 && publication.getLng()!= 0){
-                        i = new Intent(Intent.ACTION_VIEW,
+                        intent = new Intent(Intent.ACTION_VIEW,
                                 Uri.parse("geo:" + publication.getLat() + "," +
                                                 publication.getLng()
 //                                    + "?q=" + getStreet() + "+" +
 //                                    getHousenumber() + "+" + getPostalcode() + "+" +
 //                                    getCity()
                                 ));
-                        startActivity(i);
+                        startActivity(intent);
                     }
-                    break;
-
-                /** pressing on the publication image - open full screen view of the image */
-                case R.id.imagePicturePublication:
-                    // TODO: 16/01/2017 add image view logic
                     break;
 
                 case R.id.imageActionAdminShareFacebook:
@@ -445,10 +379,98 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
 
                 case R.id.imageActionAdminSMS:
                     // TODO: 13/02/2017 check what this button needs to do and implement
+                    if(countRegisteredUsers != 0){
+                        RegisteredUsersDBHandler smsRegisteredUsersHandler = new RegisteredUsersDBHandler(getContext());
+                        final ArrayList<RegisteredUser> smsRegisteredUsers = smsRegisteredUsersHandler.getPublicationRegisteredUsers(publication.getId());
+                        String[] registeredUsersNames = new String[smsRegisteredUsers.size()];
+                        for(int i = 0; i < smsRegisteredUsers.size(); i++){
+                            registeredUsersNames[i] = smsRegisteredUsers.get(i).getCollectorName();
+                        }
+                        final boolean[] checkedItems = new boolean[smsRegisteredUsers.size()];
+                        final ArrayList<Integer> selectedItemsIndexList = new ArrayList<>();
+
+                        AlertDialog.Builder smsDialog = new AlertDialog.Builder(getContext())
+                                .setTitle(R.string.dialog_select_contact)
+                                .setMultiChoiceItems(registeredUsersNames, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                                        if(isChecked){
+                                            selectedItemsIndexList.add(which);
+                                        } else if(selectedItemsIndexList.contains(which)){
+                                            selectedItemsIndexList.remove(Integer.valueOf(which));
+                                        }
+                                    }
+                                })
+                                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        StringBuilder phoneBuilder = new StringBuilder();
+                                        int itemIndex;
+                                        String phone;
+                                        for(int i = 0; i < selectedItemsIndexList.size(); i++){
+                                            itemIndex = selectedItemsIndexList.get(i);
+                                            phone = smsRegisteredUsers.get(itemIndex).getCollectorContactInfo();
+                                            if (i > 0) {
+                                                phoneBuilder.append(";");
+                                            }
+                                            phoneBuilder.append(phone);
+                                        }
+
+                                        String message = String.format("%1$s%2$s%3$s%4$s",
+                                                getResources().getString(R.string.sms_to_registered_user_part1),
+                                                publication.getTitle(),
+                                                getResources().getString(R.string.sms_to_registered_user_part2),
+                                                user.getDisplayName());
+                                        Uri uri = Uri.parse(String.format("smsto:%1$s",phoneBuilder.toString()));
+                                        final Intent intent = new Intent(Intent.ACTION_SENDTO,uri);
+                                        intent.putExtra("sms_body",message);
+                                        startActivity(intent);
+                                    }
+                                });
+                        alertDialog = smsDialog.show();
+                    } else{
+                        Snackbar.make(imagePicturePublication,"There are no registered users",Snackbar.LENGTH_LONG).show();
+                    }
                     break;
 
                 case R.id.imageActionAdminPhone:
-                    // TODO: 13/02/2017 check what this button needs to do and implement
+                    if(countRegisteredUsers != 0){
+                        RegisteredUsersDBHandler callRegisteredUsersHandler = new RegisteredUsersDBHandler(getContext());
+                        final ArrayList<RegisteredUser> callRegisteredUsers = callRegisteredUsersHandler.getPublicationRegisteredUsers(publication.getId());
+                        String[] registeredUsersNames = new String[callRegisteredUsers.size()];
+                        for(int i = 0; i < callRegisteredUsers.size(); i++){
+                            registeredUsersNames[i] = callRegisteredUsers.get(i).getCollectorName();
+                        }
+                        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getContext(), android.R.layout.select_dialog_singlechoice, registeredUsersNames);
+
+                        AlertDialog.Builder callDialog = new AlertDialog.Builder(getContext())
+                                .setTitle(R.string.dialog_select_contact)
+                                .setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String phone = callRegisteredUsers.get(which).getCollectorContactInfo();
+                                        if (phone.matches("[0-9]+") && publication.getContactInfo().length() > 2) {
+                                            final Intent callIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("tel:" + phone));
+                                            startActivity(callIntent);
+                                        }
+                                    }
+                                })
+                                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                    }
+                                })
+                                ;
+                        alertDialog = callDialog.show();
+
+                    } else{
+                        Snackbar.make(imagePicturePublication,"There are no registered users",Snackbar.LENGTH_LONG).show();
+                    }
+                    break;
+
+                /** pressing on the publication image - open full screen view of the image */
+                case R.id.imagePicturePublication:
+                    // TODO: 16/01/2017 add image view logic
                     break;
             }
         }
@@ -498,7 +520,6 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                             i.putExtra(ReceiverConstants.ADDRESS_ARGS,registrationArgs);
                             i.putExtra(ReceiverConstants.JSON_TO_SEND,registration);
                             getContext().startService(i);
-                            isRegistered = true;
                         }
                     }
 
@@ -538,7 +559,10 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                 case ReceiverConstants.ACTION_UNREGISTER_FROM_PUBLICATION:
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 28/01/2017 add logic
-                        Toast.makeText(context, getResources().getString(R.string.unregistered), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Snackbar.make(imagePicturePublication,getResources().getString(R.string.unregistered),Snackbar.LENGTH_LONG).show();
+                        isRegistered = false;
                         initViews();
                     }
                     break;
@@ -561,6 +585,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                     }
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 19/12/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
                         Toast.makeText(context, getResources().getString(R.string.deleted), Toast.LENGTH_SHORT).show();
                         Intent openMyPublicationsIntent = new Intent(getContext(), PublicationActivity.class);

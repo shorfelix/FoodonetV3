@@ -173,7 +173,8 @@ public class CommonMethods {
 
     /** returns the userID from shared preferences */
     public static long getMyUserID(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getLong(User.IDENTITY_PROVIDER_USER_ID, -1);
+        long userID = PreferenceManager.getDefaultSharedPreferences(context).getLong(User.IDENTITY_PROVIDER_USER_ID,(long) -1);
+        return userID;
     }
 
     /** saves the userID to shared preferences */
@@ -194,7 +195,7 @@ public class CommonMethods {
     /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
     public static long getNewLocalPublicationID() {
         //todo add a check for available negative id, currently hard coded
-        return -1;
+        return (long)-1;
     }
 
     public static String getRoundedStringFromNumber(float num) {

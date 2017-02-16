@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar.setTitle(R.string.foodonet);
         setSupportActionBar(toolbar);
 
-        /** check if the app is initialized*/
         preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
 
         // TODO: 16/01/2017 remove this after finished testing the push notification user sign in
@@ -255,8 +254,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             activeDevice.put("remote_notification_token", token);
         }
         activeDevice.put("is_ios", false);
-        activeDevice.put("last_location_latitude", PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LATITUDE, null));
-        activeDevice.put("last_location_longitude", PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LONGITUDE,null));
+        activeDevice.put("last_location_latitude", preferenceManager.getString(CommonConstants.USER_LATITUDE, null));
+        activeDevice.put("last_location_longitude", preferenceManager.getString(CommonConstants.USER_LONGITUDE,null));
         activeDeviceRoot.put("active_device",activeDevice);
     } catch (JSONException e) {
         e.printStackTrace();
