@@ -44,9 +44,11 @@ class FoodonetDBHelper extends SQLiteOpenHelper {
                 FoodonetDBProvider.LatestPlacesDB.TABLE_NAME,FoodonetDBProvider.LatestPlacesDB._ID_COLUMN,FoodonetDBProvider.LatestPlacesDB.POSITION_COLUMN,
                 FoodonetDBProvider.LatestPlacesDB.ADDRESS_COLUMN,FoodonetDBProvider.LatestPlacesDB.LAT_COLUMN,FoodonetDBProvider.LatestPlacesDB.LNG_COLUMN);
         sqLiteDatabase.execSQL(sql);
-        sql = String.format("CREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY AUTOINCREMENT,%3$s INTEGER,%4$s INTEGER,%5$s INTEGER)",
+        sql = String.format("CREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY AUTOINCREMENT,%3$s INTEGER,%4$s INTEGER,%5$s INTEGER, %6$s TEXT, %7$s TEXT, %8$s TEXT)",
                 FoodonetDBProvider.RegisteredUsersDB.TABLE_NAME,FoodonetDBProvider.RegisteredUsersDB._ID_COLUMN,FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN,
-                FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_VERSION_COLUMN,FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN);
+                FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_VERSION_COLUMN,FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN,
+                FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ACTIVE_DEVICE_UUID,FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_NAME,
+                FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_PHONE);
         sqLiteDatabase.execSQL(sql);
 
         /** add the rows of the latest places, since they won't be inserted again */

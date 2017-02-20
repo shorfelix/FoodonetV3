@@ -63,7 +63,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                  user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    Toast.makeText(SignInActivity.this, "success2", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignInActivity.this, R.string.success, Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(SignInActivity.this, WelcomeUserActivity.class));
                     finish();
                 } else {

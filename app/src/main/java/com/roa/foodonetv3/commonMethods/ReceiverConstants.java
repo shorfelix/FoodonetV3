@@ -13,6 +13,8 @@ public class ReceiverConstants {
     public static final String JSON_TO_SEND = "jsonToSend";
     public static final String SERVICE_ERROR = "serviceError";
 
+    public static final String REQUEST_IDENTIFIER = "request_identifier";
+    public static final String DATA = "data";
     /** Server types */
     public static final int ACTION_GET_PUBLICATIONS = 1;
     public static final int ACTION_ADD_PUBLICATION = 2;
@@ -24,11 +26,13 @@ public class ReceiverConstants {
     public static final int ACTION_REGISTER_TO_PUBLICATION = 30;
     public static final int ACTION_GET_PUBLICATION_REGISTERED_USERS = 31;
     public static final int ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS = 32;
+    public static final int ACTION_UNREGISTER_FROM_PUBLICATION = 33;
     public static final int ACTION_ADD_GROUP = 40;
     public static final int ACTION_GET_GROUPS = 41;
     public static final int ACTION_ADD_GROUP_MEMBER = 50;
     public static final int ACTION_POST_FEEDBACK = 60;
     public static final int ACTION_ACTIVE_DEVICE_NEW_USER = 70;
+
 
     /** Local types */
     public static final int ACTION_FAB_CLICK = 100;
@@ -42,4 +46,5 @@ public class ReceiverConstants {
     public static final int FAB_TYPE_NEW_GROUP_MEMBER = 1;
     public static final int FAB_TYPE_SAVE_NEW_PUBLICATION = 2;
     public static final int FAB_TYPE_ADD_NEW_PUBLICATION = 3;
+    public static final int FAB_TYPE_REGISTER_TO_PUBLICATION = 4;
 }

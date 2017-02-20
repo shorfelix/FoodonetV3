@@ -1,6 +1,9 @@
 package com.roa.foodonetv3.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -32,6 +35,7 @@ import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.GroupsOverviewFragment;
 import com.roa.foodonetv3.fragments.AdminGroupFragment;
 import com.roa.foodonetv3.model.Group;
+import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.services.FoodonetService;
 import java.util.ArrayList;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -52,6 +56,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
 
     private FloatingActionButton fab;
     private FragmentManager fragmentManager;
+    private FoodonetReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,8 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        receiver = new FoodonetReceiver();
 
         /** set the fragment manager */
         fragmentManager = getSupportFragmentManager();
@@ -92,11 +99,16 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     protected void onResume() {
         super.onResume();
+        /** register receiver */
+        IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
+
         /** set drawer header and image */
+        // TODO: 19/02/2017 currently loading the image from the web
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
-            headerTxt.setText(mFirebaseUser.getDisplayName());
+            headerTxt.setText(CommonMethods.getMyUserName(this));
         }else{
             Glide.with(this).load(android.R.drawable.sym_def_app_icon).into(circleImageView);
             headerTxt.setText(getResources().getString(R.string.not_signed_in));
@@ -106,6 +118,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     protected void onPause() {
         super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         /** dismiss the dialog if open*/
         if(newGroupDialog!= null){
             newGroupDialog.dismiss();
@@ -151,12 +164,12 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         } else{
             duration = CommonConstants.FAB_ANIM_DURATION;
         }
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = size.x;
-        int height = size.y;
-        final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + CommonConstants.FAB_SIZE*2);
+//        Display display = getWindowManager().getDefaultDisplay();
+//        Point size = new Point();
+//        display.getSize(size);
+//        int width = size.x;
+//        int height = size.y;
+//        final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + CommonConstants.FAB_SIZE*2);
 
         /** set the current frag to be the new one */
         currentFrag = openFragType;
@@ -166,7 +179,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
             case GROUPS_OVERVIEW_TAG:
                 GroupsOverviewFragment groupsOverviewFragment = new GroupsOverviewFragment();
                 fragmentManager.beginTransaction().replace(R.id.containerGroups,groupsOverviewFragment, GROUPS_OVERVIEW_TAG).commit();
-                FabAnimation.animateFAB(this,fab,normalFabY, duration,R.drawable.white_plus,getResources().getColor(R.color.colorPrimary),false);
+                FabAnimation.animateFAB(this,fab, duration,R.drawable.white_plus,getResources().getColor(R.color.colorPrimary),false);
                 break;
             case ADMIN_GROUP_TAG:
                 AdminGroupFragment adminGroupFragment = new AdminGroupFragment();
@@ -176,7 +189,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                 adminGroupFragment.setArguments(bundle);
                 fragmentManager.beginTransaction().replace(R.id.containerGroups, adminGroupFragment, ADMIN_GROUP_TAG).commit();
                 // TODO: 19/12/2016 change the image for the fab
-                FabAnimation.animateFAB(this,fab,normalFabY, duration,R.drawable.user,getResources().getColor(R.color.FooGreen),false);
+                FabAnimation.animateFAB(this,fab, duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
                 break;
             case OPEN_GROUP_TAG:
                 // TODO: 13/12/2016 add fragment
@@ -199,7 +212,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     public void onNewGroupClick(String groupName){
         /** after a user creates a new group from the dialog, run the service to create the group */
-        Group newGroup = new Group(groupName, CommonMethods.getMyUserID(this),null,-1);
+        Group newGroup = new Group(groupName, CommonMethods.getMyUserID(this),(long)-1);
         Intent intent = new Intent(this, FoodonetService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_GROUP);
         intent.putExtra(ReceiverConstants.JSON_TO_SEND,newGroup.getAddGroupJson().toString());
@@ -227,7 +240,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                             break;
                         case ADMIN_GROUP_TAG:
                             /** pressed on create a new user in a group the user is the admin of */
-                            // TODO: 14/12/2016 currently not working... getting a 404 code
+                            // TODO: 14/12/2016 currently not working... getting a 440 json response
                             Toast.makeText(this, "add new member", Toast.LENGTH_SHORT).show();
                             Intent fabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
                             fabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_FAB_CLICK);
@@ -238,6 +251,40 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                     }
                 }
                 break;
+        }
+    }
+
+    private class FoodonetReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            /** receiver for reports got from the service */
+            int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
+            switch (action){
+                /** response from service of adding a new group */
+                case ReceiverConstants.ACTION_ADD_GROUP:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 14/12/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        long groupID = intent.getLongExtra(Group.GROUP_ID,-1);
+                        if(groupID!=-1){
+                            String[] args = {String.valueOf(groupID)};
+                            ArrayList<GroupMember> userAdmin = new ArrayList<>();
+                            String userName = CommonMethods.getMyUserName(context);
+                            userAdmin.add(new GroupMember(groupID,CommonMethods.getMyUserID(GroupsActivity.this),
+                                    CommonMethods.getMyUserPhone(GroupsActivity.this),userName,true));
+                            String newAdminJson = Group.getAddGroupMembersJson(userAdmin).toString();
+                            Intent addAdminIntent = new Intent(GroupsActivity.this,FoodonetService.class);
+                            addAdminIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
+                            addAdminIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+                            addAdminIntent.putExtra(ReceiverConstants.JSON_TO_SEND,newAdminJson);
+                            GroupsActivity.this.startService(addAdminIntent);
+                        } else{
+                            // TODO: 22/01/2017 do something
+                        }
+
+                    }
+            }
         }
     }
 }

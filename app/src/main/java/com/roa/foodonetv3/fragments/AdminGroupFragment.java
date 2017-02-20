@@ -25,9 +25,13 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.GroupMembersRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.db.GroupMembersDBHandler;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.services.FoodonetService;
+
+import java.util.ArrayList;
+
 import static android.app.Activity.RESULT_OK;
 import static com.roa.foodonetv3.activities.GroupsActivity.CONTACT_PICKER;
 
@@ -76,7 +80,7 @@ public class AdminGroupFragment extends Fragment {
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
-        adapter.updateMembers(group.getMembers());
+        adapter.updateMembers(group.getGroupID());
     }
 
     @Override
@@ -118,21 +122,24 @@ public class AdminGroupFragment extends Fragment {
                 name = cursor.getString(nameIndex);
             }
             Log.d(TAG,"phone:"+phone+" ,name:"+name);
+            GroupMember member = new GroupMember(group.getGroupID(),0,phone,name,false);
             boolean error = false;
             if(phone==null || name == null){
                 error = true;
             }
-            if(group.getMembers().size()==0){
-                GroupMember member = new GroupMember(group.getGroupID(), CommonMethods.getMyUserID(getContext()),
-                        CommonMethods.getMyUserPhone(getContext()), FirebaseAuth.getInstance().getCurrentUser().getDisplayName(),true);
-                /** if no members are in the group yet, when adding the first one, add the user as the admin as well */
-                group.addToMembers(member);
-            }
-            GroupMember member = new GroupMember(group.getGroupID(),0,phone,name,false);
-            group.addToMembers(member);
+//            if(group.getMembers().size()==0){
+//                GroupMember member = new GroupMember(group.getGroupID(), CommonMethods.getMyUserID(getContext()),
+//                        CommonMethods.getMyUserPhone(getContext()), FirebaseAuth.getInstance().getCurrentUser().getDisplayName(),true);
+//                /** if no members are in the group yet, when adding the first one, add the user as the admin as well */
+//                group.addToMembers(member);
+//            }
+            GroupMembersDBHandler handler = new GroupMembersDBHandler(getContext());
+            handler.insertMemberToGroup(group.getGroupID(),member);
             Intent addMemberIntent = new Intent(getContext(), FoodonetService.class);
             addMemberIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
-            addMemberIntent.putExtra(ReceiverConstants.JSON_TO_SEND,group.getAddGroupMembersJson().toString());
+            ArrayList<GroupMember> members = new ArrayList<>();
+            members.add(member);
+            addMemberIntent.putExtra(ReceiverConstants.JSON_TO_SEND,Group.getAddGroupMembersJson(members).toString());
             String[] args = {String.valueOf(group.getGroupID())};
             addMemberIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
             getContext().startService(addMemberIntent);
