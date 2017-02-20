@@ -11,7 +11,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -313,8 +312,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
     public void uploadPublicationToServer() {
         /** upload the publication to the foodonet server */
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String contactInfo = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(User.PHONE_NUMBER, "");
+        String contactInfo = CommonMethods.getMyUserPhone(getContext());
         String title = editTextTitleAddPublication.getText().toString();
         String location = textLocationAddPublication.getText().toString();
         String priceS = editTextPriceAddPublication.getText().toString();
@@ -361,7 +359,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                     //CommonMethods.getFileNameFromPath(mCurrentPhotoPath),
                     photoPath,
                     CommonMethods.getMyUserID(getContext()),
-                    groups.get(spinnerShareWith.getSelectedItemPosition()).getGroupID() , user.getDisplayName(), price, "");
+                    groups.get(spinnerShareWith.getSelectedItemPosition()).getGroupID() , CommonMethods.getMyUserName(getContext()), price, "");
             ArrayList<Parcelable> data = new ArrayList<>();
             data.add(publication);
             // TODO: 27/11/2016 currently just adding publications, no logic for edit yet

@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.FoodonetService;
@@ -70,6 +71,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
             }
             if(userName!= null){
                 userNameTxt.setText(userName);
+                preferences.edit().putString(getString(R.string.key_prefs_user_name),userName).apply();
             } else{
                 // TODO: 28/11/2016 add logic
             }
@@ -79,10 +81,10 @@ public class WelcomeUserActivity extends AppCompatActivity {
                 String phoneNumber = userPhoneNumber.getText().toString();
                 if(isLegalNumber(phoneNumber)) {
                     /** save user phone number to sharedPreferences */
-                    preferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
+                    preferences.edit().putString(getString(R.string.key_prefs_user_phone), phoneNumber).apply();
 
                     /** sign in the user to foodonet server and get his new (or existing) id and save it to the shared preferences through the service */
-                    String uuid = preferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
+                    String uuid = CommonMethods.getDeviceUUID(getBaseContext());
                     String providerId = "";
                     String userEmail = mFirebaseUser.getEmail();
                     for (UserInfo userInfo : mFirebaseUser.getProviderData()) {
@@ -98,10 +100,10 @@ public class WelcomeUserActivity extends AppCompatActivity {
                     }
                     User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,mFirebaseUser.getDisplayName(),true,uuid);
 
-                    Intent i = new Intent(WelcomeUserActivity.this, FoodonetService.class);
-                    i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_USER);
-                    i.putExtra(ReceiverConstants.JSON_TO_SEND,user.getUserJson().toString());
-                    WelcomeUserActivity.this.startService(i);
+                    Intent intent = new Intent(WelcomeUserActivity.this, FoodonetService.class);
+                    intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_USER);
+                    intent.putExtra(ReceiverConstants.JSON_TO_SEND,user.getUserJson().toString());
+                    WelcomeUserActivity.this.startService(intent);
                     dialog = new ProgressDialog(WelcomeUserActivity.this);
                     dialog.show();
 

@@ -28,7 +28,6 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
     private LocationManager locationManager;
     private static final int PERMISSION_REQUEST_NEW_LOCATION = 1;
     private static final int PERMISSION_REQUEST_UNREGISTER = 2;
-    private static final String GOT_LOCATION = "gotLocation";
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -41,7 +40,7 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        if(!sharedPreferences.getBoolean("initialized",false)){
+        if(!sharedPreferences.getBoolean(getString(R.string.key_prefs_initialized),false)){
             init();
         }
         startGps();
@@ -62,16 +61,15 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         /** in first use, get a new UUID for the device and save it in the shared preferences */
         SharedPreferences.Editor edit = sharedPreferences.edit();
         // TODO: 21/12/2016 get the string from a static field or a resource string
-        edit.putBoolean("initialized",true);
+        edit.putBoolean(getString(R.string.key_prefs_initialized),true);
         String deviceUUID = UUID.randomUUID().toString();
-        edit.putString(User.ACTIVE_DEVICE_DEV_UUID, deviceUUID).apply();
+        edit.putString(getString(R.string.key_prefs_device_uuid), deviceUUID).apply();
         Log.d("Got new device UUID",deviceUUID);
     }
 
     public void startGps(){
         /** get a network based position (fastest, and accuracy is not an issue) so when the app starts it will have a reference to distances */
         // TODO: 21/12/2016 change the logic to be run from a different class, add common methods - getUserLocation method
-        sharedPreferences.edit().putBoolean(GOT_LOCATION,false).apply();
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         String providerName = LocationManager.NETWORK_PROVIDER;
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
@@ -84,9 +82,8 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
     public void onLocationChanged(Location location) {
         LatLng userLocation = new LatLng(location.getLatitude(), location.getLongitude());
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(CommonConstants.USER_LATITUDE, String.valueOf(userLocation.latitude));
-        editor.putString(CommonConstants.USER_LONGITUDE, String.valueOf(userLocation.longitude));
-        editor.putBoolean(GOT_LOCATION,true);
+        editor.putString(getString(R.string.key_prefs_user_lat), String.valueOf(userLocation.latitude));
+        editor.putString(getString(R.string.key_prefs_user_lng), String.valueOf(userLocation.longitude));
         editor.apply();
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if(permissionCheck == PackageManager.PERMISSION_GRANTED){

@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.GroupMembersDBHandler;
@@ -34,8 +35,8 @@ public class GetDataService extends IntentService {
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
                     /** remove user phone number and foodonet user ID from sharedPreferences */
                     SharedPreferences.Editor editor = preferences.edit();
-                    editor.remove(User.PHONE_NUMBER);
-                    editor.remove(User.IDENTITY_PROVIDER_USER_ID);
+                    editor.remove(getString(R.string.key_prefs_user_phone));
+                    editor.remove(getString(R.string.key_prefs_user_id));
                     editor.apply();
                     /** delete the data from the db that won't be re-downloaded */
                     GroupMembersDBHandler groupMembersDBHandler = new GroupMembersDBHandler(this);
@@ -49,7 +50,7 @@ public class GetDataService extends IntentService {
                 case ReceiverConstants.ACTION_GET_GROUPS:
                     /** get groups */
                     long userID = CommonMethods.getMyUserID(this);
-                    if (userID != -1) {
+                    if (userID != (long)-1) {
                         getDataIntent = new Intent(this,FoodonetService.class);
                         getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_GROUPS);
                         String[] args = new String[]{String.valueOf(userID)};

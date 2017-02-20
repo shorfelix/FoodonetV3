@@ -89,10 +89,11 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
     protected void onResume() {
         super.onResume();
         /** set drawer header and image */
+        // TODO: 19/02/2017 currently loading the image from the web
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
-            headerTxt.setText(mFirebaseUser.getDisplayName());
+            headerTxt.setText(CommonMethods.getMyUserName(this));
         }else{
             Glide.with(this).load(android.R.drawable.sym_def_app_icon).into(circleImageView);
             headerTxt.setText(getResources().getString(R.string.not_signed_in));

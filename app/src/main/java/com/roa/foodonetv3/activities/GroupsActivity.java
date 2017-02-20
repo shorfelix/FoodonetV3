@@ -104,10 +104,11 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
 
         /** set drawer header and image */
+        // TODO: 19/02/2017 currently loading the image from the web
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
-            headerTxt.setText(mFirebaseUser.getDisplayName());
+            headerTxt.setText(CommonMethods.getMyUserName(this));
         }else{
             Glide.with(this).load(android.R.drawable.sym_def_app_icon).into(circleImageView);
             headerTxt.setText(getResources().getString(R.string.not_signed_in));
@@ -211,7 +212,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     public void onNewGroupClick(String groupName){
         /** after a user creates a new group from the dialog, run the service to create the group */
-        Group newGroup = new Group(groupName, CommonMethods.getMyUserID(this),-1);
+        Group newGroup = new Group(groupName, CommonMethods.getMyUserID(this),(long)-1);
         Intent intent = new Intent(this, FoodonetService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_GROUP);
         intent.putExtra(ReceiverConstants.JSON_TO_SEND,newGroup.getAddGroupJson().toString());
@@ -239,7 +240,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                             break;
                         case ADMIN_GROUP_TAG:
                             /** pressed on create a new user in a group the user is the admin of */
-                            // TODO: 14/12/2016 currently not working... getting a 404 code
+                            // TODO: 14/12/2016 currently not working... getting a 440 json response
                             Toast.makeText(this, "add new member", Toast.LENGTH_SHORT).show();
                             Intent fabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
                             fabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_FAB_CLICK);
@@ -269,9 +270,9 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                         if(groupID!=-1){
                             String[] args = {String.valueOf(groupID)};
                             ArrayList<GroupMember> userAdmin = new ArrayList<>();
-                            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                            String userName = CommonMethods.getMyUserName(context);
                             userAdmin.add(new GroupMember(groupID,CommonMethods.getMyUserID(GroupsActivity.this),
-                                    CommonMethods.getMyUserPhone(GroupsActivity.this),firebaseUser.getDisplayName(),true));
+                                    CommonMethods.getMyUserPhone(GroupsActivity.this),userName,true));
                             String newAdminJson = Group.getAddGroupMembersJson(userAdmin).toString();
                             Intent addAdminIntent = new Intent(GroupsActivity.this,FoodonetService.class);
                             addAdminIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
