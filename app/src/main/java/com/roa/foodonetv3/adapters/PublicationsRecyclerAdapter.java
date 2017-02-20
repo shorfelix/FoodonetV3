@@ -2,7 +2,6 @@ package com.roa.foodonetv3.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.preference.PreferenceManager;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -47,8 +46,7 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
         this.context = context;
         /** get the S3 utility */
         transferUtility = CommonMethods.getTransferUtility(context);
-        userLatLng = new LatLng(Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LATITUDE,String.valueOf(LOCATION_NOT_FOUND))),
-                Double.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(CommonConstants.USER_LONGITUDE,String.valueOf(LOCATION_NOT_FOUND))));
+        userLatLng = CommonMethods.getLastLocation(context);
     }
 
     /** updates the recycler */

@@ -168,28 +168,33 @@ public class CommonMethods {
 
     /** returns a UUID */
     public static String getDeviceUUID(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.ACTIVE_DEVICE_DEV_UUID, null);
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_device_uuid), null);
     }
 
     /** returns the userID from shared preferences */
     public static long getMyUserID(Context context) {
-        long userID = PreferenceManager.getDefaultSharedPreferences(context).getLong(User.IDENTITY_PROVIDER_USER_ID,(long) -1);
+        long userID = PreferenceManager.getDefaultSharedPreferences(context).getLong(context.getString(R.string.key_prefs_user_id),(long) -1);
         return userID;
+    }
+
+    /** @return returns the userName from shared preferences */
+    public static String getMyUserName(Context context){
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_name),"");
     }
 
     /** saves the userID to shared preferences */
     public static void setMyUserID(Context context, long userID) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(User.IDENTITY_PROVIDER_USER_ID, userID).apply();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(context.getString(R.string.key_prefs_user_id), userID).apply();
     }
 
     public static String getMyUserPhone(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER, null);
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_phone), null);
     }
 
     public static LatLng getLastLocation(Context context){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return new LatLng(Double.valueOf(preferences.getString(CommonConstants.USER_LATITUDE,"-9999")),
-                Double.valueOf(preferences.getString(CommonConstants.USER_LONGITUDE,"-9999")));
+        return new LatLng(Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lat),String.valueOf(CommonConstants.LATLNG_ERROR))),
+                Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lng),String.valueOf(CommonConstants.LATLNG_ERROR))));
     }
 
     /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */

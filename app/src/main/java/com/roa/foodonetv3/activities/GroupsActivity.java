@@ -104,10 +104,11 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
 
         /** set drawer header and image */
+        // TODO: 19/02/2017 currently loading the image from the web
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
             Glide.with(this).load(mFirebaseUser.getPhotoUrl()).into(circleImageView);
-            headerTxt.setText(mFirebaseUser.getDisplayName());
+            headerTxt.setText(CommonMethods.getMyUserName(this));
         }else{
             Glide.with(this).load(android.R.drawable.sym_def_app_icon).into(circleImageView);
             headerTxt.setText(getResources().getString(R.string.not_signed_in));
@@ -269,9 +270,9 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                         if(groupID!=-1){
                             String[] args = {String.valueOf(groupID)};
                             ArrayList<GroupMember> userAdmin = new ArrayList<>();
-                            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+                            String userName = CommonMethods.getMyUserName(context);
                             userAdmin.add(new GroupMember(groupID,CommonMethods.getMyUserID(GroupsActivity.this),
-                                    CommonMethods.getMyUserPhone(GroupsActivity.this),firebaseUser.getDisplayName(),true));
+                                    CommonMethods.getMyUserPhone(GroupsActivity.this),userName,true));
                             String newAdminJson = Group.getAddGroupMembersJson(userAdmin).toString();
                             Intent addAdminIntent = new Intent(GroupsActivity.this,FoodonetService.class);
                             addAdminIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);

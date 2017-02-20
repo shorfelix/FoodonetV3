@@ -127,5 +127,11 @@
     <string name="unregistered">Unregistered</string>
     <string name="dialog_select_contact">Select contact</string>
     <string name="ok">OK</string>
+    <string name="prefs_user_name">User Name</string>
+    <string name="prefs_phone_number">Phone Number</string>
+    <string name="prefs_get_notifications">Get Notifications</string>
+    <string name="prefs_notification_radius">Notification Radius</string>
+    <string name="prefs_all">All</string>
+    <string name="success">Success</string>
 
 </resources>

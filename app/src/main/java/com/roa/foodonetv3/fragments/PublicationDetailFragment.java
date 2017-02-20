@@ -339,7 +339,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                             getResources().getString(R.string.sms_to_publisher_part1),
                             publication.getTitle(),
                             getResources().getString(R.string.sms_to_publisher_part2),
-                            user.getDisplayName());
+                            CommonMethods.getMyUserName(getContext()));
                     Uri uri = Uri.parse(String.format("smsto:%1$s",publication.getContactInfo()));
                     intent = new Intent(Intent.ACTION_SENDTO,uri);
                     intent.putExtra("sms_body",message);
@@ -420,7 +420,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                                                 getResources().getString(R.string.sms_to_registered_user_part1),
                                                 publication.getTitle(),
                                                 getResources().getString(R.string.sms_to_registered_user_part2),
-                                                user.getDisplayName());
+                                                CommonMethods.getMyUserName(getContext()));
                                         Uri uri = Uri.parse(String.format("smsto:%1$s",phoneBuilder.toString()));
                                         final Intent intent = new Intent(Intent.ACTION_SENDTO,uri);
                                         intent.putExtra("sms_body",message);
@@ -479,10 +479,9 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
     @Override
     public void onReportCreate(int rating, short typeOfReport) {
         /** send the report */
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         long currentTime = (long) CommonMethods.getCurrentTimeSeconds();
         PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(), typeOfReport,
-                CommonMethods.getDeviceUUID(getContext()),String.valueOf(currentTime),user.getDisplayName(),
+                CommonMethods.getDeviceUUID(getContext()),String.valueOf(currentTime),CommonMethods.getMyUserName(getContext()),
                 CommonMethods.getMyUserPhone(getContext()),CommonMethods.getMyUserID(getContext()),rating);
         String reportJson = publicationReport.getAddReportJson().toString();
         Log.d(TAG,"report json:"+reportJson);
@@ -511,8 +510,8 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                             startActivity(i);
                         } else{
                             RegisteredUser registeredUser = new RegisteredUser(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
-                                    CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),user.getDisplayName(),CommonMethods.getMyUserPhone(getContext()),
-                                    CommonMethods.getMyUserID(getContext()));
+                                    CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),CommonMethods.getMyUserName(getContext()),
+                                    CommonMethods.getMyUserPhone(getContext()), CommonMethods.getMyUserID(getContext()));
                             String registration = registeredUser.getJsonForRegistration().toString();
                             String[] registrationArgs = {String.valueOf(publication.getId())};
                             i = new Intent(getContext(),FoodonetService.class);
