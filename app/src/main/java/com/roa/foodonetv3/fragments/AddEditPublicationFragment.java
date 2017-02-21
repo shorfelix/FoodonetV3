@@ -44,6 +44,7 @@ import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.SavedPlace;
 import com.roa.foodonetv3.model.User;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.FoodonetService;
 import java.io.File;
 import java.io.IOException;
@@ -356,18 +357,10 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, place.getLat(), place.getLng(),
                     String.valueOf(startingDate), String.valueOf(endingDate), contactInfo, true, CommonMethods.getDeviceUUID(getContext()),
-                    //CommonMethods.getFileNameFromPath(mCurrentPhotoPath),
                     photoPath,
                     CommonMethods.getMyUserID(getContext()),
                     groups.get(spinnerShareWith.getSelectedItemPosition()).getGroupID() , CommonMethods.getMyUserName(getContext()), price, "");
-            ArrayList<Parcelable> data = new ArrayList<>();
-            data.add(publication);
-            // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
-            Intent i = new Intent(getContext(), FoodonetService.class);
-            i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_PUBLICATION);
-            i.putExtra(ReceiverConstants.JSON_TO_SEND, publication.getPublicationJson().toString());
-            i.putExtra(ReceiverConstants.DATA,data);
-            getContext().startService(i);
+            ServerMethods.addPublication(getContext(),publication);
         }
     }
 

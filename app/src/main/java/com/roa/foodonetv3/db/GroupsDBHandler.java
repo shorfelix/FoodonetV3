@@ -88,6 +88,17 @@ public class GroupsDBHandler {
         return groupsIDs;
     }
 
+    public void insertGroup(Group group) {
+        ContentResolver resolver = context.getContentResolver();
+
+        ContentValues values = new ContentValues();
+        values.put(FoodonetDBProvider.GroupsDB.GROUP_ID_COLUMN,group.getGroupID());
+        values.put(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN,group.getGroupName());
+        values.put(FoodonetDBProvider.GroupsDB.ADMIN_ID_COLUMN,group.getUserID());
+
+        resolver.insert(FoodonetDBProvider.GroupsDB.CONTENT_URI,values);
+    }
+
     /** replaces all groups in the db */
     public void replaceAllGroups(ArrayList<Group> groups){
         /** first, delete all current groups from db */

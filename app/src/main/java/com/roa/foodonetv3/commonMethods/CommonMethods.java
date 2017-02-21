@@ -162,7 +162,7 @@ public class CommonMethods {
 
     public static void getNewData(Context context){
         Intent getDataIntent = new Intent(context, GetDataService.class);
-        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_DATA);
         context.startService(getDataIntent);
     }
 
@@ -379,16 +379,6 @@ public class CommonMethods {
         }
         return sCredProvider;
     }
-    // old as backup
-//    private static CognitoCachingCredentialsProvider getCredProvider(Context context) {
-//        if (sCredProvider == null) {
-//            sCredProvider = new CognitoCachingCredentialsProvider(
-//                    context.getApplicationContext(),
-//                    context.getResources().getString(R.string.amazon_pool_id),
-//                    Regions.EU_WEST_1);
-//        }
-//        return sCredProvider;
-//    }
 
     /**
      * Gets an instance of a S3 client which is constructed using the given

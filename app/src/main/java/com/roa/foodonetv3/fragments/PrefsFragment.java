@@ -6,8 +6,10 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.roa.foodonetv3.R;
 
@@ -77,8 +79,13 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
             // TODO: 19/02/2017 add logic to send to server
             userName.setSummary(newValue.toString());
         } else if(preferenceKey.equals(keyUserPhone)){
+            if(PhoneNumberUtils.isGlobalPhoneNumber(newValue.toString())){
+                userPhone.setSummary(newValue.toString());
+            } else{
+                Toast.makeText(getActivity(), R.string.invalid_phone_number, Toast.LENGTH_SHORT).show();
+                return false;
+            }
             // TODO: 19/02/2017 add logic to send to server
-            userPhone.setSummary(newValue.toString());
         }
         return true;
     }

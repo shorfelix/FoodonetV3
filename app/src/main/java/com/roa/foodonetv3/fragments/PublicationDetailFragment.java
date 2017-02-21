@@ -42,6 +42,7 @@ import com.roa.foodonetv3.dialogs.ReportDialog;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.RegisteredUser;
 import com.roa.foodonetv3.model.PublicationReport;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.FoodonetService;
 import java.io.File;
 import java.util.ArrayList;
@@ -149,11 +150,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
         // TODO: 21/12/2016 should be from db
-        Intent intent = new Intent(getContext(),FoodonetService.class);
-        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_REPORTS);
-        String[] args = {String.valueOf(publication.getId()),String.valueOf(publication.getVersion())};
-        intent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-        getContext().startService(intent);
+        ServerMethods.getReports(getContext(),publication.getId(),publication.getVersion());
 
         /** initialize the views */
         initViews();
@@ -199,11 +196,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                String[] args = {String.valueOf(publication.getId())};
-                                Intent deleteIntent = new Intent(getContext(),FoodonetService.class);
-                                deleteIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_DELETE_PUBLICATION);
-                                deleteIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-                                getContext().startService(deleteIntent);
+                                ServerMethods.deletePublication(getContext(),publication.getId());
                             }
                         })
                         .setNegativeButton(R.string.no, null);
@@ -216,12 +209,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                             .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    String[] args = {String.valueOf(publication.getId()),String.valueOf(publication.getVersion()),
-                                            String.valueOf(CommonMethods.getDeviceUUID(getContext()))};
-                                    Intent unregisterIntent = new Intent(getContext(),FoodonetService.class);
-                                    unregisterIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_UNREGISTER_FROM_PUBLICATION);
-                                    unregisterIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-                                    getContext().startService(unregisterIntent);
+                                    ServerMethods.unregisterFromPublication(getContext(),publication.getId(),publication.getVersion());
                                 }
                             })
                             .setNegativeButton(R.string.no, null);
@@ -483,14 +471,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         PublicationReport publicationReport = new PublicationReport(-1,publication.getId(),publication.getVersion(), typeOfReport,
                 CommonMethods.getDeviceUUID(getContext()),String.valueOf(currentTime),CommonMethods.getMyUserName(getContext()),
                 CommonMethods.getMyUserPhone(getContext()),CommonMethods.getMyUserID(getContext()),rating);
-        String reportJson = publicationReport.getAddReportJson().toString();
-        Log.d(TAG,"report json:"+reportJson);
-        Intent i = new Intent(getContext(),FoodonetService.class);
-        i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_REPORT);
-        String[] reportArgs = {String.valueOf(publication.getId())};
-        i.putExtra(ReceiverConstants.ADDRESS_ARGS,reportArgs);
-        i.putExtra(ReceiverConstants.JSON_TO_SEND,reportJson);
-        getContext().startService(i);
+        ServerMethods.addReport(getContext(),publicationReport);
     }
 
     private class FoodonetReceiver extends BroadcastReceiver {
@@ -512,13 +493,7 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
                             RegisteredUser registeredUser = new RegisteredUser(publication.getId(),CommonMethods.getCurrentTimeSeconds(),
                                     CommonMethods.getDeviceUUID(getContext()),publication.getVersion(),CommonMethods.getMyUserName(getContext()),
                                     CommonMethods.getMyUserPhone(getContext()), CommonMethods.getMyUserID(getContext()));
-                            String registration = registeredUser.getJsonForRegistration().toString();
-                            String[] registrationArgs = {String.valueOf(publication.getId())};
-                            i = new Intent(getContext(),FoodonetService.class);
-                            i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION);
-                            i.putExtra(ReceiverConstants.ADDRESS_ARGS,registrationArgs);
-                            i.putExtra(ReceiverConstants.JSON_TO_SEND,registration);
-                            getContext().startService(i);
+                            ServerMethods.registerToPublication(getContext(),registeredUser);
                         }
                     }
 

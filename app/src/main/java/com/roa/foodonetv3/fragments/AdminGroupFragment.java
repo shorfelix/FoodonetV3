@@ -28,6 +28,7 @@ import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.GroupMembersDBHandler;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.GroupMember;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.FoodonetService;
 
 import java.util.ArrayList;
@@ -122,7 +123,7 @@ public class AdminGroupFragment extends Fragment {
                 name = cursor.getString(nameIndex);
             }
             Log.d(TAG,"phone:"+phone+" ,name:"+name);
-            GroupMember member = new GroupMember(group.getGroupID(),0,phone,name,false);
+            GroupMember member = new GroupMember(group.getGroupID(),(long)-1,phone,name,false);
             boolean error = false;
             if(phone==null || name == null){
                 error = true;
@@ -133,16 +134,7 @@ public class AdminGroupFragment extends Fragment {
 //                /** if no members are in the group yet, when adding the first one, add the user as the admin as well */
 //                group.addToMembers(member);
 //            }
-            GroupMembersDBHandler handler = new GroupMembersDBHandler(getContext());
-            handler.insertMemberToGroup(group.getGroupID(),member);
-            Intent addMemberIntent = new Intent(getContext(), FoodonetService.class);
-            addMemberIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
-            ArrayList<GroupMember> members = new ArrayList<>();
-            members.add(member);
-            addMemberIntent.putExtra(ReceiverConstants.JSON_TO_SEND,Group.getAddGroupMembersJson(members).toString());
-            String[] args = {String.valueOf(group.getGroupID())};
-            addMemberIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-            getContext().startService(addMemberIntent);
+            ServerMethods.addGroupMember(getContext(),member);
         } catch (Exception e) {
             Log.e(TAG,e.getMessage());
         } finally {
@@ -178,8 +170,9 @@ public class AdminGroupFragment extends Fragment {
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
                         // TODO: 14/12/2016 add logic, currently fails with a 404 code
-                        Log.d(TAG,"ADDED MEMBER!");
-                        Toast.makeText(context, "member added!", Toast.LENGTH_SHORT).show();
+                        boolean added = intent.getBooleanExtra(ReceiverConstants.MEMBER_ADDED,false);
+                        Log.d(TAG,"ADDED MEMBER: "+added);
+                        Toast.makeText(context, "ADDED MEMBER: "+added, Toast.LENGTH_SHORT).show();
                     }
             }
         }

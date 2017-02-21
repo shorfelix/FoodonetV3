@@ -133,5 +133,6 @@
     <string name="prefs_notification_radius">Notification Radius</string>
     <string name="prefs_all">All</string>
     <string name="success">Success</string>
+    <string name="invalid_phone_number">invalid phone number</string>
 
 </resources>
