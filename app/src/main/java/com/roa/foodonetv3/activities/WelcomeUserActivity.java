@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.PhoneNumberUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -91,15 +92,14 @@ public class WelcomeUserActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View v) {
-        if(userPhoneNumber.getText()!=null){
-            if(ServerMethods.addUser(this,
-                    userPhoneNumber.getText().toString(),
-                    editUserName.getText().toString())){
-                dialog = new ProgressDialog(WelcomeUserActivity.this);
-                dialog.show();
-            } else{
-                Toast.makeText(WelcomeUserActivity.this, R.string.invalid_phone_number, Toast.LENGTH_SHORT).show();
-            }
+        String phone = userPhoneNumber.getText().toString();
+        String userName = editUserName.getText().toString();
+        if(PhoneNumberUtils.isGlobalPhoneNumber(phone)){
+            ServerMethods.addUser(this, phone, userName);
+            dialog = new ProgressDialog(WelcomeUserActivity.this);
+            dialog.show();
+        } else{
+            Toast.makeText(WelcomeUserActivity.this, R.string.invalid_phone_number, Toast.LENGTH_SHORT).show();
         }
     }
 

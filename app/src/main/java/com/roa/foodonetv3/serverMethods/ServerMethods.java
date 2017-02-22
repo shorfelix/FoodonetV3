@@ -80,43 +80,50 @@ public class ServerMethods {
         context.startService(i);
     }
 
-    /** @return true if user is handled, false if a problem occurred*/
-    public static boolean addUser(Context context, String phoneNumber, String userName){
-        if(PhoneNumberUtils.isGlobalPhoneNumber(phoneNumber)) {
-            FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+    public static void addUser(Context context, String phoneNumber, String userName){
+        sendUser(context,phoneNumber,userName,ReceiverConstants.ACTION_ADD_USER);
+    }
 
-            /** save user phone number and user name to sharedPreferences */
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-            preferences.edit().putString(context.getString(R.string.key_prefs_user_phone), phoneNumber)
-                    .putString(context.getString(R.string.key_prefs_user_name),userName)
-                    .apply();
+    public static void updateUser(Context context, String phoneNumber, String userName){
+        sendUser(context,phoneNumber,userName,ReceiverConstants.ACTION_UPDATE_USER);
+    }
 
-            /** sign in the user to foodonet server and get his new (or existing) id and save it to the shared preferences through the service */
-            String uuid = CommonMethods.getDeviceUUID(context);
-            String providerId = "";
-            String userEmail = mFirebaseUser.getEmail();
-            for (UserInfo userInfo : mFirebaseUser.getProviderData()) {
-                //                        String mail = userInfo.getEmail();
-                String tempProviderId = userInfo.getProviderId();
-                if(tempProviderId.equals("google.com")){
-                    providerId = "google";
-                }
-                if (tempProviderId.equals("facebook.com")) {
-                    providerId = "facebook";
-                }
+    private static void sendUser(Context context, String phoneNumber, String userName, int actionType){
+        FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        /** save user phone number and user name to sharedPreferences */
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        preferences.edit().putString(context.getString(R.string.key_prefs_user_phone), phoneNumber)
+                .putString(context.getString(R.string.key_prefs_user_name),userName)
+                .apply();
+
+        /** sign in the user to foodonet server and get his new (or existing) id and save it to the shared preferences through the service */
+        String uuid = CommonMethods.getDeviceUUID(context);
+        String providerId = "";
+        String userEmail = mFirebaseUser.getEmail();
+        for (UserInfo userInfo : mFirebaseUser.getProviderData()) {
+            //                        String mail = userInfo.getEmail();
+            String tempProviderId = userInfo.getProviderId();
+            if(tempProviderId.equals("google.com")){
+                providerId = "google";
             }
-            User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,userName,true,uuid);
-
-            Intent intent = new Intent(context, FoodonetService.class);
-            intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_USER);
-            intent.putExtra(ReceiverConstants.JSON_TO_SEND,user.getUserJson().toString());
-            context.startService(intent);
-
-            String message = "user: "+user.getUserJson().toString();
-            Log.d(TAG,message);
-            return true;
+            if (tempProviderId.equals("facebook.com")) {
+                providerId = "facebook";
+            }
         }
-        return false;
+        User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,userName,true,uuid);
+
+        Intent intent = new Intent(context, FoodonetService.class);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, actionType);
+        if(actionType == ReceiverConstants.ACTION_UPDATE_USER){
+            String[] args = {String.valueOf(CommonMethods.getMyUserID(context))};
+            intent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+        }
+        intent.putExtra(ReceiverConstants.JSON_TO_SEND,user.getUserJson().toString());
+        context.startService(intent);
+
+        String message = "user: "+user.getUserJson().toString();
+        Log.d(TAG,message);
     }
 
     public static void registerToPublication(Context context, RegisteredUser registeredUser){

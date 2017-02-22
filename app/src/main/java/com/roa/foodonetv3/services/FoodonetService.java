@@ -272,6 +272,11 @@ public class FoodonetService extends IntentService {
                 Log.d("Add user response", "id: " + userID);
             }
 
+            else if(actionType == ReceiverConstants.ACTION_UPDATE_USER){
+                Log.d(TAG,responseRoot);
+                // TODO: 22/02/2017 add logic
+            }
+
             else if(actionType == ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION){
                 JSONObject rootRegistered = new JSONObject(responseRoot);
                 long publicationID, collectorUserID;

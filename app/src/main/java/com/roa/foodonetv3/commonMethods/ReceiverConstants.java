@@ -23,6 +23,7 @@ public class ReceiverConstants {
     public static final int ACTION_GET_REPORTS = 10;
     public static final int ACTION_ADD_REPORT = 11;
     public static final int ACTION_ADD_USER = 20;
+    public static final int ACTION_UPDATE_USER = 21;
     public static final int ACTION_REGISTER_TO_PUBLICATION = 30;
 //    public static final int ACTION_GET_PUBLICATION_REGISTERED_USERS = 31;
     public static final int ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS = 32;

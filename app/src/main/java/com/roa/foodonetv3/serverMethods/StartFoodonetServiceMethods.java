@@ -23,6 +23,7 @@ public class StartFoodonetServiceMethods {
      * add report - add args[0] = (String) publication id
      * register for publication - add args[0] = (String) publication id
      * get publication registered users - add args[0] = (String) publication id
+     * add user - add args[0] = (String) userID
      * unregister from publication - add args[0] (string) publication id, args[1] (String) publication version, args[2] (String) user UUID
      * add group - add args[0] = String group name
      * get groups - add args[0] = (String) user id
@@ -66,6 +67,10 @@ public class StartFoodonetServiceMethods {
                 break;
             case ReceiverConstants.ACTION_ADD_USER:
                 builder.append(context.getResources().getString(R.string.foodonet_users));
+                break;
+            case ReceiverConstants.ACTION_UPDATE_USER:
+                builder.append(context.getResources().getString(R.string.foodonet_users));
+                builder.append(String.format(Locale.US,"/%1$s",args[0]));
                 break;
             case ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION:
                 builder.append(context.getResources().getString(R.string.foodonet_publications));
@@ -134,6 +139,8 @@ public class StartFoodonetServiceMethods {
                 return CommonConstants.HTTP_POST;
             case ReceiverConstants.ACTION_ADD_USER:
                 return CommonConstants.HTTP_POST;
+            case ReceiverConstants.ACTION_UPDATE_USER:
+                return CommonConstants.HTTP_PUT;
             case ReceiverConstants.ACTION_REGISTER_TO_PUBLICATION:
                 return CommonConstants.HTTP_POST;
 //            case ReceiverConstants.ACTION_GET_PUBLICATION_REGISTERED_USERS:

@@ -7,19 +7,18 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.telephony.PhoneNumberUtils;
-import android.util.Log;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 
 public class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
     private static final String TAG = "PrefsFragment";
     private OnSignOutClickListener listener;
     private ListPreference listNotificationRadius;
     private String keyListNotificationRadius, keyUserName, keyUserPhone;
-    private Preference userPhone;
-    private Preference userName;
+    private Preference preferenceUserPhone, preferenceUserName;
+    private SharedPreferences sharedPreferences;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,24 +31,24 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
         keyUserName = getString(R.string.key_prefs_user_name);
         keyUserPhone = getString(R.string.key_prefs_user_phone);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         listNotificationRadius = (ListPreference) findPreference(getString(R.string.key_prefs_list_notification_radius));
         String[] notificationRadiusListKMValues = getResources().getStringArray(R.array.prefs_notification_radius_values_km);
-        String currentValueNotificationRadiusListKM = preferences.getString(keyListNotificationRadius, notificationRadiusListKMValues[2]);
+        String currentValueNotificationRadiusListKM = sharedPreferences.getString(keyListNotificationRadius, notificationRadiusListKMValues[2]);
         listNotificationRadius.setSummary(getEntryStringFromList(
                 R.array.prefs_notification_radius_entries_km,
                 R.array.prefs_notification_radius_values_km,
                 currentValueNotificationRadiusListKM));
         listNotificationRadius.setOnPreferenceChangeListener(this);
 
-        userName = findPreference(keyUserName);
-        userName.setSummary(preferences.getString(keyUserName,""));
-        userName.setOnPreferenceChangeListener(this);
+        preferenceUserName = findPreference(keyUserName);
+        preferenceUserName.setSummary(sharedPreferences.getString(keyUserName,""));
+        preferenceUserName.setOnPreferenceChangeListener(this);
 
-        userPhone = findPreference(keyUserPhone);
-        userPhone.setSummary(preferences.getString(keyUserPhone,""));
-        userPhone.setOnPreferenceChangeListener(this);
+        preferenceUserPhone = findPreference(keyUserPhone);
+        preferenceUserPhone.setSummary(sharedPreferences.getString(keyUserPhone,""));
+        preferenceUserPhone.setOnPreferenceChangeListener(this);
 
         findPreference(getString(R.string.prefs_sign_out)).setOnPreferenceClickListener(this);
 
@@ -70,24 +69,32 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String preferenceKey = preference.getKey();
+        String userName = sharedPreferences.getString(keyUserName,"");
+        String userPhone = sharedPreferences.getString(keyUserPhone,"");
         if (preferenceKey.equals(keyListNotificationRadius)) {
             listNotificationRadius.setSummary(getEntryStringFromList(
                     R.array.prefs_notification_radius_entries_km,
                     R.array.prefs_notification_radius_values_km,
                     newValue.toString()));
         } else if(preferenceKey.equals(keyUserName)){
-            // TODO: 19/02/2017 add logic to send to server
-            userName.setSummary(newValue.toString());
+            userName = newValue.toString();
+            preferenceUserName.setSummary(newValue.toString());
+            updateUser(userName,userPhone);
         } else if(preferenceKey.equals(keyUserPhone)){
+            userPhone = newValue.toString();
             if(PhoneNumberUtils.isGlobalPhoneNumber(newValue.toString())){
-                userPhone.setSummary(newValue.toString());
+                preferenceUserPhone.setSummary(newValue.toString());
+                updateUser(userName,userPhone);
             } else{
                 Toast.makeText(getActivity(), R.string.invalid_phone_number, Toast.LENGTH_SHORT).show();
                 return false;
             }
-            // TODO: 19/02/2017 add logic to send to server
         }
         return true;
+    }
+
+    private void updateUser(String userName, String userPhone){
+        ServerMethods.updateUser(getActivity(), userPhone, userName);
     }
 
     @Override
