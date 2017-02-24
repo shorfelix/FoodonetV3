@@ -383,11 +383,16 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                     break;
 
                 case ReceiverConstants.ACTION_ADD_PUBLICATION:
-                    /** added new publication */
-                    Intent i = new Intent(getContext(), PublicationActivity.class);
-                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION,PublicationActivity.MY_PUBLICATIONS_TAG);
-                    getActivity().startActivity(i);
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 27/11/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        /** added new publication */
+                        Intent i = new Intent(getContext(), PublicationActivity.class);
+                        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
+                        getActivity().startActivity(i);
+                    }
             }
         }
     }

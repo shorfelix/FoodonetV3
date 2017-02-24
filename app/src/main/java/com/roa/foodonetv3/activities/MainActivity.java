@@ -32,19 +32,22 @@ import com.google.android.gms.iid.InstanceID;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
 import com.roa.foodonetv3.fragments.RecentFragment;
+import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.FoodonetService;
 import org.json.JSONException;
 import org.json.JSONObject;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener,
+        GoogleApiClient.OnConnectionFailedListener, PublicationsRecyclerAdapter.OnPublicationClickListener {
     private static final String TAG = "MainActivity";
 
 
@@ -200,6 +203,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    }
+
+    @Override
+    public void onPublicationClick(Publication publication) {
+        Intent i = new Intent(this, PublicationActivity.class);
+            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.PUBLICATION_DETAIL_TAG);
+            i.putExtra(Publication.PUBLICATION_KEY,publication);
+            this.startActivity(i);
     }
 
     //view pager adapter...

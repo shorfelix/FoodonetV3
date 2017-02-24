@@ -53,6 +53,9 @@ public class CommonMethods {
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
+                if (!(context instanceof MainActivity)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                }
                 intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainActivity)) {
@@ -82,7 +85,7 @@ public class CommonMethods {
                 break;
             case R.id.nav_groups:
                 intent = new Intent(context, GroupsActivity.class);
-                if(context instanceof GroupsActivity){
+                if(context instanceof GroupsActivity || context instanceof MainActivity){
                     // TODO: 06/12/2016 test
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
