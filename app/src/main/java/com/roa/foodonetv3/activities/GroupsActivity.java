@@ -36,6 +36,7 @@ import com.roa.foodonetv3.fragments.GroupsOverviewFragment;
 import com.roa.foodonetv3.fragments.AdminGroupFragment;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.GroupMember;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.FoodonetService;
 import java.util.ArrayList;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -213,12 +214,7 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     public void onNewGroupClick(String groupName){
         /** after a user creates a new group from the dialog, run the service to create the group */
         Group newGroup = new Group(groupName, CommonMethods.getMyUserID(this),(long)-1);
-        Intent intent = new Intent(this, FoodonetService.class);
-        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_GROUP);
-        intent.putExtra(ReceiverConstants.JSON_TO_SEND,newGroup.getAddGroupJson().toString());
-        String[] args = {groupName};
-        intent.putExtra(ReceiverConstants.ADDRESS_ARGS, args);
-        this.startService(intent);
+        ServerMethods.addGroup(this,newGroup);
     }
 
     /** handles the floating action button presses from the different fragments of GroupsActivity */
@@ -266,22 +262,25 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                         // TODO: 14/12/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        long groupID = intent.getLongExtra(Group.GROUP_ID,-1);
-                        if(groupID!=-1){
-                            String[] args = {String.valueOf(groupID)};
-                            ArrayList<GroupMember> userAdmin = new ArrayList<>();
-                            String userName = CommonMethods.getMyUserName(context);
-                            userAdmin.add(new GroupMember(groupID,CommonMethods.getMyUserID(GroupsActivity.this),
-                                    CommonMethods.getMyUserPhone(GroupsActivity.this),userName,true));
-                            String newAdminJson = Group.getAddGroupMembersJson(userAdmin).toString();
-                            Intent addAdminIntent = new Intent(GroupsActivity.this,FoodonetService.class);
-                            addAdminIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
-                            addAdminIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-                            addAdminIntent.putExtra(ReceiverConstants.JSON_TO_SEND,newAdminJson);
-                            GroupsActivity.this.startService(addAdminIntent);
-                        } else{
-                            // TODO: 22/01/2017 do something
-                        }
+                        // TODO: 21/02/2017 CHANGE!!!
+//                        long groupID = intent.getLongExtra(Group.GROUP_ID,-1);
+//                        if(groupID!=-1){
+//                            String[] args = {String.valueOf(groupID)};
+//                            ArrayList<GroupMember> userAdmin = new ArrayList<>();
+//                            String userName = CommonMethods.getMyUserName(context);
+//                            GroupMember adminMember = new GroupMember(groupID,CommonMethods.getMyUserID(GroupsActivity.this),
+//                                    CommonMethods.getMyUserPhone(GroupsActivity.this),userName,true);
+//                            userAdmin.add(adminMember);
+//                            ServerMethods.addGroupMember(getBaseContext(),adminMember);
+//                            String newAdminJson = Group.getAddGroupMembersJson(userAdmin).toString();
+//                            Intent addAdminIntent = new Intent(GroupsActivity.this,FoodonetService.class);
+//                            addAdminIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
+//                            addAdminIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+//                            addAdminIntent.putExtra(ReceiverConstants.JSON_TO_SEND,newAdminJson);
+//                            GroupsActivity.this.startService(addAdminIntent);
+//                        } else{
+//                            // TODO: 22/01/2017 do something
+//                        }
 
                     }
             }

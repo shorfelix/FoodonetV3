@@ -20,6 +20,9 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
 
     private static final String TAG = "GroupsRecyclerAdapter";
 
+    private static final int GROUP_VIEW = 1;
+    private static final int GROUP_SPACER = 2;
+
     private Context context;
     private ArrayList<Group> groups;
     private ArrayList<Group> filteredGroups;
@@ -60,20 +63,32 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
     }
 
     @Override
+    public int getItemViewType(int position) {
+        if(position==filteredGroups.size()){
+            return GROUP_SPACER;
+        }
+        return GROUP_VIEW;
+    }
+
+    @Override
     public GroupHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View v = inflater.inflate(R.layout.item_group_list,parent,false);
-        return new GroupHolder(v);
+        if(viewType == GROUP_VIEW){
+            return new GroupHolder(inflater.inflate(R.layout.item_group_list,parent,false),viewType);
+        }
+        return new GroupHolder(inflater.inflate(R.layout.item_list_spacer,parent,false),viewType);
     }
 
     @Override
     public void onBindViewHolder(GroupHolder holder, int position) {
-        holder.bindGroup(filteredGroups.get(position));
+        if(getItemViewType(position) == GROUP_VIEW){
+            holder.bindGroup(filteredGroups.get(position));
+        }
     }
 
     @Override
     public int getItemCount() {
-        return filteredGroups.size();
+        return filteredGroups.size()+1;
     }
 
     class GroupHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -81,13 +96,15 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
         private Group group;
         private boolean isAdmin = true; // test!!!!
 
-        GroupHolder(View itemView) {
+        GroupHolder(View itemView, int viewType) {
             super(itemView);
-            textAdmin = (TextView) itemView.findViewById(R.id.textAdmin);
-            textGroupName = (TextView) itemView.findViewById(R.id.textGroupName);
-            textGroupMembers = (TextView) itemView.findViewById(R.id.textGroupMembers);
+            if(viewType == GROUP_VIEW){
+                textAdmin = (TextView) itemView.findViewById(R.id.textAdmin);
+                textGroupName = (TextView) itemView.findViewById(R.id.textGroupName);
+                textGroupMembers = (TextView) itemView.findViewById(R.id.textGroupMembers);
 
-            itemView.setOnClickListener(this);
+                itemView.setOnClickListener(this);
+            }
         }
 
         void bindGroup(Group group){

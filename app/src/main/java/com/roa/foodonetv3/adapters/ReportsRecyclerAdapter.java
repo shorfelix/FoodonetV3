@@ -15,6 +15,7 @@ import java.util.Locale;
 /** recycler for publication reports */
 public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecyclerAdapter.ReportsHolder> {
     private static final String TAG = "ReportsRecyclerAdapter";
+
     private static final int REPORT_VIEW = 1;
     private static final int REPORT_SPACER = 2;
     private Context context;
@@ -42,9 +43,9 @@ public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecycler
     public ReportsHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
         if(viewType == REPORT_VIEW){
-            return new ReportsHolder(inflater.inflate(R.layout.item_report_list,parent,false));
+            return new ReportsHolder(inflater.inflate(R.layout.item_report_list,parent,false),viewType);
         } else{
-            return new ReportsHolder(inflater.inflate(R.layout.item_list_spacer,parent,false));
+            return new ReportsHolder(inflater.inflate(R.layout.item_list_spacer,parent,false),viewType);
         }
     }
 
@@ -63,9 +64,11 @@ public class ReportsRecyclerAdapter extends RecyclerView.Adapter<ReportsRecycler
     class ReportsHolder extends RecyclerView.ViewHolder{
         private TextView textReport;
 
-        ReportsHolder(View itemView) {
+        ReportsHolder(View itemView, int viewType) {
             super(itemView);
-            textReport = (TextView) itemView.findViewById(R.id.textReport);
+            if(viewType == REPORT_VIEW){
+                textReport = (TextView) itemView.findViewById(R.id.textReport);
+            }
         }
 
         void bindReport(PublicationReport report){

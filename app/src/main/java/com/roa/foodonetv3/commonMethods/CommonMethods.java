@@ -53,6 +53,9 @@ public class CommonMethods {
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
+                if (!(context instanceof MainActivity)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                }
                 intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainActivity)) {
@@ -82,7 +85,7 @@ public class CommonMethods {
                 break;
             case R.id.nav_groups:
                 intent = new Intent(context, GroupsActivity.class);
-                if(context instanceof GroupsActivity){
+                if(context instanceof GroupsActivity || context instanceof MainActivity){
                     // TODO: 06/12/2016 test
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
@@ -162,7 +165,7 @@ public class CommonMethods {
 
     public static void getNewData(Context context){
         Intent getDataIntent = new Intent(context, GetDataService.class);
-        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_DATA);
         context.startService(getDataIntent);
     }
 
@@ -379,16 +382,6 @@ public class CommonMethods {
         }
         return sCredProvider;
     }
-    // old as backup
-//    private static CognitoCachingCredentialsProvider getCredProvider(Context context) {
-//        if (sCredProvider == null) {
-//            sCredProvider = new CognitoCachingCredentialsProvider(
-//                    context.getApplicationContext(),
-//                    context.getResources().getString(R.string.amazon_pool_id),
-//                    Regions.EU_WEST_1);
-//        }
-//        return sCredProvider;
-//    }
 
     /**
      * Gets an instance of a S3 client which is constructed using the given
