@@ -15,6 +15,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.GroupsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
@@ -28,6 +30,7 @@ public class GroupsOverviewFragment extends Fragment {
     private GroupsRecyclerAdapter adapter;
     private TextView textInfo;
     private View layoutInfo;
+    private GroupsDBHandler groupsDBHandler;
 
     private FoodonetReceiver receiver;
 
@@ -72,8 +75,8 @@ public class GroupsOverviewFragment extends Fragment {
         IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
         LocalBroadcastManager.getInstance(getContext()).registerReceiver(receiver,filter);
 
-        GroupsDBHandler handler = new GroupsDBHandler(getContext());
-        ArrayList<Group> groups = handler.getAllGroups();
+        groupsDBHandler = new GroupsDBHandler(getContext());
+        ArrayList<Group> groups = groupsDBHandler.getAllGroups();
         if(groups.size() == 0){
             layoutInfo.setVisibility(View.VISIBLE);
             textInfo.setText(R.string.you_dont_have_any_groups_yet);
@@ -95,7 +98,21 @@ public class GroupsOverviewFragment extends Fragment {
             /** receiver for reports got from the service */
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
             switch (action){
-                // TODO: 16/01/2017 delete?
+                case ReceiverConstants.ACTION_ADD_GROUP:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 27/02/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        adapter.updateGroups(groupsDBHandler.getAllGroups());
+                    }
+                    break;
+                case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 14/12/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        adapter.updateGroups(groupsDBHandler.getAllGroups());
+                    }
             }
         }
     }

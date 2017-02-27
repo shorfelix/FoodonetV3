@@ -52,7 +52,9 @@ public class GroupMembersRecyclerAdapter extends RecyclerView.Adapter<GroupMembe
 
     @Override
     public void onBindViewHolder(MemberHolder holder, int position) {
-        holder.bindMember(members.get(position));
+        if(getItemViewType(position) == GROUP_MEMBER_VIEW){
+            holder.bindMember(members.get(position));
+        }
     }
 
     @Override

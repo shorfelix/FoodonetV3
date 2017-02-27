@@ -38,6 +38,7 @@ import static com.roa.foodonetv3.activities.GroupsActivity.CONTACT_PICKER;
 
 public class AdminGroupFragment extends Fragment {
     private static final String TAG = "AdminGroupFragment";
+    private static final long UNKNOWN_USER_ID = 0;
 
     private GroupMembersRecyclerAdapter adapter;
     private TextView textGroupName;
@@ -123,7 +124,7 @@ public class AdminGroupFragment extends Fragment {
                 name = cursor.getString(nameIndex);
             }
             Log.d(TAG,"phone:"+phone+" ,name:"+name);
-            GroupMember member = new GroupMember(group.getGroupID(),(long)-1,phone,name,false);
+            GroupMember member = new GroupMember(group.getGroupID(), UNKNOWN_USER_ID,phone,name,false);
             boolean error = false;
             if(phone==null || name == null){
                 error = true;
@@ -169,10 +170,12 @@ public class AdminGroupFragment extends Fragment {
                         // TODO: 14/12/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        // TODO: 14/12/2016 add logic, currently fails with a 404 code
                         boolean added = intent.getBooleanExtra(ReceiverConstants.MEMBER_ADDED,false);
-                        Log.d(TAG,"ADDED MEMBER: "+added);
-                        Toast.makeText(context, "ADDED MEMBER: "+added, Toast.LENGTH_SHORT).show();
+                        if(added){
+                            adapter.updateMembers(group.getGroupID());
+                        } else{
+                            Toast.makeText(context, R.string.toast_user_already_in_group, Toast.LENGTH_SHORT).show();
+                        }
                     }
             }
         }

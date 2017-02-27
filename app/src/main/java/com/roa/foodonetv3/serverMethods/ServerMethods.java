@@ -152,7 +152,6 @@ public class ServerMethods {
     }
 
     public static void addGroup(Context context, Group newGroup){
-        // TODO: 21/02/2017 remove the args, add to data, change logic
         Intent intent = new Intent(context, FoodonetService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_GROUP);
         intent.putExtra(ReceiverConstants.JSON_TO_SEND,newGroup.getAddGroupJson().toString());
@@ -172,8 +171,7 @@ public class ServerMethods {
     public static void addGroupMember(Context context, GroupMember groupMember){
         Intent addMemberIntent = new Intent(context, FoodonetService.class);
         addMemberIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
-        GroupMembersDBHandler handler = new GroupMembersDBHandler(context);
-        ArrayList<GroupMember> members = handler.getGroupMembers(groupMember.getGroupID());
+        ArrayList<GroupMember> members = new ArrayList<>();
         members.add(groupMember);
         addMemberIntent.putExtra(ReceiverConstants.JSON_TO_SEND,Group.getAddGroupMembersJson(members).toString());
         String[] args = {String.valueOf(groupMember.getGroupID())};

@@ -132,6 +132,7 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
                     if(isAdmin){
                         fragToOpen = GroupsActivity.ADMIN_GROUP_TAG;
                     } else{
+                        // TODO: 27/02/2017 add logic after implementing
                         fragToOpen = GroupsActivity.OPEN_GROUP_TAG;
                     }
                     ArrayList<Parcelable> arrayList = new ArrayList<>();

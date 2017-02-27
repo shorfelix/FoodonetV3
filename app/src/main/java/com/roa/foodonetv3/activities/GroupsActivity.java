@@ -10,6 +10,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -45,12 +46,12 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     private static final String TAG = "GroupsActivity";
 
     public static final String GROUPS_OVERVIEW_TAG = "groupsOverviewFrag";
-    public static final String ADMIN_GROUP_TAG = "newGroupFrag";
+    public static final String ADMIN_GROUP_TAG = "adminGroupFrag";
     public static final String OPEN_GROUP_TAG = "openGroupFrag";
 
     public static final int CONTACT_PICKER = 1;
 
-    private String currentFrag;
+    private String currentFrag, previousFrag;
     private NewGroupDialog newGroupDialog;
     private CircleImageView circleImageView;
     private TextView headerTxt;
@@ -132,15 +133,12 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            switch (currentFrag){
-                case GROUPS_OVERVIEW_TAG:
-                    super.onBackPressed();
-                    break;
-                case ADMIN_GROUP_TAG:
-                    // TODO: 21/12/2016 change
-                    replaceFrags(GROUPS_OVERVIEW_TAG, null);
-                    break;
+            if(previousFrag != null){
+                replaceFrags(previousFrag, new ArrayList<Parcelable>());
+                previousFrag = null;
+                return;
             }
+            super.onBackPressed();
         }
     }
 
@@ -159,18 +157,16 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     public void replaceFrags(String openFragType, ArrayList<Parcelable> arrayList) {
         /** get the values for the fab animation */
         long duration;
+        boolean isAddNewFragment;
         if(currentFrag==null){
             /** if this is the first frag - don't make a long animation */
             duration = 1;
+            isAddNewFragment = true;
         } else{
             duration = CommonConstants.FAB_ANIM_DURATION;
+            isAddNewFragment = false;
+            previousFrag = currentFrag;
         }
-//        Display display = getWindowManager().getDefaultDisplay();
-//        Point size = new Point();
-//        display.getSize(size);
-//        int width = size.x;
-//        int height = size.y;
-//        final int normalFabY = height - (int)(getResources().getDimension(R.dimen.fab_margin) + CommonConstants.FAB_SIZE*2);
 
         /** set the current frag to be the new one */
         currentFrag = openFragType;
@@ -179,8 +175,9 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         switch (openFragType) {
             case GROUPS_OVERVIEW_TAG:
                 GroupsOverviewFragment groupsOverviewFragment = new GroupsOverviewFragment();
-                fragmentManager.beginTransaction().replace(R.id.containerGroups,groupsOverviewFragment, GROUPS_OVERVIEW_TAG).commit();
-                FabAnimation.animateFAB(this,fab, duration,R.drawable.white_plus,getResources().getColor(R.color.colorPrimary),false);
+                updateContainer(isAddNewFragment,groupsOverviewFragment,GROUPS_OVERVIEW_TAG);
+                animateFab(openFragType, true, duration);
+//                fragmentManager.beginTransaction().replace(R.id.containerGroups,groupsOverviewFragment, GROUPS_OVERVIEW_TAG).commit();
                 break;
             case ADMIN_GROUP_TAG:
                 AdminGroupFragment adminGroupFragment = new AdminGroupFragment();
@@ -188,16 +185,36 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(Group.GROUP,newGroup);
                 adminGroupFragment.setArguments(bundle);
-                fragmentManager.beginTransaction().replace(R.id.containerGroups, adminGroupFragment, ADMIN_GROUP_TAG).commit();
-                // TODO: 19/12/2016 change the image for the fab
-                FabAnimation.animateFAB(this,fab, duration,R.drawable.user,getResources().getColor(R.color.fooGreen),false);
-                break;
-            case OPEN_GROUP_TAG:
-                // TODO: 13/12/2016 add fragment
-//                OpenGroupFragment openGroupFragment = new OpenGroupFragment();
-                Toast.makeText(this, "Open Group", Toast.LENGTH_SHORT).show();
+                updateContainer(isAddNewFragment,adminGroupFragment,ADMIN_GROUP_TAG);
+//                fragmentManager.beginTransaction().replace(R.id.containerGroups, adminGroupFragment, ADMIN_GROUP_TAG).commit();
+                animateFab(openFragType, true, duration);
                 break;
         }
+    }
+
+    private void updateContainer(boolean isAddNewFragment, Fragment fragment, String fragmentTag){
+        if(isAddNewFragment){
+            fragmentManager.beginTransaction().add(R.id.containerGroups, fragment, fragmentTag).commit();
+        } else{
+            fragmentManager.beginTransaction().replace(R.id.containerGroups, fragment, fragmentTag).commit();
+        }
+    }
+
+    private void animateFab(String fragmentTag, boolean setVisible, long duration){
+        int imgResource = -1;
+        int color = -1;
+        // TODO: 13/02/2017 add different fab icons and colors
+        switch (fragmentTag){
+            case GROUPS_OVERVIEW_TAG:
+                imgResource = R.drawable.user;
+                color = getResources().getColor(R.color.fooGreen);
+                break;
+            case ADMIN_GROUP_TAG:
+                imgResource = R.drawable.user;
+                color = getResources().getColor(R.color.fooGreen);
+                break;
+        }
+        FabAnimation.animateFAB(this,fab,duration,imgResource,color,setVisible);
     }
 
     @Override

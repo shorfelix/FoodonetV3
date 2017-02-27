@@ -199,7 +199,7 @@ public class FoodonetService extends IntentService {
                     /** instantiate the transfer utility for the s3*/
                     TransferUtility transferUtility = CommonMethods.getTransferUtility(this);
                     /** if there is an image to upload */
-                    if(publication.getPhotoURL()!=null){
+                    if(publication.getPhotoURL()!=null && !publication.getPhotoURL().equals("")){
                         String[] split = publication.getPhotoURL().split(":");
                         File file = new File(split[1]);
                         File destFile = new File(CommonMethods.getPhotoPathByID(this,publicationID,publicationVersion));
@@ -334,15 +334,13 @@ public class FoodonetService extends IntentService {
             }
 
             else if(actionType == ReceiverConstants.ACTION_ADD_GROUP){
-                // TODO: 06/12/2016 add logic according to what we receive
-
                 long groupID,userID;
                 String groupName;
 
                 JSONObject groupObject = new JSONObject(responseRoot);
-                userID = groupObject.getLong(Group.USER_ID);
-                groupID = groupObject.getLong(Group.GROUP_ID);
-                groupName = groupObject.getString(Group.GET_GROUP_NAME);
+                userID = CommonMethods.getMyUserID(this);
+                groupID = groupObject.getLong("id");
+                groupName = args[0];
                 Group group = new Group(groupName,userID,groupID);
 
                 /** add group to db */
@@ -362,25 +360,29 @@ public class FoodonetService extends IntentService {
 
                 ArrayList<Group> groups = new ArrayList<>();
                 ArrayList<GroupMember> members = new ArrayList<>();
+                ArrayList<Long> groupsID = new ArrayList<>();
                 long groupID,memberID,userID;
                 String groupName,phoneNumber,memberName;
                 boolean isAdmin;
 
                 for (int i = 0; i < groupArray.length(); i++) {
                     JSONObject group = groupArray.getJSONObject(i);
-                    userID = group.getLong(Group.USER_ID);
                     groupID = group.getLong(Group.GROUP_ID);
-                    groupName = group.getString(Group.GET_GROUP_NAME);
-                    JSONArray membersArray = group.getJSONArray(Group.MEMBERS);
-                    for (int j = 0; j < membersArray.length(); j++) {
-                        JSONObject member = membersArray.getJSONObject(j);
-                        memberID = member.getLong(GroupMember.USER_ID);
-                        phoneNumber = member.getString(GroupMember.PHONE_NUMBER);
-                        memberName = member.getString(GroupMember.NAME);
-                        isAdmin = member.getBoolean(GroupMember.IS_ADMIN);
-                        members.add(new GroupMember(groupID,memberID,phoneNumber,memberName,isAdmin));
+                    if(!groupsID.contains(groupID)){
+                        groupsID.add(groupID);
+                        userID = group.getLong(Group.USER_ID);
+                        groupName = group.getString(Group.GET_GROUP_NAME);
+                        JSONArray membersArray = group.getJSONArray(Group.MEMBERS);
+                        for (int j = 0; j < membersArray.length(); j++) {
+                            JSONObject member = membersArray.getJSONObject(j);
+                            memberID = member.getLong(GroupMember.USER_ID);
+                            phoneNumber = member.getString(GroupMember.PHONE_NUMBER);
+                            memberName = member.getString(GroupMember.NAME);
+                            isAdmin = member.getBoolean(GroupMember.IS_ADMIN);
+                            members.add(new GroupMember(groupID,memberID,phoneNumber,memberName,isAdmin));
+                        }
+                        groups.add(new Group(groupName,userID,groupID));
                     }
-                    groups.add(new Group(groupName,userID,groupID));
                 }
                 groupsDBHandler = new GroupsDBHandler(this);
                 groupsDBHandler.replaceAllGroups(groups);
@@ -393,7 +395,6 @@ public class FoodonetService extends IntentService {
             }
 
             else if (actionType == ReceiverConstants.ACTION_ADD_GROUP_MEMBER){
-                Log.d("TEST!!!!!!!",responseRoot);
                 long groupID = Long.valueOf(args[0]);
                 GroupMember groupMember = (GroupMember) data.get(0);
                 groupMembersDBHandler = new GroupMembersDBHandler(this);

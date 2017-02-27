@@ -134,5 +134,6 @@
     <string name="prefs_all">All</string>
     <string name="success">Success</string>
     <string name="invalid_phone_number">invalid phone number</string>
+    <string name="toast_user_already_in_group">User already in group</string>
 
 </resources>

@@ -68,7 +68,7 @@ public class GroupMembersDBHandler {
     public ArrayList<GroupMember> getGroupMembers(long groupID){
         ArrayList<GroupMember> members = new ArrayList<>();
         String where = String.format("%1$s = ?",
-                FoodonetDBProvider.MembersDB.USER_ID_COLUMN);
+                FoodonetDBProvider.MembersDB.GROUP_ID_COLUMN);
         String[] whereArgs = {String.valueOf(groupID)};
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.MembersDB.CONTENT_URI,null,where,whereArgs,null);
         long userID;
