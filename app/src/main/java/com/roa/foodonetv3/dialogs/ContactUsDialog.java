@@ -11,6 +11,7 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.model.Feedback;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.FoodonetService;
 
 public class ContactUsDialog extends Dialog implements View.OnClickListener {
@@ -33,16 +34,11 @@ public class ContactUsDialog extends Dialog implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.buttonCancel:
-
                 break;
 
             case R.id.buttonSend:
                 String message = contactEditText.getText().toString();
-                Feedback feedback = new Feedback(CommonMethods.getDeviceUUID(context), FirebaseAuth.getInstance().getCurrentUser().getDisplayName(),message);
-                Intent intent = new Intent(context, FoodonetService.class);
-                intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_POST_FEEDBACK);
-                intent.putExtra(ReceiverConstants.JSON_TO_SEND,feedback.getFeedbackJson().toString());
-                context.startService(intent);
+                ServerMethods.postFeedback(context,message);
                 break;
         }
         this.dismiss();

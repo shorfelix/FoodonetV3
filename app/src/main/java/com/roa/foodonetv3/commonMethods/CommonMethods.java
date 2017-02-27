@@ -53,6 +53,9 @@ public class CommonMethods {
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
+                if (!(context instanceof MainActivity)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                }
                 intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainActivity)) {
@@ -82,7 +85,7 @@ public class CommonMethods {
                 break;
             case R.id.nav_groups:
                 intent = new Intent(context, GroupsActivity.class);
-                if(context instanceof GroupsActivity){
+                if(context instanceof GroupsActivity || context instanceof MainActivity){
                     // TODO: 06/12/2016 test
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
@@ -162,39 +165,45 @@ public class CommonMethods {
 
     public static void getNewData(Context context){
         Intent getDataIntent = new Intent(context, GetDataService.class);
-        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_DATA);
         context.startService(getDataIntent);
     }
 
     /** returns a UUID */
     public static String getDeviceUUID(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.ACTIVE_DEVICE_DEV_UUID, null);
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_device_uuid), null);
     }
 
     /** returns the userID from shared preferences */
     public static long getMyUserID(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getLong(User.IDENTITY_PROVIDER_USER_ID, -1);
+        long userID = PreferenceManager.getDefaultSharedPreferences(context).getLong(context.getString(R.string.key_prefs_user_id),(long) -1);
+        return userID;
+    }
+
+    /** @return returns the userName from shared preferences */
+    public static String getMyUserName(Context context){
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_name),"");
     }
 
     /** saves the userID to shared preferences */
     public static void setMyUserID(Context context, long userID) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(User.IDENTITY_PROVIDER_USER_ID, userID).apply();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(context.getString(R.string.key_prefs_user_id), userID).apply();
     }
 
     public static String getMyUserPhone(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER, null);
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_phone), null);
     }
 
     public static LatLng getLastLocation(Context context){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return new LatLng(Double.valueOf(preferences.getString(CommonConstants.USER_LATITUDE,"-9999")),
-                Double.valueOf(preferences.getString(CommonConstants.USER_LONGITUDE,"-9999")));
+        return new LatLng(Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lat),String.valueOf(CommonConstants.LATLNG_ERROR))),
+                Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lng),String.valueOf(CommonConstants.LATLNG_ERROR))));
     }
 
     /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
     public static long getNewLocalPublicationID() {
         //todo add a check for available negative id, currently hard coded
-        return -1;
+        return (long)-1;
     }
 
     public static String getRoundedStringFromNumber(float num) {
@@ -373,16 +382,6 @@ public class CommonMethods {
         }
         return sCredProvider;
     }
-    // old as backup
-//    private static CognitoCachingCredentialsProvider getCredProvider(Context context) {
-//        if (sCredProvider == null) {
-//            sCredProvider = new CognitoCachingCredentialsProvider(
-//                    context.getApplicationContext(),
-//                    context.getResources().getString(R.string.amazon_pool_id),
-//                    Regions.EU_WEST_1);
-//        }
-//        return sCredProvider;
-//    }
 
     /**
      * Gets an instance of a S3 client which is constructed using the given

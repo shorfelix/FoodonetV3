@@ -17,6 +17,9 @@ import java.util.ArrayList;
 public class GroupMembersRecyclerAdapter extends RecyclerView.Adapter<GroupMembersRecyclerAdapter.MemberHolder>{
     private static final String TAG = "GroupMembersRecyclerAdapter";
 
+    private static final int GROUP_MEMBER_VIEW = 1;
+    private static final int GROUP_MEMBER_SPACER = 2;
+
     private Context context;
     private ArrayList<GroupMember> members = new ArrayList<>();
 
@@ -31,9 +34,20 @@ public class GroupMembersRecyclerAdapter extends RecyclerView.Adapter<GroupMembe
     }
 
     @Override
+    public int getItemViewType(int position) {
+        if(position == members.size()){
+            return GROUP_MEMBER_SPACER;
+        }
+        return GROUP_MEMBER_VIEW;
+    }
+
+    @Override
     public MemberHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        return new MemberHolder(inflater.inflate(R.layout.item_group_member,parent,false));
+        if(viewType == GROUP_MEMBER_VIEW){
+            return new MemberHolder(inflater.inflate(R.layout.item_group_member,parent,false),viewType);
+        }
+        return new MemberHolder(inflater.inflate(R.layout.item_list_spacer,parent,false),viewType);
     }
 
     @Override
@@ -43,7 +57,7 @@ public class GroupMembersRecyclerAdapter extends RecyclerView.Adapter<GroupMembe
 
     @Override
     public int getItemCount() {
-        return members.size();
+        return members.size()+1;
     }
 
     class MemberHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -51,13 +65,15 @@ public class GroupMembersRecyclerAdapter extends RecyclerView.Adapter<GroupMembe
         private ImageView imageMember, imageRemoveMember;
         private TextView textMemberName;
 
-        MemberHolder(View itemView) {
+        MemberHolder(View itemView, int viewType) {
             super(itemView);
             // TODO: 21/12/2016 add imageMember logic to show if the member is a foodonet user or not
-            imageMember = (ImageView) itemView.findViewById(R.id.imageMember);
-            textMemberName = (TextView) itemView.findViewById(R.id.textMemberName);
-            imageRemoveMember = (ImageView) itemView.findViewById(R.id.imageRemoveMember);
-            imageRemoveMember.setOnClickListener(this);
+            if(viewType == GROUP_MEMBER_VIEW){
+                imageMember = (ImageView) itemView.findViewById(R.id.imageMember);
+                textMemberName = (TextView) itemView.findViewById(R.id.textMemberName);
+                imageRemoveMember = (ImageView) itemView.findViewById(R.id.imageRemoveMember);
+                imageRemoveMember.setOnClickListener(this);
+            }
         }
 
         void bindMember(GroupMember member){

@@ -17,13 +17,13 @@
         android:layout_centerHorizontal="true"
         style="@style/FooBlueLarge"/>
 
-    <TextView
+    <EditText
         android:text="TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_32"
         android:layout_below="@+id/textView3"
-        android:id="@+id/textUserName"
+        android:id="@+id/editUserName"
         style="@style/FooBoldMedium"
         android:layout_centerHorizontal="true" />
 
@@ -33,7 +33,7 @@
         android:layout_marginTop="@dimen/margin_16"
         android:layout_height="@dimen/image_size_height_120"
         android:layout_width="@dimen/image_size_height_120"
-        android:layout_below="@+id/textUserName"
+        android:layout_below="@+id/editUserName"
         android:layout_centerHorizontal="true" />
 
     <TextView

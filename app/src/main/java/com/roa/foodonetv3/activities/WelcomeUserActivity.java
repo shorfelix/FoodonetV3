@@ -11,29 +11,27 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.telephony.PhoneNumberUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserInfo;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
-import com.roa.foodonetv3.model.User;
-import com.roa.foodonetv3.services.FoodonetService;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.GetDataService;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class WelcomeUserActivity extends AppCompatActivity {
+public class WelcomeUserActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "WelcomeUserActivity";
     private Button finishRegisterationButton;
-    private TextView userNameTxt;
+    private EditText editUserName;
     private FirebaseUser mFirebaseUser;
     private FirebaseAuth mFirebaseAuth;
     private EditText userPhoneNumber;
@@ -51,65 +49,27 @@ public class WelcomeUserActivity extends AppCompatActivity {
         setTitle(R.string.foodonet);
 
         finishRegisterationButton = (Button) findViewById(R.id.buttonFinishRegistration);
-        userNameTxt = (TextView) findViewById(R.id.textUserName);
+        editUserName = (EditText) findViewById(R.id.editUserName);
         userPhoneNumber = (EditText) findViewById(R.id.editUserPhoneNumber);
         circleImageView = (CircleImageView) findViewById(R.id.circleImageUser);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Initialize Firebase Auth
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser != null) {
-            userName = mFirebaseUser.getDisplayName();
             //load the photo from fireBase
             Uri userPhotoUrl = mFirebaseUser.getPhotoUrl();
-            if(userPhotoUrl!= null){
+            if (userPhotoUrl != null) {
                 Glide.with(this).load(userPhotoUrl).into(circleImageView);
-            } else{
+            } else {
                 Glide.with(this).load(R.drawable.foodonet_image).into(circleImageView);
             }
-            if(userName!= null){
-                userNameTxt.setText(userName);
-            } else{
+            userName = mFirebaseUser.getDisplayName();
+            if (userName != null) {
+                editUserName.setText(userName);
+            } else {
                 // TODO: 28/11/2016 add logic
             }
-            finishRegisterationButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                String phoneNumber = userPhoneNumber.getText().toString();
-                if(isLegalNumber(phoneNumber)) {
-                    /** save user phone number to sharedPreferences */
-                    preferences.edit().putString(User.PHONE_NUMBER, phoneNumber).apply();
-
-                    /** sign in the user to foodonet server and get his new (or existing) id and save it to the shared preferences through the service */
-                    String uuid = preferences.getString(User.ACTIVE_DEVICE_DEV_UUID,null);
-                    String providerId = "";
-                    String userEmail = mFirebaseUser.getEmail();
-                    for (UserInfo userInfo : mFirebaseUser.getProviderData()) {
-    //                        String mail = userInfo.getEmail();
-                        String tempProviderId = userInfo.getProviderId();
-                        if(tempProviderId.equals("google.com")){
-                            providerId = "google";
-                        }
-                        if (tempProviderId.equals("facebook.com")) {
-                            providerId = "facebook";
-                        }
-                        Toast.makeText(WelcomeUserActivity.this, userEmail, Toast.LENGTH_SHORT).show();
-                    }
-                    User user = new User(providerId,mFirebaseUser.getUid(),"token1",phoneNumber,userEmail,mFirebaseUser.getDisplayName(),true,uuid);
-
-                    Intent i = new Intent(WelcomeUserActivity.this, FoodonetService.class);
-                    i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_USER);
-                    i.putExtra(ReceiverConstants.JSON_TO_SEND,user.getUserJson().toString());
-                    WelcomeUserActivity.this.startService(i);
-                    dialog = new ProgressDialog(WelcomeUserActivity.this);
-                    dialog.show();
-
-                    String message = "user: "+user.getUserJson().toString();
-                    Log.d(TAG,message);
-                }
-                }
-            });
+            finishRegisterationButton.setOnClickListener(this);
         }
     }
 
@@ -130,30 +90,17 @@ public class WelcomeUserActivity extends AppCompatActivity {
         }
     }
 
-    public Boolean isLegalNumber(String number){
-        // TODO: 21/11/2016 currently just checking israeli mobile phone numbers, should allow line phones as well, fix!
-        if(number.length()<10){
-            Toast.makeText(this, "invalid phone number", Toast.LENGTH_SHORT).show();
-            return false;
+    @Override
+    public void onClick(View v) {
+        String phone = userPhoneNumber.getText().toString();
+        String userName = editUserName.getText().toString();
+        if(PhoneNumberUtils.isGlobalPhoneNumber(phone)){
+            ServerMethods.addUser(this, phone, userName);
+            dialog = new ProgressDialog(WelcomeUserActivity.this);
+            dialog.show();
+        } else{
+            Toast.makeText(WelcomeUserActivity.this, R.string.invalid_phone_number, Toast.LENGTH_SHORT).show();
         }
-        if(number.length()>10){
-            Toast.makeText(this, "invalid phone number", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        String numForCheck = number.substring(0,2);
-        if (!numForCheck.equals("05")){
-            Toast.makeText(this, "your area code is incorrect", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        numForCheck = number.substring(0,3);
-        char[] d= numForCheck.toCharArray();
-        if ((d[2]!='0')&&(d[2]!='2')&&(d[2]!='3')&&(d[2]!='4')&&(d[2]!='5')&&(d[2]!='6')&&(d[2]!='8')){
-            Toast.makeText(this, "your area code is incorrect 05-?" +d[2], Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        return true;
     }
 
     private class FoodonetReceiver extends BroadcastReceiver{
@@ -169,9 +116,7 @@ public class WelcomeUserActivity extends AppCompatActivity {
                     Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                 } else{
                     /** user successfully added, finish the activity*/
-                    Intent getDataIntent = new Intent(WelcomeUserActivity.this, GetDataService.class);
-                    getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
-                    startService(getDataIntent);
+                    CommonMethods.getNewData(getBaseContext());
                     Intent startActivityIntent = new Intent(WelcomeUserActivity.this, MainActivity.class);
                     startActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(startActivityIntent);
