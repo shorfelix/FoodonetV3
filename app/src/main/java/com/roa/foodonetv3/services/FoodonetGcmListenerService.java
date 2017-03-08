@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import static android.R.attr.data;
 
 /**
- * Created by felixshor on 3/7/17.
+ * Created by felixshor on 3/8/17.
  */
 
 public class FoodonetGcmListenerService extends GcmListenerService {
@@ -32,5 +32,7 @@ public class FoodonetGcmListenerService extends GcmListenerService {
           //  HandleMessage(pushNotification);
 
     }
+
+
 
 }
