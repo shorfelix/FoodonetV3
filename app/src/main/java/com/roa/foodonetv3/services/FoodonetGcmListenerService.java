@@ -30,7 +30,7 @@ public class FoodonetGcmListenerService extends GcmListenerService {
             }*/
            // pushNotification = FNotification.ParseSingleNotificationFromJSON(jo);//PushObject.DecodePushObject(data);
           //  HandleMessage(pushNotification);
-        }
+
     }
 
 }
