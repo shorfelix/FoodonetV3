@@ -27,8 +27,8 @@ public class StartFoodonetServiceMethods {
      * unregister from publication - add args[0] (string) publication id, args[1] (String) publication version, args[2] (String) user UUID
      * add group - add args[0] = String group name
      * get groups - add args[0] = (String) user id
-     * add group member - add args[0] = (String) group id,
-     *
+     * add group member - add args[0] = (String) group id
+     * delete group member - add args[0] = (String) uniqueID, args[1] - String "1" or "0" - isUserExitingGroup, args[2] - String groupID
      */
     public static String getUrlAddress(Context context, int actionType, String[] args) {
         /** prepares the url address according to the action intended */
@@ -113,6 +113,10 @@ public class StartFoodonetServiceMethods {
             case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
                 builder.append(context.getResources().getString(R.string.foodonet_group_members));
                 break;
+            case ReceiverConstants.ACTION_DELETE_GROUP_MEMBER:
+                builder.append(context.getResources().getString(R.string.foodonet_group_members));
+                builder.append(String.format("/%1$s",args[0]));
+                break;
             case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
                 builder.append(context.getResources().getString(R.string.foodonet_active_devices));
                 break;
@@ -130,7 +134,7 @@ public class StartFoodonetServiceMethods {
             case ReceiverConstants.ACTION_ADD_PUBLICATION:
                 return CommonConstants.HTTP_POST;
             case ReceiverConstants.ACTION_EDIT_PUBLICATION: // not tested
-                return CommonConstants.HTTP_POST;
+                return CommonConstants.HTTP_PUT;
             case ReceiverConstants.ACTION_DELETE_PUBLICATION:
                 return CommonConstants.HTTP_DELETE;
             case ReceiverConstants.ACTION_GET_REPORTS:
@@ -157,6 +161,8 @@ public class StartFoodonetServiceMethods {
                 return CommonConstants.HTTP_POST;
             case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
                 return CommonConstants.HTTP_POST;
+            case ReceiverConstants.ACTION_DELETE_GROUP_MEMBER:
+                return CommonConstants.HTTP_DELETE;
             case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
                 return CommonConstants.HTTP_POST;
         }

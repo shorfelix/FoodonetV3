@@ -167,6 +167,9 @@ public class Publication implements Parcelable {
     }
 
     public String getAddress() {
+        if(address==null){
+            return "";
+        }
         return address;
     }
 

@@ -1,7 +1,7 @@
 package com.roa.foodonetv3.activities;
 
 import android.content.Intent;
-import android.graphics.Point;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -14,31 +14,36 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
-import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.FabAnimation;
 import com.roa.foodonetv3.commonMethods.OnFabChangeListener;
+import com.roa.foodonetv3.commonMethods.OnReceiveResponse;
+import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.fragments.AddEditPublicationFragment;
 import com.roa.foodonetv3.fragments.MyPublicationsFragment;
 import com.roa.foodonetv3.fragments.PublicationDetailFragment;
 import com.roa.foodonetv3.model.Publication;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.EmptyStackException;
+import java.util.Stack;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, OnFabChangeListener, PublicationsRecyclerAdapter.OnPublicationClickListener{
+public class PublicationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
+        OnFabChangeListener, OnReceiveResponse, PublicationDetailFragment.OnDeletePublicationListener, OnReplaceFragListener {
     private static final String TAG = "PublicationActivity";
 
     public static final String ACTION_OPEN_PUBLICATION = "action_open_publication";
@@ -46,12 +51,15 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
     public static final String EDIT_PUBLICATION_TAG = "editPublicationFrag";
     public static final String PUBLICATION_DETAIL_TAG = "publicationDetailFrag";
     public static final String MY_PUBLICATIONS_TAG = "myPublicationsFrag";
+    public static final String BACK_IN_STACK_TAG = "backInStack";
 
     private FloatingActionButton fab;
-    private String currentFrag, previousFrag;
+    private Stack<String> fragStack;
     private CircleImageView circleImageView;
     private TextView headerTxt;
     private Publication publication;
+    private boolean waitForServerResponse;
+    private PublicationsDBHandler publicationsDBHandler;
 
     private FragmentManager fragmentManager;
 
@@ -63,15 +71,20 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-        /** set the fragment manager */
+        // set the fragment manager */
         fragmentManager = getSupportFragmentManager();
 
-        /** set the floating action button */
+        fragStack = new Stack<>();
+
+        publicationsDBHandler = new PublicationsDBHandler(this);
+
+        // set the floating action button */
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
 
-        /** set the drawer */
+        waitForServerResponse = false;
+
+        // set the drawer */
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -84,19 +97,20 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         circleImageView = (CircleImageView) hView.findViewById(R.id.headerCircleImage);
         headerTxt = (TextView) hView.findViewById(R.id.headerNavTxt);
 
-        /** get which fragment should be opened from the intent, and open it */
+        // get which fragment should be opened from the intent, and open it */
         Intent intent = getIntent();
-        publication = getIntent().getParcelableExtra(Publication.PUBLICATION_KEY);
+        publication = publicationsDBHandler.getPublication(getIntent().getLongExtra(Publication.PUBLICATION_KEY,-1));
         String openFragType = intent.getStringExtra(ACTION_OPEN_PUBLICATION);
         if(savedInstanceState==null){
-            openNewPublicationFrag(openFragType);
+            fragStack.push(openFragType);
+            replaceFrags(openFragType,true);
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        /** set drawer header and image */
+        // set drawer header and image */
         // TODO: 19/02/2017 currently loading the image from the web
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (mFirebaseUser !=null && mFirebaseUser.getPhotoUrl()!=null) {
@@ -114,21 +128,23 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if(previousFrag != null){
-                openNewPublicationFrag(previousFrag);
-                previousFrag = null;
-                return;
+            fragStack.pop();
+            if(fragStack.isEmpty()){
+                super.onBackPressed();
+            } else{
+                replaceFrags(fragStack.peek(),false);
             }
-            super.onBackPressed();
         }
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        /** handle the navigation actions in the common methods class */
+        // handle the navigation actions in the common methods class */
         if(item.getItemId()== R.id.nav_my_shares){
-            if(currentFrag== null || !currentFrag.equals(MY_PUBLICATIONS_TAG)){
-                openNewPublicationFrag(MY_PUBLICATIONS_TAG);
+            if(!fragStack.peek().equals(MY_PUBLICATIONS_TAG)){
+                fragStack = new Stack<>();
+                fragStack.push(MY_PUBLICATIONS_TAG);
+                replaceFrags(MY_PUBLICATIONS_TAG,false);
             }
         } else{
             CommonMethods.navigationItemSelectedAction(this,item.getItemId());
@@ -139,27 +155,19 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
         return true;
     }
 
-    /** opens a new fragment and sets the fab */
-    private void openNewPublicationFrag(String openFragType){
-        /** get the values for the fab animation */
+    public void replaceFrags(String openFragType, boolean isAddNewFragment) {
+        // get the values for the fab animation */
+        waitForServerResponse = false;
         long duration;
-        boolean isAddNewFragment;
-        if(currentFrag==null){
-            /** if this is the first frag - don't make a long animation */
+        if(isAddNewFragment){
+            // if this is the first frag - don't make a long animation */
             duration = 1;
-            isAddNewFragment = true;
         } else{
             duration = CommonConstants.FAB_ANIM_DURATION;
-            isAddNewFragment = false;
-            previousFrag = currentFrag;
         }
-
-        /** set the current frag to be the new one */
-        currentFrag = openFragType;
-
         Bundle bundle;
 
-        /** replace the fragment and animate the fab accordingly */
+        // replace the fragment and animate the fab accordingly */
         switch (openFragType){
             case ADD_PUBLICATION_TAG:
                 AddEditPublicationFragment addPublicationFragment = new AddEditPublicationFragment();
@@ -234,36 +242,62 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.fab:
-                if(currentFrag!= null){
+                if(!fragStack.isEmpty()){
+                    String currentFrag = fragStack.peek();
                     switch (currentFrag){
-                        /** clicked on save (the new publication)
-                         * send the fab click to the fragment */
+                        // clicked on save (the new publication)
+                        // send the fab click to the fragment */
                         case ADD_PUBLICATION_TAG:
-                            Intent fabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
-                            fabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_FAB_CLICK);
-                            fabClickIntent.putExtra(ReceiverConstants.SERVICE_ERROR,false);
-                            fabClickIntent.putExtra(ReceiverConstants.FAB_TYPE,ReceiverConstants.FAB_TYPE_SAVE_NEW_PUBLICATION);
-                            LocalBroadcastManager.getInstance(this).sendBroadcast(fabClickIntent);
+                            if(waitForServerResponse){
+                                Toast.makeText(this, R.string.dialog_please_wait, Toast.LENGTH_SHORT).show();
+                            } else {
+                                waitForServerResponse = true;
+                                Intent addFabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
+                                addFabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_FAB_CLICK);
+                                addFabClickIntent.putExtra(ReceiverConstants.SERVICE_ERROR, false);
+                                addFabClickIntent.putExtra(ReceiverConstants.FAB_TYPE, ReceiverConstants.FAB_TYPE_SAVE_NEW_PUBLICATION);
+                                LocalBroadcastManager.getInstance(this).sendBroadcast(addFabClickIntent);
+                            }
                             break;
 
-                        /** clicked on create new publication */
+                        case EDIT_PUBLICATION_TAG:
+                            if(waitForServerResponse){
+                                Toast.makeText(this, R.string.dialog_please_wait, Toast.LENGTH_SHORT).show();
+                            } else{
+                                waitForServerResponse = true;
+                                Intent editFabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
+                                editFabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_FAB_CLICK);
+                                editFabClickIntent.putExtra(ReceiverConstants.SERVICE_ERROR,false);
+                                editFabClickIntent.putExtra(ReceiverConstants.FAB_TYPE,ReceiverConstants.FAB_TYPE_EDIT_PUBLICATION);
+                                LocalBroadcastManager.getInstance(this).sendBroadcast(editFabClickIntent);
+
+                            }
+                            break;
+
+                        // clicked on create new publication */
                         case MY_PUBLICATIONS_TAG:
                             if(CommonMethods.getMyUserID(this)==-1){
                                 Intent intent = new Intent(this,SignInActivity.class);
                                 startActivity(intent);
                             } else{
-                                openNewPublicationFrag(ADD_PUBLICATION_TAG);
+                                fragStack.push(ADD_PUBLICATION_TAG);
+                                replaceFrags(ADD_PUBLICATION_TAG,false);
                             }
                             break;
 
-                        /** clicked on register for publication
-                         * send the fab click to the fragment */
+                        // clicked on register for publication
+                        // send the fab click to the fragment */
                         case PUBLICATION_DETAIL_TAG:
-                            Intent registerToPublicationIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
-                            registerToPublicationIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_FAB_CLICK);
-                            registerToPublicationIntent.putExtra(ReceiverConstants.SERVICE_ERROR,false);
-                            registerToPublicationIntent.putExtra(ReceiverConstants.FAB_TYPE,ReceiverConstants.FAB_TYPE_REGISTER_TO_PUBLICATION);
-                            LocalBroadcastManager.getInstance(this).sendBroadcast(registerToPublicationIntent);
+                            if(waitForServerResponse){
+                                Toast.makeText(this, R.string.dialog_please_wait, Toast.LENGTH_SHORT).show();
+                            } else{
+                                waitForServerResponse = true;
+                                Intent registerToPublicationIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
+                                registerToPublicationIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_FAB_CLICK);
+                                registerToPublicationIntent.putExtra(ReceiverConstants.SERVICE_ERROR,false);
+                                registerToPublicationIntent.putExtra(ReceiverConstants.FAB_TYPE,ReceiverConstants.FAB_TYPE_REGISTER_TO_PUBLICATION);
+                                LocalBroadcastManager.getInstance(this).sendBroadcast(registerToPublicationIntent);
+                            }
                             break;
                     }
                     break;
@@ -273,12 +307,36 @@ public class PublicationActivity extends AppCompatActivity implements Navigation
 
     @Override
     public void onFabChange(String fragmentTag, boolean setVisible) {
-        animateFab(fragmentTag,setVisible,1);
+        animateFab(fragmentTag, setVisible, 1);
     }
 
     @Override
-    public void onPublicationClick(Publication publication) {
-        this.publication = publication;
-        openNewPublicationFrag(PUBLICATION_DETAIL_TAG);
+    public void onReceiveResponse() {
+        waitForServerResponse = false;
+    }
+
+    @Override
+    public void onDeletePublication() {
+        onBackPressed();
+    }
+
+    @Override
+    public void onReplaceFrags(String openFragType, long id) {
+        if(openFragType.equals(BACK_IN_STACK_TAG)){
+            fragStack.pop();
+            if(fragStack.isEmpty()){
+                // if empty stack - a new publication was added from the main activity, go to my shares
+                fragStack.push(MY_PUBLICATIONS_TAG);
+                openFragType = MY_PUBLICATIONS_TAG;
+            } else{
+                openFragType = fragStack.peek();
+            }
+        } else{
+            fragStack.push(openFragType);
+        }
+        if(id != -1){
+            publication = publicationsDBHandler.getPublication(id);
+        }
+        replaceFrags(openFragType,false);
     }
 }

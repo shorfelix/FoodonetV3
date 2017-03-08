@@ -49,7 +49,7 @@ public class FoodonetService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        /** a universal service for all foodonet server communications */
+        // a universal service for all foodonet server communications */
         if (intent != null) {
             Intent finishedIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
             boolean serviceError = false;
@@ -96,13 +96,20 @@ public class FoodonetService extends IntentService {
                         serviceError = true;
                 }
                 int responseCode = connection.getResponseCode();
-                if(responseCode !=HttpsURLConnection.HTTP_OK && responseCode != HttpsURLConnection.HTTP_CREATED){
+                if(responseCode !=HttpsURLConnection.HTTP_OK && responseCode != HttpsURLConnection.HTTP_CREATED
+                        // right now deleting the last member from a group gives response 500 from the server, though still deleting the member,
+                        // in order to operate adding this logic here for now
+                        && responseCode != HttpsURLConnection.HTTP_INTERNAL_ERROR){
                     serviceError = true;
                 } else{
-                    reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String line;
-                    while((line = reader.readLine())!= null){
-                        builder.append(line);
+                    // right now deleting the last member from a group gives response 500 from the server, though still deleting the member,
+                    // in order to operate adding this logic here for now
+                    if(responseCode != HttpsURLConnection.HTTP_INTERNAL_ERROR) {
+                        reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            builder.append(line);
+                        }
                     }
                     finishedIntent = addResponseToIntent(actionType,builder.toString(),finishedIntent);
                 }
@@ -135,7 +142,7 @@ public class FoodonetService extends IntentService {
             RegisteredUsersDBHandler registeredUsersDBHandler;
             GroupMembersDBHandler groupMembersDBHandler;
             if(actionType == ReceiverConstants.ACTION_GET_PUBLICATIONS){
-                /** get the users groups id, as we don't care about the others */
+                // get the users groups id, as we don't care about the others */
                 groupsDBHandler = new GroupsDBHandler(this);
                 ArrayList<Long> groupsIDs = groupsDBHandler.getGroupsIDs();
                 ArrayList<Publication> publications = new ArrayList<>();
@@ -196,10 +203,10 @@ public class FoodonetService extends IntentService {
                     publication.setVersion(publicationVersion);
                     publicationsDBHandler = new PublicationsDBHandler(this);
                     publicationsDBHandler.insertPublication(publication);
-                    /** instantiate the transfer utility for the s3*/
+                    // instantiate the transfer utility for the s3*/
                     TransferUtility transferUtility = CommonMethods.getTransferUtility(this);
-                    /** if there is an image to upload */
-                    if(publication.getPhotoURL()!=null){
+                    // if there is an image to upload */
+                    if(publication.getPhotoURL()!=null && !publication.getPhotoURL().equals("")){
                         String[] split = publication.getPhotoURL().split(":");
                         File file = new File(split[1]);
                         File destFile = new File(CommonMethods.getPhotoPathByID(this,publicationID,publicationVersion));
@@ -218,13 +225,39 @@ public class FoodonetService extends IntentService {
             }
 
             else if(actionType == ReceiverConstants.ACTION_EDIT_PUBLICATION){
-                // TODO: 27/11/2016 check versions and the like
+                Log.d(TAG,responseRoot);
+                JSONObject root = new JSONObject(responseRoot);
+                long publicationID = root.getLong("id");
+                int publicationVersion = root.getInt("version");
+                if(data!= null){
+                    Publication publication = (Publication) data.get(0);
+                    publication.setVersion(publicationVersion);
+                    publicationsDBHandler = new PublicationsDBHandler(this);
+                    publicationsDBHandler.updatePublication(publication);
+                    // instantiate the transfer utility for the s3*/
+                    TransferUtility transferUtility = CommonMethods.getTransferUtility(this);
+                    // if there is an image to upload */
+                    if(publication.getPhotoURL()!=null && !publication.getPhotoURL().equals("")){
+                        String[] split = publication.getPhotoURL().split(":");
+                        File file = new File(split[1]);
+                        File destFile = new File(CommonMethods.getPhotoPathByID(this,publicationID,publicationVersion));
+                        Log.d(TAG,"pre"+file.getPath());
+                        String s3Name = CommonMethods.getFileNameFromPublicationID(publicationID,publicationVersion);
+                        boolean renamed = file.renameTo(destFile);
+                        Log.d(TAG,"post"+destFile.getPath());
+                        if(renamed){
+                            transferUtility.upload(getResources().getString(R.string.amazon_publications_bucket),s3Name,destFile);
+                        }else{
+                            Log.d(TAG,"Rename failed");
+                        }
+                        // TODO: 05/03/2017 currently not checking if the upload was successful or not
+                    }
+                }
             }
 
             else if(actionType == ReceiverConstants.ACTION_DELETE_PUBLICATION){
                 publicationsDBHandler = new PublicationsDBHandler(this);
                 publicationsDBHandler.deletePublication(Long.parseLong(args[0]));
-                Log.d(TAG,responseRoot);
             }
 
             else if(actionType == ReceiverConstants.ACTION_GET_REPORTS){
@@ -334,23 +367,21 @@ public class FoodonetService extends IntentService {
             }
 
             else if(actionType == ReceiverConstants.ACTION_ADD_GROUP){
-                // TODO: 06/12/2016 add logic according to what we receive
-
                 long groupID,userID;
                 String groupName;
 
                 JSONObject groupObject = new JSONObject(responseRoot);
-                userID = groupObject.getLong(Group.USER_ID);
-                groupID = groupObject.getLong(Group.GROUP_ID);
-                groupName = groupObject.getString(Group.GET_GROUP_NAME);
+                userID = CommonMethods.getMyUserID(this);
+                groupID = groupObject.getLong("id");
+                groupName = args[0];
                 Group group = new Group(groupName,userID,groupID);
 
-                /** add group to db */
+                // add group to db */
                 intent.putExtra(Group.GROUP_ID,groupID);
                 groupsDBHandler = new GroupsDBHandler(this);
                 groupsDBHandler.insertGroup(group);
 
-                /** send an admin member to the server */
+                // send an admin member to the server */
                 Intent addAdminMemberIntent = new Intent(this,GetDataService.class);
                 addAdminMemberIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_ADMIN_MEMBER);
                 addAdminMemberIntent.putExtra(ReceiverConstants.GROUP_ID,groupID);
@@ -361,26 +392,41 @@ public class FoodonetService extends IntentService {
                 JSONArray groupArray = new JSONArray(responseRoot);
 
                 ArrayList<Group> groups = new ArrayList<>();
-                ArrayList<GroupMember> members = new ArrayList<>();
-                long groupID,memberID,userID;
+                ArrayList<GroupMember> members = new ArrayList<>(), groupMembers = new ArrayList<>();
+                ArrayList<Long> groupsID = new ArrayList<>();
+                long uniqueID,groupID,memberID,userID,myUserID;
                 String groupName,phoneNumber,memberName;
-                boolean isAdmin;
+                boolean isAdmin, foundUserInMembers;
+
+                myUserID = CommonMethods.getMyUserID(this);
 
                 for (int i = 0; i < groupArray.length(); i++) {
                     JSONObject group = groupArray.getJSONObject(i);
-                    userID = group.getLong(Group.USER_ID);
                     groupID = group.getLong(Group.GROUP_ID);
-                    groupName = group.getString(Group.GET_GROUP_NAME);
                     JSONArray membersArray = group.getJSONArray(Group.MEMBERS);
-                    for (int j = 0; j < membersArray.length(); j++) {
-                        JSONObject member = membersArray.getJSONObject(j);
-                        memberID = member.getLong(GroupMember.USER_ID);
-                        phoneNumber = member.getString(GroupMember.PHONE_NUMBER);
-                        memberName = member.getString(GroupMember.NAME);
-                        isAdmin = member.getBoolean(GroupMember.IS_ADMIN);
-                        members.add(new GroupMember(groupID,memberID,phoneNumber,memberName,isAdmin));
+                    if(!groupsID.contains(groupID) && membersArray.length()>0){
+                        groupsID.add(groupID);
+                        userID = group.getLong(Group.USER_ID);
+                        groupName = group.getString(Group.GET_GROUP_NAME);
+                        foundUserInMembers = false;
+                        groupMembers.clear();
+                        for (int j = 0; j < membersArray.length(); j++) {
+                            JSONObject member = membersArray.getJSONObject(j);
+                            uniqueID = member.getLong(GroupMember.UNIQUE_ID);
+                            memberID = member.getLong(GroupMember.USER_ID);
+                            if(memberID== myUserID){
+                                foundUserInMembers = true;
+                            }
+                            phoneNumber = member.getString(GroupMember.PHONE_NUMBER);
+                            memberName = member.getString(GroupMember.NAME);
+                            isAdmin = member.getBoolean(GroupMember.IS_ADMIN);
+                            groupMembers.add(new GroupMember(uniqueID,groupID,memberID,phoneNumber,memberName,isAdmin));
+                        }
+                        if(foundUserInMembers){
+                            groups.add(new Group(groupName,userID,groupID));
+                            members.addAll(groupMembers);
+                        }
                     }
-                    groups.add(new Group(groupName,userID,groupID));
                 }
                 groupsDBHandler = new GroupsDBHandler(this);
                 groupsDBHandler.replaceAllGroups(groups);
@@ -393,12 +439,38 @@ public class FoodonetService extends IntentService {
             }
 
             else if (actionType == ReceiverConstants.ACTION_ADD_GROUP_MEMBER){
-                Log.d("TEST!!!!!!!",responseRoot);
-                long groupID = Long.valueOf(args[0]);
-                GroupMember groupMember = (GroupMember) data.get(0);
+                JSONArray root = new JSONArray(responseRoot);
+                boolean isMemberAdded = false;
+                if (root.length()>0) {
+                    JSONObject memberObject = root.getJSONObject(0);
+                    long uniqueID = memberObject.getLong(GroupMember.UNIQUE_ID);
+                    long userID = memberObject.getLong(GroupMember.USER_ID);
+                    long groupID = memberObject.getLong(GroupMember.GROUP_ID);
+                    String phone = memberObject.getString(GroupMember.PHONE_NUMBER);
+                    String name = memberObject.getString(GroupMember.NAME);
+                    boolean isAdmin = memberObject.getBoolean(GroupMember.IS_ADMIN);
+                    GroupMember groupMember = new GroupMember(uniqueID,groupID,userID,phone,name,isAdmin);
+                    groupMembersDBHandler = new GroupMembersDBHandler(this);
+                    isMemberAdded = groupMembersDBHandler.insertMemberToGroup(groupID,groupMember);
+                }
+                intent.putExtra(ReceiverConstants.MEMBER_ADDED,isMemberAdded);
+            }
+
+            else if (actionType == ReceiverConstants.ACTION_DELETE_GROUP_MEMBER){
+                Log.d(TAG,responseRoot);
+                long uniqueID = Long.valueOf(args[0]);
                 groupMembersDBHandler = new GroupMembersDBHandler(this);
-                boolean memberAdded = groupMembersDBHandler.insertMemberToGroup(groupID,groupMember);
-                intent.putExtra(ReceiverConstants.MEMBER_ADDED,memberAdded);
+                groupMembersDBHandler.deleteGroupMember(uniqueID);
+                boolean userExitedGroup;
+                if(args[1].equals("1")){
+                    userExitedGroup = true;
+                    long groupID = Long.valueOf(args[2]);
+                    groupsDBHandler = new GroupsDBHandler(this);
+                    groupsDBHandler.deleteGroup(groupID);
+                } else{
+                    userExitedGroup = false;
+                }
+                intent.putExtra(ReceiverConstants.USER_EXITED_GROUP,userExitedGroup);
             }
 
             else if(actionType == ReceiverConstants.ACTION_POST_FEEDBACK){

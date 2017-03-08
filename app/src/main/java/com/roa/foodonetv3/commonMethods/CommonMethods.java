@@ -28,6 +28,7 @@ import com.roa.foodonetv3.activities.MapActivity;
 import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
+import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.GetDataService;
 
@@ -36,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -148,6 +150,18 @@ public class CommonMethods {
             }
         }
         return message.toString();
+    }
+
+    public static boolean isUserGroupAdmin(Context context, ArrayList<GroupMember> members){
+        long userID = getMyUserID(context);
+        GroupMember member;
+        for(int i = 0; i < members.size(); i++){
+            member = members.get(i);
+            if(member.getUserID() == userID){
+                return member.isAdmin();
+            }
+        }
+        return false;
     }
 
     /** get the message according to the server specified report type */

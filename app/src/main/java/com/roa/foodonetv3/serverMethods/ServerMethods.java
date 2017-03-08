@@ -50,6 +50,10 @@ public class ServerMethods {
         i.putExtra(ReceiverConstants.ACTION_TYPE, actionType);
         i.putExtra(ReceiverConstants.JSON_TO_SEND, publication.getPublicationJson().toString());
         i.putExtra(ReceiverConstants.DATA,data);
+        if(actionType==ReceiverConstants.ACTION_EDIT_PUBLICATION){
+            String[] args = {String.valueOf(publication.getId())};
+            i.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+        }
         context.startService(i);
     }
 
@@ -152,7 +156,6 @@ public class ServerMethods {
     }
 
     public static void addGroup(Context context, Group newGroup){
-        // TODO: 21/02/2017 remove the args, add to data, change logic
         Intent intent = new Intent(context, FoodonetService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_GROUP);
         intent.putExtra(ReceiverConstants.JSON_TO_SEND,newGroup.getAddGroupJson().toString());
@@ -172,8 +175,7 @@ public class ServerMethods {
     public static void addGroupMember(Context context, GroupMember groupMember){
         Intent addMemberIntent = new Intent(context, FoodonetService.class);
         addMemberIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
-        GroupMembersDBHandler handler = new GroupMembersDBHandler(context);
-        ArrayList<GroupMember> members = handler.getGroupMembers(groupMember.getGroupID());
+        ArrayList<GroupMember> members = new ArrayList<>();
         members.add(groupMember);
         addMemberIntent.putExtra(ReceiverConstants.JSON_TO_SEND,Group.getAddGroupMembersJson(members).toString());
         String[] args = {String.valueOf(groupMember.getGroupID())};
@@ -182,6 +184,20 @@ public class ServerMethods {
         memberData.add(groupMember);
         addMemberIntent.putExtra(ReceiverConstants.DATA,memberData);
         context.startService(addMemberIntent);
+    }
+
+    public static void deleteGroupMember(Context context, long uniqueID, boolean isUserExitingGroup, long groupID){
+        Intent deleteMemberIntent = new Intent(context,FoodonetService.class);
+        deleteMemberIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_DELETE_GROUP_MEMBER);
+        String isUserExitingGroupString;
+        if(isUserExitingGroup){
+            isUserExitingGroupString = "1";
+        } else{
+            isUserExitingGroupString = "0";
+        }
+        String[] args = {String.valueOf(uniqueID),isUserExitingGroupString,String.valueOf(groupID)};
+        deleteMemberIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+        context.startService(deleteMemberIntent);
     }
 
     public static void postFeedback(Context context, String message){

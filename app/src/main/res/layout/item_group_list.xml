@@ -30,7 +30,13 @@
         android:layout_marginRight="@dimen/margin_16"
         android:layout_marginEnd="@dimen/margin_16"
         android:text="Group"
-        style="@style/FooBlackLarge" />
+        style="@style/FooBlackLarge"
+        android:maxLines="1"
+        android:scrollHorizontally="true"
+        android:focusableInTouchMode="true"
+        android:focusable="true"
+        android:ellipsize="end"
+        />
 
     <TextView
         android:text="@string/admin"
