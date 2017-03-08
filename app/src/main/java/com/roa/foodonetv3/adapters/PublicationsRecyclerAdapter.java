@@ -1,7 +1,7 @@
 package com.roa.foodonetv3.adapters;
 
 import android.content.Context;
-import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -20,6 +20,7 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.db.RegisteredUsersDBHandler;
 import com.roa.foodonetv3.model.Publication;
@@ -33,17 +34,21 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<PublicationsRecyclerAdapter.PublicationHolder> {
     private static final String TAG = "PubsRecyclerAdapter";
 
+    private static final int PUBLICATION_VIEW = 1;
+    private static final int PUBLICATION_SPACER = 2;
+
     private Context context;
     private ArrayList<Publication> filteredPublications = new ArrayList<>();
     private ArrayList<Publication> publications = new ArrayList<>();
     private LongSparseArray<Integer> registeredUsersArray = new LongSparseArray<>();
     private TransferUtility transferUtility;
     private LatLng userLatLng;
-    private static final double LOCATION_NOT_FOUND = -9999;
     private PublicationsDBHandler publicationsDBHandler;
+    private OnReplaceFragListener onReplaceFragListener;
 
     public PublicationsRecyclerAdapter(Context context) {
         this.context = context;
+        onReplaceFragListener = (OnReplaceFragListener) context;
         /** get the S3 utility */
         transferUtility = CommonMethods.getTransferUtility(context);
         userLatLng = CommonMethods.getLastLocation(context);
@@ -89,99 +94,111 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
     }
 
     @Override
+    public int getItemViewType(int position) {
+        if(position== filteredPublications.size()){
+            return PUBLICATION_SPACER;
+        }
+        return PUBLICATION_VIEW;
+    }
+
+    @Override
     public PublicationHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View v = inflater.inflate(R.layout.item_publication_list,parent,false);
-        return new PublicationHolder(v);
+        if(viewType == PUBLICATION_VIEW){
+            return new PublicationHolder(inflater.inflate(R.layout.item_publication_list,parent,false),viewType);
+        }
+        return new PublicationHolder(inflater.inflate(R.layout.item_list_spacer, parent, false),viewType);
+
     }
 
     @Override
     public void onBindViewHolder(PublicationHolder holder, int position) {
-        holder.bindPublication(filteredPublications.get(position));
+        if(getItemViewType(position)== PUBLICATION_VIEW){
+            holder.bindPublication(filteredPublications.get(position));
+        }
     }
 
     @Override
     public int getItemCount() {
-        return filteredPublications.size();
+        return filteredPublications.size()+1;
     }
 
     class PublicationHolder extends RecyclerView.ViewHolder implements TransferListener, View.OnClickListener {
         private Publication publication;
         private ImageView imagePublicationGroup;
         private CircleImageView imagePublication;
-        private TextView textPublicationTitle, textPublicationAddressDistance,textPublicationUsers;
+        private TextView textPublicationTitle, textPublicationAddressDistance, textPublicationUsers;
         private File mCurrentPhotoFile;
         private int observerId;
         private int publicationImageSize;
 
 
-        PublicationHolder(View itemView) {
+        PublicationHolder(View itemView, int viewType) {
             super(itemView);
-            imagePublication = (CircleImageView) itemView.findViewById(R.id.imagePublication);
-            imagePublicationGroup = (ImageView) itemView.findViewById(R.id.imagePublicationGroup);
-            textPublicationTitle = (TextView) itemView.findViewById(R.id.textPublicationTitle);
-            textPublicationAddressDistance = (TextView) itemView.findViewById(R.id.textPublicationAddressDistance);
-            textPublicationUsers = (TextView) itemView.findViewById(R.id.textPublicationUsers);
-            publicationImageSize = (int)context.getResources().getDimension(R.dimen.image_size_68);
-            itemView.setOnClickListener(this);
+            if (viewType == PUBLICATION_VIEW) {
+                imagePublication = (CircleImageView) itemView.findViewById(R.id.imagePublication);
+                imagePublicationGroup = (ImageView) itemView.findViewById(R.id.imagePublicationGroup);
+                textPublicationTitle = (TextView) itemView.findViewById(R.id.textPublicationTitle);
+                textPublicationAddressDistance = (TextView) itemView.findViewById(R.id.textPublicationAddressDistance);
+                textPublicationUsers = (TextView) itemView.findViewById(R.id.textPublicationUsers);
+                publicationImageSize = (int) context.getResources().getDimension(R.dimen.image_size_68);
+                itemView.setOnClickListener(this);
+            }
         }
 
         private void bindPublication(Publication publication) {
             this.publication = publication;
-            // TODO: add image logic, add distance logic, number of users who joined, currently hard coded
             textPublicationTitle.setText(publication.getTitle());
-            if(userLatLng.latitude != LOCATION_NOT_FOUND && userLatLng.longitude != LOCATION_NOT_FOUND){
-                double distance = CommonMethods.distance(userLatLng.latitude,userLatLng.longitude,publication.getLat(),publication.getLng());
-                String addressDistance = String.format(Locale.US,"%1$s %2$s",CommonMethods.getRoundedStringFromNumber(distance),context.getResources().getString(R.string.km));
+            if (userLatLng.latitude != CommonConstants.LATLNG_ERROR && userLatLng.longitude != CommonConstants.LATLNG_ERROR) {
+                double distance = CommonMethods.distance(userLatLng.latitude, userLatLng.longitude, publication.getLat(), publication.getLng());
+                String addressDistance = String.format(Locale.US, "%1$s %2$s", CommonMethods.getRoundedStringFromNumber(distance), context.getResources().getString(R.string.km));
                 textPublicationAddressDistance.setText(addressDistance);
-            } else{
+            } else {
                 textPublicationAddressDistance.setText("");
             }
             Integer numberRegisteredUsers = registeredUsersArray.get(publication.getId());
-            if(numberRegisteredUsers== null){
+            if (numberRegisteredUsers == null) {
                 numberRegisteredUsers = 0;
             }
-            String registeredUsers = String.format(Locale.US,"%1$d %2$s", numberRegisteredUsers,context.getResources().getString(R.string.users_joined));
+            String registeredUsers = String.format(Locale.US, "%1$d %2$s", numberRegisteredUsers, context.getResources().getString(R.string.users_joined));
             textPublicationUsers.setText(registeredUsers);
             //add photo here
-            mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId(),publication.getVersion()));
-            if(mCurrentPhotoFile.isFile()){
+            mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context, publication.getId(), publication.getVersion()));
+            if (mCurrentPhotoFile.isFile()) {
                 Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
-            } else{
-                String imagePath = CommonMethods.getFileNameFromPublicationID(publication.getId(),publication.getVersion());
+            } else {
+                String imagePath = CommonMethods.getFileNameFromPublicationID(publication.getId(), publication.getVersion());
                 TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_publications_bucket),
                         imagePath, mCurrentPhotoFile);
-                        observer.setTransferListener(this);
-                        observerId = observer.getId();
+                observer.setTransferListener(this);
+                observerId = observer.getId();
             }
         }
 
         @Override
         public void onStateChanged(int id, TransferState state) {
-            /** listener for the s3 server download, needs to be adapter wide since it's currently keeps using the same image in different layout */
-            // TODO: 09/11/2016 check picasso adapter for the images and using the s3 observer on an adapter scale
-            Log.d(TAG,"amazon onStateChanged " + id + " "  + state.toString());
-            if(state == TransferState.COMPLETED){
-                if(observerId==id){
+            /** listener for the s3 server download */
+            Log.d(TAG, "amazon onStateChanged " + id + " " + state.toString());
+            if (state == TransferState.COMPLETED) {
+                if (observerId == id) {
                     Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
                 }
 
             }
         }
+
         @Override
         public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
         }
+
         @Override
         public void onError(int id, Exception ex) {
-            Log.d(TAG,"amazon onError" + id + " " + ex.toString());
+            Log.d(TAG, "amazon onError" + id + " " + ex.toString());
         }
 
         @Override
         public void onClick(View v) {
-            Intent i = new Intent(context, PublicationActivity.class);
-            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.PUBLICATION_DETAIL_TAG);
-            i.putExtra(Publication.PUBLICATION_KEY,publication);
-            context.startActivity(i);
+            onReplaceFragListener.onReplaceFrags(PublicationActivity.PUBLICATION_DETAIL_TAG, publication.getId());
         }
     }
 }

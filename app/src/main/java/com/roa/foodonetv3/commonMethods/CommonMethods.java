@@ -28,6 +28,7 @@ import com.roa.foodonetv3.activities.MapActivity;
 import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
+import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.GetDataService;
 
@@ -36,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -53,6 +55,9 @@ public class CommonMethods {
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
+                if (!(context instanceof MainActivity)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                }
                 intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainActivity)) {
@@ -82,7 +87,7 @@ public class CommonMethods {
                 break;
             case R.id.nav_groups:
                 intent = new Intent(context, GroupsActivity.class);
-                if(context instanceof GroupsActivity){
+                if(context instanceof GroupsActivity || context instanceof MainActivity){
                     // TODO: 06/12/2016 test
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
@@ -147,6 +152,18 @@ public class CommonMethods {
         return message.toString();
     }
 
+    public static boolean isUserGroupAdmin(Context context, ArrayList<GroupMember> members){
+        long userID = getMyUserID(context);
+        GroupMember member;
+        for(int i = 0; i < members.size(); i++){
+            member = members.get(i);
+            if(member.getUserID() == userID){
+                return member.isAdmin();
+            }
+        }
+        return false;
+    }
+
     /** get the message according to the server specified report type */
     public static String getReportStringFromType(Context context, int typeOfReport) {
         switch (typeOfReport) {
@@ -162,7 +179,7 @@ public class CommonMethods {
 
     public static void getNewData(Context context){
         Intent getDataIntent = new Intent(context, GetDataService.class);
-        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_DATA);
         context.startService(getDataIntent);
     }
 
@@ -379,16 +396,6 @@ public class CommonMethods {
         }
         return sCredProvider;
     }
-    // old as backup
-//    private static CognitoCachingCredentialsProvider getCredProvider(Context context) {
-//        if (sCredProvider == null) {
-//            sCredProvider = new CognitoCachingCredentialsProvider(
-//                    context.getApplicationContext(),
-//                    context.getResources().getString(R.string.amazon_pool_id),
-//                    Regions.EU_WEST_1);
-//        }
-//        return sCredProvider;
-//    }
 
     /**
      * Gets an instance of a S3 client which is constructed using the given

@@ -8,6 +8,7 @@
 
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="fab_size">56dp</dimen>
+    <dimen name="fab_size_plus_margin">72dp</dimen>
 
     <dimen name="margin_4">4dp</dimen>
     <dimen name="margin_8">8dp</dimen>
@@ -32,5 +33,7 @@
     <dimen name="text_size_36">36sp</dimen>
 
     <dimen name="layout_size_80">80dp</dimen>
+
+    <dimen name="divider_height">1dp</dimen>
 
 </resources>
