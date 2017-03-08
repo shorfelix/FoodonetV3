@@ -81,6 +81,11 @@
         <item name="android:textSize">@dimen/text_size_16</item>
     </style>
 
+    <style name="FooBlueSmall">
+        <item name="android:textSize">@dimen/text_size_16</item>
+        <item name="android:textColor">@color/fooLightBlue</item>
+    </style>
+
     <style name="FooBlackSmall">
         <item name="android:textSize">@dimen/text_size_16</item>
         <item name="android:textColor">@color/fooBlack</item>

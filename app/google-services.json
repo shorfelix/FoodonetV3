@@ -15,6 +15,30 @@
       },
       "oauth_client": [
         {
+          "client_id": "754311117367-f1p3mcqrco2is1qh7sips6cf6gbn7ru7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roa.foodonetv3",
+            "certificate_hash": "919dd53a8562d53f61becc27c5826122d65d75df"
+          }
+        },
+        {
+          "client_id": "754311117367-vdf5l6lpbj8hrvmnu144nkojjrqcmqra.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roa.foodonetv3",
+            "certificate_hash": "135fdf1d693082ca94c5a3170552a74be20c8090"
+          }
+        },
+        {
+          "client_id": "754311117367-c42ia8ipcf330b34n25uqlp72cutpb34.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roa.foodonetv3",
+            "certificate_hash": "e8ffa04324833efd04c678089ba59e380c691c9e"
+          }
+        },
+        {
           "client_id": "754311117367-ensqdv8pen9vcdchvi6amjfij3r6lmt2.apps.googleusercontent.com",
           "client_type": 3
         }

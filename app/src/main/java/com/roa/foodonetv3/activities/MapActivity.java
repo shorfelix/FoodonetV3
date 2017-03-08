@@ -142,11 +142,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onInfoWindowClick(Marker marker) {
         long publicationID = (long) marker.getTag();
         if(publicationID!=-1){
-            PublicationsDBHandler handler = new PublicationsDBHandler(this);
-            Publication publication = handler.getPublication(publicationID);
             Intent detailsIntent = new Intent(this,PublicationActivity.class);
             detailsIntent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION,PublicationActivity.PUBLICATION_DETAIL_TAG);
-            detailsIntent.putExtra(Publication.PUBLICATION_KEY,publication);
+            detailsIntent.putExtra(Publication.PUBLICATION_KEY,publicationID);
             detailsIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(detailsIntent);
         }

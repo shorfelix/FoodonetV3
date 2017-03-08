@@ -13,6 +13,7 @@ android:layout_height="wrap_content">
     android:layout_below="@+id/buttonCreate"
     style="@style/FooMedium"
     android:maxLines="1"
+    android:maxLength="15"
     android:layout_centerHorizontal="true"
     android:gravity="top|start" />
 

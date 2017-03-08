@@ -134,5 +134,10 @@
     <string name="prefs_all">All</string>
     <string name="success">Success</string>
     <string name="invalid_phone_number">invalid phone number</string>
+    <string name="toast_user_already_in_group">User already in group</string>
+    <string name="dialog_are_you_sure">Are you sure?</string>
+    <string name="toast_there_are_no_registered_users">There are no registered users</string>
+    <string name="dialog_please_wait">Please wait</string>
+    <string name="menu_exit_group">Exit group</string>
 
 </resources>

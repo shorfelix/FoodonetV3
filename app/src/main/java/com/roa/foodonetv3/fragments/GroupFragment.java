@@ -1,6 +1,5 @@
 package com.roa.foodonetv3.fragments;
 
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,49 +15,58 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
-import com.google.firebase.auth.FirebaseAuth;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.adapters.GroupMembersRecyclerAdapter;
-import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.GroupMembersDBHandler;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.serverMethods.ServerMethods;
-import com.roa.foodonetv3.services.FoodonetService;
-
-import java.util.ArrayList;
-
 import static android.app.Activity.RESULT_OK;
 import static com.roa.foodonetv3.activities.GroupsActivity.CONTACT_PICKER;
 
-public class AdminGroupFragment extends Fragment {
-    private static final String TAG = "AdminGroupFragment";
+public class GroupFragment extends Fragment {
+    private static final String TAG = "GroupFragment";
+    private static final long UNKNOWN_USER_ID = 0;
 
     private GroupMembersRecyclerAdapter adapter;
-    private TextView textGroupName;
+//    private TextView textGroupName;
     private Group group;
     private FoodonetReceiver receiver;
+    private OnReplaceFragListener onReplaceFragListener;
+    private GroupMembersDBHandler groupMembersDBHandler;
 
-    public AdminGroupFragment() {
+    public GroupFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        onReplaceFragListener = (OnReplaceFragListener) context;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        groupMembersDBHandler = new GroupMembersDBHandler(getContext());
         group = getArguments().getParcelable(Group.GROUP);
+        setHasOptionsMenu(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_admin_group, container, false);
+        View v = inflater.inflate(R.layout.fragment_group, container, false);
 
         /** set title */
         getActivity().setTitle(group.getGroupName());
@@ -67,9 +75,6 @@ public class AdminGroupFragment extends Fragment {
         recyclerGroupMembers.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new GroupMembersRecyclerAdapter(getContext());
         recyclerGroupMembers.setAdapter(adapter);
-
-        textGroupName = (TextView) v.findViewById(R.id.textGroupName);
-        textGroupName.setText(group.getGroupName());
 
         return v;
     }
@@ -90,6 +95,23 @@ public class AdminGroupFragment extends Fragment {
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.group_menu,menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.menu_exit_group:
+                long userUniqueID = groupMembersDBHandler.getUserUniqueID(group.getGroupID());
+                ServerMethods.deleteGroupMember(getContext(),userUniqueID,true,group.getGroupID());
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -123,18 +145,16 @@ public class AdminGroupFragment extends Fragment {
                 name = cursor.getString(nameIndex);
             }
             Log.d(TAG,"phone:"+phone+" ,name:"+name);
-            GroupMember member = new GroupMember(group.getGroupID(),(long)-1,phone,name,false);
-            boolean error = false;
-            if(phone==null || name == null){
-                error = true;
+            if(!groupMembersDBHandler.isMemberInGroup(group.getGroupID(),phone)){
+                GroupMember member = new GroupMember((long)-1,group.getGroupID(), UNKNOWN_USER_ID,phone,name,false);
+                boolean error = false;
+                if(phone==null || name == null){
+                    error = true;
+                }
+                ServerMethods.addGroupMember(getContext(),member);
+            } else{
+                Toast.makeText(getContext(), R.string.toast_user_already_in_group, Toast.LENGTH_SHORT).show();
             }
-//            if(group.getMembers().size()==0){
-//                GroupMember member = new GroupMember(group.getGroupID(), CommonMethods.getMyUserID(getContext()),
-//                        CommonMethods.getMyUserPhone(getContext()), FirebaseAuth.getInstance().getCurrentUser().getDisplayName(),true);
-//                /** if no members are in the group yet, when adding the first one, add the user as the admin as well */
-//                group.addToMembers(member);
-//            }
-            ServerMethods.addGroupMember(getContext(),member);
         } catch (Exception e) {
             Log.e(TAG,e.getMessage());
         } finally {
@@ -163,17 +183,35 @@ public class AdminGroupFragment extends Fragment {
                         }
                     }
                     break;
+
                 /** response from service of adding a new group member */
                 case ReceiverConstants.ACTION_ADD_GROUP_MEMBER:
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
                         // TODO: 14/12/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        // TODO: 14/12/2016 add logic, currently fails with a 404 code
                         boolean added = intent.getBooleanExtra(ReceiverConstants.MEMBER_ADDED,false);
-                        Log.d(TAG,"ADDED MEMBER: "+added);
-                        Toast.makeText(context, "ADDED MEMBER: "+added, Toast.LENGTH_SHORT).show();
+                        if(added){
+                            adapter.updateMembers(group.getGroupID());
+                        } else{
+                            Toast.makeText(context, R.string.toast_user_already_in_group, Toast.LENGTH_SHORT).show();
+                        }
                     }
+                    break;
+
+                case ReceiverConstants.ACTION_DELETE_GROUP_MEMBER:
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 07/03/2017 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        boolean exitedGroup = intent.getBooleanExtra(ReceiverConstants.USER_EXITED_GROUP,false);
+                        if(exitedGroup){
+                            onReplaceFragListener.onReplaceFrags(GroupsActivity.BACK_IN_STACK_TAG,-1);
+                        } else{
+                            adapter.updateMembers(group.getGroupID());
+                        }
+                    }
+                    break;
             }
         }
     }

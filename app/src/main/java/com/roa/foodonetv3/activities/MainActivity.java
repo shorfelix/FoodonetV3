@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -35,6 +36,7 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
+import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.fragments.ActiveFragment;
 import com.roa.foodonetv3.fragments.ClosestFragment;
@@ -44,10 +46,13 @@ import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.FoodonetService;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,TabLayout.OnTabSelectedListener,
-        GoogleApiClient.OnConnectionFailedListener, PublicationsRecyclerAdapter.OnPublicationClickListener {
+        GoogleApiClient.OnConnectionFailedListener, OnReplaceFragListener {
     private static final String TAG = "MainActivity";
 
 
@@ -206,11 +211,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void onPublicationClick(Publication publication) {
+    public void onReplaceFrags(String openFragType, long id) {
         Intent i = new Intent(this, PublicationActivity.class);
-            i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.PUBLICATION_DETAIL_TAG);
-            i.putExtra(Publication.PUBLICATION_KEY,publication);
-            this.startActivity(i);
+        i.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, openFragType);
+        i.putExtra(Publication.PUBLICATION_KEY,id);
+        this.startActivity(i);
     }
 
     //view pager adapter...
