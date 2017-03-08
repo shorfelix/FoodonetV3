@@ -6,16 +6,25 @@
 
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <ImageView
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        app:srcCompat="@drawable/camera_xxh"
-        android:id="@+id/imagePictureAddPublication" />
+        android:layout_height="@dimen/image_size_height_150"
+        android:id="@+id/layoutImage">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/image_size_height_150"
+            app:srcCompat="@drawable/camera_xxh"
+            android:id="@+id/imagePictureAddPublication" />
+
+        <include layout="@layout/layout_info"
+            android:id="@+id/layoutInfo"/>
+
+    </FrameLayout>
     <View
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:background="@android:color/holo_blue_dark"
-        android:layout_below="@id/imagePictureAddPublication"/>
+        android:layout_below="@id/layoutImage"/>
 
     <ImageView
         android:layout_width="@dimen/fab_size"
@@ -67,7 +76,7 @@
         android:layout_height="1dp"
         android:id="@+id/divider1"
         android:layout_below="@id/textLocationAddPublication"
-        android:background="@color/FooGrey"
+        android:background="@color/fooGrey"
         android:layout_alignLeft="@id/textLocationAddPublication"
         android:layout_alignStart="@id/textLocationAddPublication"
         android:layout_alignRight="@id/textLocationAddPublication"

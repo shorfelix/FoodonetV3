@@ -93,7 +93,7 @@
     <string name="day">day</string>
     <string name="price">Price:</string>
     <string name="you_dont_have_any_groups_yet">You don\'t have any groups yet</string>
-    <string name="hi_what_would_you_like_to_share">Hi,\nWhat would you like\n to share?</string>
+    <string name="hi_what_would_you_like_to_share">Hi,\nWhat would you like\nto share?</string>
 
     <string name="title_activity_fullscreen_image">FullscreenActivityImage</string>
     <string name="dummy_button">Dummy Button</string>
@@ -103,5 +103,41 @@
     <string name="view_pager_tab_recent">Recent</string>
     <string name="view_pager_tab_closest">Closest</string>
     <string name="not_signed_in">Not signed in</string>
+    <string name="dialog_please_report">Please Report</string>
+    <string name="dialog_has_more_to_pickup">Has More to Pickup</string>
+    <string name="dialog_i_took_all">I Took All</string>
+    <string name="dialog_found_nothing_there">Found Nothing There</string>
+    <string name="dialog_please_rate">Please Rate</string>
+    <string name="not_rated">Not rated</string>
+    <string name="deleted">Deleted</string>
+    <string name="you_can_only_report_once">You can only report once</string>
+    <string name="unregister">Unregister</string>
+    <string name="start_sharing_by_adding_an_image_of_the_food_you_wish_to_share">Start sharing by adding\n an image of the food\n you wish to share</string>
+    <string name="sms_to_publisher_part1">Hi, about your event in Foodonet:\n</string>
+    <string name="sms_to_publisher_part2">, can I come and pick it up?\nthanks,\n</string>
+
+    <string name="sms_to_registered_user_part1">Hi, about my event in Foodonet:\n</string>
+    <string name="sms_to_registered_user_part2">, when would you like to pick it up?\nthanks,\n </string>
+
+    <string name="welcome_to_foodonet">Welcome to Foodonet</string>
+    <string name="last_step">Last step</string>
+    <string name="phone">Phone</string>
+    <string name="start_sharing">Start sharing</string>
+    <string name="continue_without_registration">Continue without registration</string>
+    <string name="unregistered">Unregistered</string>
+    <string name="dialog_select_contact">Select contact</string>
+    <string name="ok">OK</string>
+    <string name="prefs_user_name">User Name</string>
+    <string name="prefs_phone_number">Phone Number</string>
+    <string name="prefs_get_notifications">Get Notifications</string>
+    <string name="prefs_notification_radius">Notification Radius</string>
+    <string name="prefs_all">All</string>
+    <string name="success">Success</string>
+    <string name="invalid_phone_number">invalid phone number</string>
+    <string name="toast_user_already_in_group">User already in group</string>
+    <string name="dialog_are_you_sure">Are you sure?</string>
+    <string name="toast_there_are_no_registered_users">There are no registered users</string>
+    <string name="dialog_please_wait">Please wait</string>
+    <string name="menu_exit_group">Exit group</string>
 
 </resources>

@@ -1,10 +1,12 @@
 package com.roa.foodonetv3.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class RegisteredUser {
+public class RegisteredUser implements Parcelable{
     private static final String TAG = "RegisteredUser";
 
     private static final String REGISTERED_USER_FOR_PUBLICATION = "registered_user_for_publication";
@@ -31,6 +33,28 @@ public class RegisteredUser {
         this.collectorContactInfo = collectorContactInfo;
         this.collectorUserID = collectorUserID;
     }
+
+    protected RegisteredUser(Parcel in) {
+        publicationVersion = in.readInt();
+        publicationID = in.readLong();
+        collectorUserID = in.readLong();
+        dateOfRegistration = in.readDouble();
+        activeDeviceDevUUID = in.readString();
+        collectorName = in.readString();
+        collectorContactInfo = in.readString();
+    }
+
+    public static final Creator<RegisteredUser> CREATOR = new Creator<RegisteredUser>() {
+        @Override
+        public RegisteredUser createFromParcel(Parcel in) {
+            return new RegisteredUser(in);
+        }
+
+        @Override
+        public RegisteredUser[] newArray(int size) {
+            return new RegisteredUser[size];
+        }
+    };
 
     /** creates a json object to be sent to the server */
     public JSONObject getJsonForRegistration(){
@@ -105,5 +129,21 @@ public class RegisteredUser {
 
     public void setCollectorContactInfo(String collectorContactInfo) {
         this.collectorContactInfo = collectorContactInfo;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(publicationVersion);
+        dest.writeLong(publicationID);
+        dest.writeLong(collectorUserID);
+        dest.writeDouble(dateOfRegistration);
+        dest.writeString(activeDeviceDevUUID);
+        dest.writeString(collectorName);
+        dest.writeString(collectorContactInfo);
     }
 }

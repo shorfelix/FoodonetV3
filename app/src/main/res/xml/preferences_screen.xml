@@ -3,16 +3,33 @@
     <PreferenceCategory
         android:title="@string/prefs_profile_settings">
         <EditTextPreference
-            android:title="User Name"
-            android:key="prefs_user_name"/>
-        <Preference android:title="@string/sign_out"
-            android:key="@string/prefs_sign_out" />
+            android:title="@string/prefs_user_name"
+            android:key="@string/key_prefs_user_name"/>
+
+        <EditTextPreference
+            android:title="@string/prefs_phone_number"
+            android:key="@string/key_prefs_user_phone"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
         android:title="@string/prefs_notifications">
+        <SwitchPreference
+            android:title="@string/prefs_get_notifications"
+            android:key="@string/key_prefs_get_notifications"/>
+
+        <ListPreference
+            android:title="@string/prefs_notification_radius"
+            android:key="@string/key_prefs_list_notification_radius"
+            android:entries="@array/prefs_notification_radius_entries_km"
+            android:entryValues="@array/prefs_notification_radius_values_km"
+            />
 
     </PreferenceCategory>
+
+    <Preference
+        android:title="@string/sign_out"
+        android:key="@string/prefs_sign_out" />
+
 
 </PreferenceScreen>

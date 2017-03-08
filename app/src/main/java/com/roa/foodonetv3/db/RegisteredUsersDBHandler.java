@@ -25,12 +25,17 @@ public class RegisteredUsersDBHandler {
         ArrayList<RegisteredUser> registeredUsers = new ArrayList<>();
         long publicationID, registeredUserID;
         int publicationVersion;
+        String activeDeviceUUID, userName, userPhone;
 
         while(c!=null && c.moveToNext()){
             publicationID = c.getLong(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN));
             publicationVersion = c.getInt(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_VERSION_COLUMN));
             registeredUserID = c.getLong(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN));
-            registeredUsers.add(new RegisteredUser(publicationID,-1,null,publicationVersion,null,null,registeredUserID));
+            activeDeviceUUID = c.getString(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ACTIVE_DEVICE_UUID));
+            userName = c.getString(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_NAME));
+            userPhone = c.getString(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_PHONE));
+
+            registeredUsers.add(new RegisteredUser(publicationID,(double)-1,activeDeviceUUID,publicationVersion,userName,userPhone,registeredUserID));
         }
         if(c!=null){
             c.close();
@@ -61,7 +66,7 @@ public class RegisteredUsersDBHandler {
     }
 
     /** @return the count of registered users the publication has */
-    public int getRegisteredUsersCount(long publicationID){
+    public int getPublicationRegisteredUsersCount(long publicationID){
         String[] projection = {FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN};
         String where = String.format("%1$s = ?",FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN);
         String[] whereArgs = {String.valueOf(publicationID)};
@@ -75,6 +80,32 @@ public class RegisteredUsersDBHandler {
             c.close();
         }
         return count;
+    }
+
+    /** @return ArrayList<RegisteredUser> the registered users of the publication */
+    public ArrayList<RegisteredUser> getPublicationRegisteredUsers(long publicationID){
+        String where = String.format("%1$s = ?",FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN);
+        String[] whereArgs = {String.valueOf(publicationID)};
+        Cursor c = context.getContentResolver().query(FoodonetDBProvider.RegisteredUsersDB.CONTENT_URI,null,where,whereArgs,null);
+        ArrayList<RegisteredUser> registeredUsers = new ArrayList<>();
+        long registeredUserID;
+        int publicationVersion;
+        String activeDeviceUUID, userName, userPhone;
+
+        while(c!=null && c.moveToNext()){
+            publicationID = c.getLong(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN));
+            publicationVersion = c.getInt(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_VERSION_COLUMN));
+            registeredUserID = c.getLong(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN));
+            activeDeviceUUID = c.getString(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ACTIVE_DEVICE_UUID));
+            userName = c.getString(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_NAME));
+            userPhone = c.getString(c.getColumnIndex(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_PHONE));
+
+            registeredUsers.add(new RegisteredUser(publicationID,(double)-1,activeDeviceUUID,publicationVersion,userName,userPhone,registeredUserID));
+        }
+        if(c!=null){
+            c.close();
+        }
+        return registeredUsers;
     }
 
     /** @return true if the user is registered to this publication */
@@ -95,6 +126,20 @@ public class RegisteredUsersDBHandler {
         return found;
     }
 
+    /** manually insert a new registered user for a publication */
+    public void insertRegisteredUser(RegisteredUser registeredUser){
+        ContentResolver resolver = context.getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put(FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN,registeredUser.getPublicationID());
+        values.put(FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_VERSION_COLUMN,registeredUser.getPublicationVersion());
+        values.put(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN,registeredUser.getCollectorUserID());
+        values.put(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ACTIVE_DEVICE_UUID,registeredUser.getActiveDeviceDevUUID());
+        values.put(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_NAME,registeredUser.getCollectorName());
+        values.put(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_PHONE,registeredUser.getCollectorContactInfo());
+
+        resolver.insert(FoodonetDBProvider.RegisteredUsersDB.CONTENT_URI,values);
+    }
+
     /** replaces all registered users */
     public void replaceAllRegisteredUsers(ArrayList<RegisteredUser> registeredUsers){
         /** first, delete all data */
@@ -111,9 +156,20 @@ public class RegisteredUsersDBHandler {
             values.put(FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN,registeredUser.getPublicationID());
             values.put(FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_VERSION_COLUMN,registeredUser.getPublicationVersion());
             values.put(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ID_COLUMN,registeredUser.getCollectorUserID());
+            values.put(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_ACTIVE_DEVICE_UUID,registeredUser.getActiveDeviceDevUUID());
+            values.put(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_NAME,registeredUser.getCollectorName());
+            values.put(FoodonetDBProvider.RegisteredUsersDB.REGISTERED_USER_PHONE,registeredUser.getCollectorContactInfo());
 
             resolver.insert(FoodonetDBProvider.RegisteredUsersDB.CONTENT_URI,values);
         }
+    }
+
+    /** delete the user from the publication registered users */
+    public void deleteRegisteredUser(long publicationID){
+        ContentResolver resolver = context.getContentResolver();
+        String where = String.format("%1$s = ?",FoodonetDBProvider.RegisteredUsersDB.PUBLICATION_ID_COLUMN);
+        String[] whereArgs = {String.valueOf(publicationID)};
+        resolver.delete(FoodonetDBProvider.RegisteredUsersDB.CONTENT_URI,where,whereArgs);
     }
 
     /** deletes all registered users */

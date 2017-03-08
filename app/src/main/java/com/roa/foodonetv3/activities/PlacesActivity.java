@@ -105,7 +105,18 @@ public class PlacesActivity extends AppCompatActivity implements AdapterView.OnI
                     /** returning from google widget, return the clicked place to the AddEditPublicationFragment after adding it to the db */
                     Place placeData = PlacePicker.getPlace(this, data);
                     SavedPlace place = new SavedPlace(String.valueOf(placeData.getAddress()),placeData.getLatLng().latitude,placeData.getLatLng().longitude);
-                    handler.addLatestPlace(place);
+                    SavedPlace checkPlace;
+                    boolean foundPlace = false;
+                    for(int i = 0; i < places.size(); i++){
+                        checkPlace = places.get(i);
+                        if(checkPlace.getAddress() != null && checkPlace.getAddress().equals(place.getAddress()) && checkPlace.getLat() == place.getLat() && checkPlace.getLng() == place.getLng()){
+                            foundPlace = true;
+                            break;
+                        }
+                    }
+                    if(!foundPlace){
+                        handler.addLatestPlace(place);
+                    }
                     intentForResult = new Intent();
                     intentForResult.putExtra("place",place);
                     setResult(RESULT_OK, intentForResult);

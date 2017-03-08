@@ -4,13 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.Toast;
-
+import android.view.View;
+import android.widget.ImageView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -21,25 +21,21 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.MapPublicationRecyclerAdapter;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.FoodonetDBProvider;
 import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.model.Publication;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback, MapPublicationRecyclerAdapter.OnImageAdapterClickListener {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, MapPublicationRecyclerAdapter.OnImageAdapterClickListener, View.OnClickListener, GoogleMap.OnInfoWindowClickListener {
 
     private GoogleMap mMap;
     private ArrayList<Publication> publications = new ArrayList<>();
-    private String hashMapKey;
     private LatLng userLocation;
-    private HashMap<String, Publication> hashMap;
     private FoodonetReceiver receiver;
     private MapPublicationRecyclerAdapter adapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,10 +44,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         receiver = new FoodonetReceiver();
         RecyclerView mapRecycler = (RecyclerView) findViewById(R.id.mapRecycler);
+        ImageView imageMyLocation = (ImageView) findViewById(R.id.imageMyLocation);
+        imageMyLocation.setOnClickListener(this);
+
         mapRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         adapter = new MapPublicationRecyclerAdapter(this);
         mapRecycler.setAdapter(adapter);
-        hashMap = new HashMap<>();
     }
 
     @Override
@@ -95,40 +93,60 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+        Marker marker;
 
         if(userLocation!=null){
-            mMap.addMarker(new MarkerOptions().position(userLocation).title("You are here")
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, CommonConstants.ZOOM_OUT));
+            marker = mMap.addMarker(new MarkerOptions().position(userLocation).title("You are here")
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 12));
+            marker.setTag((long)-1);
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, CommonConstants.ZOOM_IN));
         }
-        /** Add a publications markers */
+        /** Add publications markers */
+        Publication publication;
         for(int i = 0; i< publications.size(); i++){
+            publication = publications.get(i);
             MarkerOptions markerOptions = new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker_xh));
-            LatLng publicationTest = new LatLng(publications.get(i).getLat(), publications.get(i).getLng());
-            mMap.addMarker(markerOptions.position(publicationTest).title("Publication Marker"));
-            //put in the hashMap's key the value of thr marker to get it later
-            hashMapKey = publicationTest.latitude+","+publicationTest.longitude;
-            hashMap.put(hashMapKey, publications.get(i));
+            LatLng publicationLatLng = new LatLng(publication.getLat(), publication.getLng());
+            marker = mMap.addMarker(markerOptions.position(publicationLatLng).title(publication.getTitle()));
+            marker.setTag(publication.getId());
         }
 
-        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                hashMapKey = marker.getPosition().latitude+","+marker.getPosition().longitude;
-                if (hashMap.get(hashMapKey)!=null) {
-                    String ms = hashMap.get(hashMapKey).getTitle();
-                    Toast.makeText(MapActivity.this, ms, Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
+        mMap.setOnInfoWindowClickListener(this);
+
+//        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+//            @Override
+//            public boolean onMarkerClick(Marker marker) {
+//                long publicationID = (long) marker.getTag();
+//                Toast.makeText(MapActivity.this, "id: "+publicationID, Toast.LENGTH_SHORT).show();
+//                return true;
+//            }
+//        });
     }
 
     @Override
     public void onImageAdapterClicked(LatLng latLng) {
         /**move the camera to publication location*/
         if(mMap!=null){
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, CommonConstants.ZOOM_IN));
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, CommonConstants.ZOOM_IN));
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        long publicationID = (long) marker.getTag();
+        if(publicationID!=-1){
+            Intent detailsIntent = new Intent(this,PublicationActivity.class);
+            detailsIntent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION,PublicationActivity.PUBLICATION_DETAIL_TAG);
+            detailsIntent.putExtra(Publication.PUBLICATION_KEY,publicationID);
+            detailsIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(detailsIntent);
         }
     }
 

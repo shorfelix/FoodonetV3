@@ -28,6 +28,7 @@ import com.roa.foodonetv3.activities.MapActivity;
 import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
+import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.GetDataService;
 
@@ -36,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -53,6 +55,9 @@ public class CommonMethods {
         switch (id) {
             case R.id.nav_my_shares:
                 intent = new Intent(context, PublicationActivity.class);
+                if (!(context instanceof MainActivity)) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                }
                 intent.putExtra(PublicationActivity.ACTION_OPEN_PUBLICATION, PublicationActivity.MY_PUBLICATIONS_TAG);
                 context.startActivity(intent);
                 if (!(context instanceof MainActivity)) {
@@ -82,7 +87,7 @@ public class CommonMethods {
                 break;
             case R.id.nav_groups:
                 intent = new Intent(context, GroupsActivity.class);
-                if(context instanceof GroupsActivity){
+                if(context instanceof GroupsActivity || context instanceof MainActivity){
                     // TODO: 06/12/2016 test
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
@@ -147,14 +152,26 @@ public class CommonMethods {
         return message.toString();
     }
 
+    public static boolean isUserGroupAdmin(Context context, ArrayList<GroupMember> members){
+        long userID = getMyUserID(context);
+        GroupMember member;
+        for(int i = 0; i < members.size(); i++){
+            member = members.get(i);
+            if(member.getUserID() == userID){
+                return member.isAdmin();
+            }
+        }
+        return false;
+    }
+
     /** get the message according to the server specified report type */
     public static String getReportStringFromType(Context context, int typeOfReport) {
         switch (typeOfReport) {
-            case 1:
+            case CommonConstants.REPORT_TYPE_HAS_MORE:
                 return context.getResources().getString(R.string.report_has_more_to_offer);
-            case 3:
+            case CommonConstants.REPORT_TYPE_TOOK_ALL:
                 return context.getResources().getString(R.string.report_took_all);
-            case 5:
+            case CommonConstants.REPORT_TYPE_NOTHING_THERE:
                 return context.getResources().getString(R.string.report_found_nothing_there);
         }
         return null;
@@ -162,39 +179,45 @@ public class CommonMethods {
 
     public static void getNewData(Context context){
         Intent getDataIntent = new Intent(context, GetDataService.class);
-        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_GROUPS);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_DATA);
         context.startService(getDataIntent);
     }
 
     /** returns a UUID */
     public static String getDeviceUUID(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.ACTIVE_DEVICE_DEV_UUID, null);
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_device_uuid), null);
     }
 
     /** returns the userID from shared preferences */
     public static long getMyUserID(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getLong(User.IDENTITY_PROVIDER_USER_ID, -1);
+        long userID = PreferenceManager.getDefaultSharedPreferences(context).getLong(context.getString(R.string.key_prefs_user_id),(long) -1);
+        return userID;
+    }
+
+    /** @return returns the userName from shared preferences */
+    public static String getMyUserName(Context context){
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_name),"");
     }
 
     /** saves the userID to shared preferences */
     public static void setMyUserID(Context context, long userID) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(User.IDENTITY_PROVIDER_USER_ID, userID).apply();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(context.getString(R.string.key_prefs_user_id), userID).apply();
     }
 
     public static String getMyUserPhone(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(User.PHONE_NUMBER, null);
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_phone), null);
     }
 
     public static LatLng getLastLocation(Context context){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return new LatLng(Double.valueOf(preferences.getString(CommonConstants.USER_LATITUDE,"-9999")),
-                Double.valueOf(preferences.getString(CommonConstants.USER_LONGITUDE,"-9999")));
+        return new LatLng(Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lat),String.valueOf(CommonConstants.LATLNG_ERROR))),
+                Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lng),String.valueOf(CommonConstants.LATLNG_ERROR))));
     }
 
     /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
     public static long getNewLocalPublicationID() {
         //todo add a check for available negative id, currently hard coded
-        return -1;
+        return (long)-1;
     }
 
     public static String getRoundedStringFromNumber(float num) {
@@ -252,6 +275,12 @@ public class CommonMethods {
         return newFile;
     }
 
+    /** @return file name from publicationID */
+    public static String getFileNameFromPublicationID(long publicationID,int version){
+        return String.format(Locale.US,"%1$d.%2$d.jpg",
+                publicationID,version);
+    }
+
     /** returns the file name without the path */
     public static String getFileNameFromPath(String path) {
         String[] segments = path.split("/");
@@ -269,14 +298,10 @@ public class CommonMethods {
     }
 
     /** Creates a local image file name for downloaded images from s3 server of a specific publication */
-    public static String getPhotoPathByID(Context context, long publicationID) {
-        String imageFileName = "PublicationID." + publicationID;
+    public static String getPhotoPathByID(Context context, long publicationID, int version) {
+        String imageFileName = getFileNameFromPublicationID(publicationID,version);
         String storageDir = (context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
-//        return File.createTempFile(
-//                imageFileName,  /* prefix */
-//                ".jpg",         /* suffix */
-//                storageDir      /* directory */);
-        String newFile = storageDir + "/" + imageFileName + ".jpg";
+        String newFile = storageDir + "/" + imageFileName;
         Log.d(TAG, "newFile = " + newFile);
         return newFile;
     }
@@ -363,8 +388,11 @@ public class CommonMethods {
         if (sCredProvider == null) {
             sCredProvider = new CognitoCachingCredentialsProvider(
                     context.getApplicationContext(),
+                    context.getResources().getString(R.string.amazon_aws_account_id),
                     context.getResources().getString(R.string.amazon_pool_id),
-                    Regions.EU_WEST_1);
+                    context.getResources().getString(R.string.amazon_unauthorized),
+                    context.getResources().getString(R.string.amazon_authorized),
+                    Regions.US_EAST_1);
         }
         return sCredProvider;
     }
