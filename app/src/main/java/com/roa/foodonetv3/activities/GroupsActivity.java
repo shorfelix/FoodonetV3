@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -18,7 +17,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Display;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -26,6 +24,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.roa.foodonetv3.db.GroupsDBHandler;
 import com.roa.foodonetv3.dialogs.NewGroupDialog;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
@@ -33,32 +32,37 @@ import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.FabAnimation;
 import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.fragments.GroupFragment;
 import com.roa.foodonetv3.fragments.GroupsOverviewFragment;
-import com.roa.foodonetv3.fragments.AdminGroupFragment;
 import com.roa.foodonetv3.model.Group;
-import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.serverMethods.ServerMethods;
-import com.roa.foodonetv3.services.FoodonetService;
+
 import java.util.ArrayList;
+import java.util.EmptyStackException;
+import java.util.Stack;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class GroupsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener , OnReplaceFragListener,NewGroupDialog.OnNewGroupClickListener {
+public class GroupsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener ,
+        OnReplaceFragListener,NewGroupDialog.OnNewGroupClickListener {
     private static final String TAG = "GroupsActivity";
 
     public static final String GROUPS_OVERVIEW_TAG = "groupsOverviewFrag";
-    public static final String ADMIN_GROUP_TAG = "adminGroupFrag";
-    public static final String OPEN_GROUP_TAG = "openGroupFrag";
+    public static final String ADMIN_GROUP_TAG = "groupFrag";
+    public static final String NON_ADMIN_GROUP_TAG = "nonGroupFrag";
+    public static final String BACK_IN_STACK_TAG = "backInStack";
 
     public static final int CONTACT_PICKER = 1;
 
-    private String currentFrag, previousFrag;
+    private Stack<String> fragStack;
     private NewGroupDialog newGroupDialog;
     private CircleImageView circleImageView;
     private TextView headerTxt;
 
     private FloatingActionButton fab;
     private FragmentManager fragmentManager;
-    private FoodonetReceiver receiver;
+    private GroupsDBHandler groupsDBHandler;
+    private long adminGroupID,nonAdminGroupID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,10 +72,14 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        receiver = new FoodonetReceiver();
-
         /** set the fragment manager */
         fragmentManager = getSupportFragmentManager();
+
+        fragStack = new Stack<>();
+        adminGroupID = -1;
+        nonAdminGroupID = -1;
+
+        groupsDBHandler = new GroupsDBHandler(this);
 
         /** set the drawer layout */
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -94,17 +102,14 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
 
         if(savedInstanceState== null){
             /** if new activity, open the overview group fragment */
-            newGroupsFrag(GROUPS_OVERVIEW_TAG);
+            fragStack.push(GROUPS_OVERVIEW_TAG);
+            replaceFrags(GROUPS_OVERVIEW_TAG,true);
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        /** register receiver */
-        IntentFilter filter = new IntentFilter(ReceiverConstants.BROADCAST_FOODONET);
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,filter);
-
         /** set drawer header and image */
         // TODO: 19/02/2017 currently loading the image from the web
         FirebaseUser mFirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -120,7 +125,6 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     @Override
     protected void onPause() {
         super.onPause();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         /** dismiss the dialog if open*/
         if(newGroupDialog!= null){
             newGroupDialog.dismiss();
@@ -133,61 +137,66 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if(previousFrag != null){
-                replaceFrags(previousFrag, new ArrayList<Parcelable>());
-                previousFrag = null;
-                return;
+            fragStack.pop();
+            if(fragStack.isEmpty()){
+                super.onBackPressed();
+            } else{
+                replaceFrags(fragStack.peek(),false);
             }
-            super.onBackPressed();
-        }
-    }
-
-    private void newGroupsFrag(String openFragType){
-        currentFrag = openFragType;
-        switch (openFragType) {
-            case GROUPS_OVERVIEW_TAG:
-                /** no need to animate the fab since the group overview is set up in xml as it should */
-                GroupsOverviewFragment groupsOverviewFragment = new GroupsOverviewFragment();
-                fragmentManager.beginTransaction().add(R.id.containerGroups,groupsOverviewFragment, GROUPS_OVERVIEW_TAG).commit();
-                break;
         }
     }
 
     @Override
-    public void replaceFrags(String openFragType, ArrayList<Parcelable> arrayList) {
-        /** get the values for the fab animation */
-        long duration;
-        boolean isAddNewFragment;
-        if(currentFrag==null){
-            /** if this is the first frag - don't make a long animation */
-            duration = 1;
-            isAddNewFragment = true;
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        /** handle the navigation actions in the common methods class */
+        if(item.getItemId() == R.id.nav_groups){
+            if(!fragStack.peek().equals(GROUPS_OVERVIEW_TAG)){
+                fragStack = new Stack<>();
+                fragStack.push(GROUPS_OVERVIEW_TAG);
+                replaceFrags(GROUPS_OVERVIEW_TAG,false);
+            }
         } else{
-            duration = CommonConstants.FAB_ANIM_DURATION;
-            isAddNewFragment = false;
-            previousFrag = currentFrag;
+            CommonMethods.navigationItemSelectedAction(this,item.getItemId());
         }
 
-        /** set the current frag to be the new one */
-        currentFrag = openFragType;
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
 
+    public void replaceFrags(String openFragType, boolean isAddNewFragment) {
+        // get the values for the fab animation */
+        long duration;
+        if(isAddNewFragment){
+            // if this is the first frag - don't make a long animation */
+            duration = 1;
+        } else{
+            duration = CommonConstants.FAB_ANIM_DURATION;
+        }
         /** replace the fragment and animate the fab accordingly */
         switch (openFragType) {
             case GROUPS_OVERVIEW_TAG:
                 GroupsOverviewFragment groupsOverviewFragment = new GroupsOverviewFragment();
                 updateContainer(isAddNewFragment,groupsOverviewFragment,GROUPS_OVERVIEW_TAG);
                 animateFab(openFragType, true, duration);
-//                fragmentManager.beginTransaction().replace(R.id.containerGroups,groupsOverviewFragment, GROUPS_OVERVIEW_TAG).commit();
                 break;
             case ADMIN_GROUP_TAG:
-                AdminGroupFragment adminGroupFragment = new AdminGroupFragment();
-                Group newGroup = (Group) arrayList.get(0);
-                Bundle bundle = new Bundle();
-                bundle.putParcelable(Group.GROUP,newGroup);
-                adminGroupFragment.setArguments(bundle);
-                updateContainer(isAddNewFragment,adminGroupFragment,ADMIN_GROUP_TAG);
-//                fragmentManager.beginTransaction().replace(R.id.containerGroups, adminGroupFragment, ADMIN_GROUP_TAG).commit();
+                GroupFragment groupFragment = new GroupFragment();
+                Group adminGroup = groupsDBHandler.getGroup(adminGroupID);
+                Bundle bundleAdmin = new Bundle();
+                bundleAdmin.putParcelable(Group.GROUP,adminGroup);
+                groupFragment.setArguments(bundleAdmin);
+                updateContainer(isAddNewFragment, groupFragment, ADMIN_GROUP_TAG);
                 animateFab(openFragType, true, duration);
+                break;
+            case NON_ADMIN_GROUP_TAG:
+                GroupFragment groupFragment2 = new GroupFragment();
+                Group nonAdminGroup = groupsDBHandler.getGroup(nonAdminGroupID);
+                Bundle bundleNonAdmin = new Bundle();
+                bundleNonAdmin.putParcelable(Group.GROUP,nonAdminGroup);
+                groupFragment2.setArguments(bundleNonAdmin);
+                updateContainer(isAddNewFragment, groupFragment2, ADMIN_GROUP_TAG);
+                animateFab(openFragType, false, duration);
                 break;
         }
     }
@@ -213,18 +222,10 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                 imgResource = R.drawable.user;
                 color = getResources().getColor(R.color.fooGreen);
                 break;
+            case NON_ADMIN_GROUP_TAG:
+                break;
         }
         FabAnimation.animateFAB(this,fab,duration,imgResource,color,setVisible);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        /** handle the navigation actions in the common methods class */
-        CommonMethods.navigationItemSelectedAction(this,item.getItemId());
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 
     @Override
@@ -239,7 +240,9 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.fab:
-                if(currentFrag!=null){
+//                if(currentFrag!=null){
+                if(!fragStack.isEmpty()){
+                    String currentFrag = fragStack.peek();
                     switch (currentFrag){
                         case GROUPS_OVERVIEW_TAG:
                             /** pressed on create a new group - shows the dialog of creating a new group */
@@ -267,40 +270,26 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
         }
     }
 
-    private class FoodonetReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            /** receiver for reports got from the service */
-            int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE,-1);
-            switch (action){
-                /** response from service of adding a new group */
-                case ReceiverConstants.ACTION_ADD_GROUP:
-                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-                        // TODO: 14/12/2016 add logic if fails
-                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
-                    } else{
-                        // TODO: 21/02/2017 CHANGE!!!
-//                        long groupID = intent.getLongExtra(Group.GROUP_ID,-1);
-//                        if(groupID!=-1){
-//                            String[] args = {String.valueOf(groupID)};
-//                            ArrayList<GroupMember> userAdmin = new ArrayList<>();
-//                            String userName = CommonMethods.getMyUserName(context);
-//                            GroupMember adminMember = new GroupMember(groupID,CommonMethods.getMyUserID(GroupsActivity.this),
-//                                    CommonMethods.getMyUserPhone(GroupsActivity.this),userName,true);
-//                            userAdmin.add(adminMember);
-//                            ServerMethods.addGroupMember(getBaseContext(),adminMember);
-//                            String newAdminJson = Group.getAddGroupMembersJson(userAdmin).toString();
-//                            Intent addAdminIntent = new Intent(GroupsActivity.this,FoodonetService.class);
-//                            addAdminIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_ADD_GROUP_MEMBER);
-//                            addAdminIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
-//                            addAdminIntent.putExtra(ReceiverConstants.JSON_TO_SEND,newAdminJson);
-//                            GroupsActivity.this.startService(addAdminIntent);
-//                        } else{
-//                            // TODO: 22/01/2017 do something
-//                        }
-
-                    }
+    @Override
+    public void onReplaceFrags(String openFragType, long id) {
+        if (openFragType.equals(BACK_IN_STACK_TAG)) {
+            fragStack.pop();
+            try {
+                openFragType = fragStack.peek();
+            } catch (EmptyStackException e) {
+                // TODO: 05/03/2017 change
+                Toast.makeText(this, "EMPTY STACK!", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            fragStack.push(openFragType);
+        }
+        if (id != -1) {
+            if (openFragType.equals(ADMIN_GROUP_TAG)) {
+                adminGroupID = id;
+            } else if (openFragType.equals(NON_ADMIN_GROUP_TAG)) {
+                nonAdminGroupID = id;
             }
         }
+        replaceFrags(openFragType, false);
     }
 }

@@ -10,27 +10,30 @@ public class GroupMember implements Parcelable{
     private static final String TAG = "GroupMember";
 
     public static final String KEY = "members";
+    public static final String UNIQUE_ID = "id";
     public static final String GROUP_ID = "Group_id";   //in ios capital G
     public static final String USER_ID = "user_id";
     public static final String PHONE_NUMBER = "phone_number";
     public static final String NAME = "name";
     public static final String IS_ADMIN = "is_admin";
 
-    private long groupID, userID;
+    private long groupID, userID, uniqueID;
     private String name, phoneNumber;
     private boolean isAdmin;
 
-    public GroupMember(long groupID, long userID, String phoneNumber, String name, boolean isAdmin) {
+    public GroupMember(long uniqueID, long groupID, long userID, String phoneNumber, String name, boolean isAdmin) {
         this.groupID = groupID;
         this.userID = userID;
         this.phoneNumber = phoneNumber;
         this.name = name;
         this.isAdmin = isAdmin;
+        this.uniqueID = uniqueID;
     }
 
     protected GroupMember(Parcel in) {
         groupID = in.readLong();
         userID = in.readLong();
+        uniqueID = in.readLong();
         name = in.readString();
         phoneNumber = in.readString();
         isAdmin = in.readByte() != 0;
@@ -61,6 +64,14 @@ public class GroupMember implements Parcelable{
             Log.e(TAG,e.getMessage());
         }
         return member;
+    }
+
+    public long getUniqueID() {
+        return uniqueID;
+    }
+
+    public void setUniqueID(long uniqueID) {
+        this.uniqueID = uniqueID;
     }
 
     public long getGroupID() {
@@ -112,6 +123,7 @@ public class GroupMember implements Parcelable{
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(groupID);
         dest.writeLong(userID);
+        dest.writeLong(uniqueID);
         dest.writeString(name);
         dest.writeString(phoneNumber);
         dest.writeByte((byte) (isAdmin ? 1 : 0));

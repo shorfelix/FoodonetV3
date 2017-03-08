@@ -50,6 +50,10 @@ public class ServerMethods {
         i.putExtra(ReceiverConstants.ACTION_TYPE, actionType);
         i.putExtra(ReceiverConstants.JSON_TO_SEND, publication.getPublicationJson().toString());
         i.putExtra(ReceiverConstants.DATA,data);
+        if(actionType==ReceiverConstants.ACTION_EDIT_PUBLICATION){
+            String[] args = {String.valueOf(publication.getId())};
+            i.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+        }
         context.startService(i);
     }
 
@@ -180,6 +184,20 @@ public class ServerMethods {
         memberData.add(groupMember);
         addMemberIntent.putExtra(ReceiverConstants.DATA,memberData);
         context.startService(addMemberIntent);
+    }
+
+    public static void deleteGroupMember(Context context, long uniqueID, boolean isUserExitingGroup, long groupID){
+        Intent deleteMemberIntent = new Intent(context,FoodonetService.class);
+        deleteMemberIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_DELETE_GROUP_MEMBER);
+        String isUserExitingGroupString;
+        if(isUserExitingGroup){
+            isUserExitingGroupString = "1";
+        } else{
+            isUserExitingGroupString = "0";
+        }
+        String[] args = {String.valueOf(uniqueID),isUserExitingGroupString,String.valueOf(groupID)};
+        deleteMemberIntent.putExtra(ReceiverConstants.ADDRESS_ARGS,args);
+        context.startService(deleteMemberIntent);
     }
 
     public static void postFeedback(Context context, String message){

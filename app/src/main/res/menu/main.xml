@@ -8,7 +8,7 @@
         <!--app:showAsAction="never" />-->
     <item android:id="@+id/search"
         android:title="@string/search_title"
-        android:icon="@drawable/places_ic_search"
+        android:icon="@drawable/search"
         app:showAsAction="collapseActionView|ifRoom"
         android:actionViewClass="android.support.v7.widget.SearchView" />
     <item android:id="@+id/map"

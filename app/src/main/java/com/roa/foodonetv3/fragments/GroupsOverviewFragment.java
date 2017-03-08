@@ -103,6 +103,7 @@ public class GroupsOverviewFragment extends Fragment {
                         // TODO: 27/02/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
+                        layoutInfo.setVisibility(View.GONE);
                         adapter.updateGroups(groupsDBHandler.getAllGroups());
                     }
                     break;

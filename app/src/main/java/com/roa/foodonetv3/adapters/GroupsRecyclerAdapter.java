@@ -28,11 +28,13 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
     private ArrayList<Group> filteredGroups;
     private LongSparseArray<Integer> groupsMembersCount = new LongSparseArray<>();
     private OnReplaceFragListener listener;
+    private GroupMembersDBHandler groupMembersDBHandler;
 
     public GroupsRecyclerAdapter(Context context) {
         this.context = context;
         groups = new ArrayList<>();
         filteredGroups = new ArrayList<>();
+        groupMembersDBHandler = new GroupMembersDBHandler(context);
         listener = (OnReplaceFragListener) context;
     }
 
@@ -94,7 +96,7 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
     class GroupHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView textGroupName, textGroupMembers, textAdmin;
         private Group group;
-        private boolean isAdmin = true; // test!!!!
+        private boolean isAdmin;
 
         GroupHolder(View itemView, int viewType) {
             super(itemView);
@@ -109,13 +111,13 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
 
         void bindGroup(Group group){
             this.group = group;
+            isAdmin = groupMembersDBHandler.isUserGroupAdmin(context, group.getGroupID());
             textGroupName.setText(group.getGroupName());
             Integer membersCount = groupsMembersCount.get(group.getGroupID());
             if(membersCount == null){
                 membersCount = 0;
             }
             textGroupMembers.setText(String.valueOf(membersCount));
-            // TODO: 07/12/2016 add logic to check if the user is the admin
             if(isAdmin){
                 textAdmin.setVisibility(View.VISIBLE);
             } else{
@@ -132,13 +134,10 @@ public class GroupsRecyclerAdapter extends RecyclerView.Adapter<GroupsRecyclerAd
                     if(isAdmin){
                         fragToOpen = GroupsActivity.ADMIN_GROUP_TAG;
                     } else{
-                        // TODO: 27/02/2017 add logic after implementing
-                        fragToOpen = GroupsActivity.OPEN_GROUP_TAG;
+                        fragToOpen = GroupsActivity.NON_ADMIN_GROUP_TAG;
                     }
-                    ArrayList<Parcelable> arrayList = new ArrayList<>();
-                    arrayList.add(group);
-                    /** run the method on the listener to change the fragment */
-                    listener.replaceFrags(fragToOpen,arrayList);
+                    // run the method on the listener to change the fragment
+                    listener.onReplaceFrags(fragToOpen,group.getGroupID());
                     break;
             }
         }

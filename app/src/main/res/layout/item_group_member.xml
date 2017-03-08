@@ -29,17 +29,6 @@
         android:layout_marginEnd="@dimen/margin_16"
         style="@style/FooMedium"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginRight="@dimen/margin_16"
-        android:layout_marginEnd="@dimen/margin_16"
-        android:layout_marginLeft="@dimen/margin_16"
-        android:layout_marginStart="@dimen/margin_16"
-        android:background="#FF909090"
-        android:layout_alignParentBottom="true"/>
 
     <ImageView
         android:layout_width="@dimen/image_size_50"
@@ -52,5 +41,27 @@
         android:layout_marginRight="@dimen/margin_16"
         android:id="@+id/imageRemoveMember" />
 
+    <TextView
+        android:text="@string/admin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageMember"
+        android:layout_alignLeft="@+id/textMemberName"
+        android:layout_alignStart="@+id/textMemberName"
+        style="@style/FooBlueXS"
+        android:visibility="gone"
+        android:id="@+id/textAdmin" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/divider_height"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="@dimen/margin_16"
+        android:layout_marginEnd="@dimen/margin_16"
+        android:layout_marginLeft="@dimen/margin_16"
+        android:layout_marginStart="@dimen/margin_16"
+        android:background="@color/fooDivider"
+        android:layout_alignParentBottom="true"/>
 
 </RelativeLayout>

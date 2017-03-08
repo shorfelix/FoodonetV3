@@ -33,44 +33,44 @@ public class GetDataService extends IntentService {
                     // TODO: 05/12/2016 check if it is written as it should...
                     FirebaseAuth.getInstance().signOut();
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                    /** remove user phone number and foodonet user ID from sharedPreferences */
+                    // remove user phone number and foodonet user ID from sharedPreferences */
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.remove(getString(R.string.key_prefs_user_phone));
                     editor.remove(getString(R.string.key_prefs_user_id));
                     editor.apply();
-                    /** delete the data from the db that won't be re-downloaded */
+                    // delete the data from the db that won't be re-downloaded */
                     GroupMembersDBHandler groupMembersDBHandler = new GroupMembersDBHandler(this);
                     groupMembersDBHandler.deleteAllGroupsMembers();
                     LatestPlacesDBHandler latestPlacesDBHandler = new LatestPlacesDBHandler(this);
                     latestPlacesDBHandler.deleteAllPlaces();
                     ReportsDBHandler reportsDBHandler = new ReportsDBHandler(this);
                     reportsDBHandler.deleteAllReports();
-                    /** continue to get new data from the server */
+                    // continue to get new data from the server */
 
                 case ReceiverConstants.ACTION_GET_DATA:
                 case ReceiverConstants.ACTION_GET_GROUPS:
-                    /** get groups */
+                    // get groups */
                     long userID = CommonMethods.getMyUserID(this);
                     if (userID != (long)-1) {
                         ServerMethods.getGroups(this,userID);
                         break;
                     }
-                    /** if the user is not registered yet, with userID -1, skip getting the groups and get the publications (which will get only the 'audience 0 - public' group) */
+                    // if the user is not registered yet, with userID -1, skip getting the groups and get the publications (which will get only the 'audience 0 - public' group) */
 
                 case ReceiverConstants.ACTION_GET_PUBLICATIONS:
-                    /** get publications */
+                    // get publications */
                     ServerMethods.getPublications(this);
                     break;
 
                 case ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS:
-                    /** get registered users */
+                    // get registered users */
                     ServerMethods.getAllRegisteredUsers(this);
                     break;
 
                 case ReceiverConstants.ACTION_ADD_ADMIN_MEMBER:
-                    /** after a new group, add the user as an admin , NOT TESTED */
+                    // after a new group, add the user as an admin */
                     long groupID = intent.getLongExtra(ReceiverConstants.GROUP_ID,(long)-1);
-                    GroupMember adminMember = new GroupMember(groupID,CommonMethods.getMyUserID(this),
+                    GroupMember adminMember = new GroupMember((long)-1,groupID,CommonMethods.getMyUserID(this),
                             CommonMethods.getMyUserPhone(this),CommonMethods.getMyUserName(this),true);
                     ServerMethods.addGroupMember(this,adminMember);
                     break;
