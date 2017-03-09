@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.widget.Toast;
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -29,7 +30,6 @@ import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.model.GroupMember;
-import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.services.GetDataService;
 
 import java.io.File;
@@ -218,6 +218,23 @@ public class CommonMethods {
     public static long getNewLocalPublicationID() {
         //todo add a check for available negative id, currently hard coded
         return (long)-1;
+    }
+
+    public static String getDigitsFromPhone(String origin){
+        return origin.replaceAll("[^0-9]", "");
+    }
+
+    public static boolean comparePhoneNumbers(String first, String second){
+        first = removeInternationalPhoneCode(getDigitsFromPhone(first));
+        second = removeInternationalPhoneCode(getDigitsFromPhone(second));
+        return PhoneNumberUtils.compare(first,second);
+    }
+
+    private static String removeInternationalPhoneCode(String phone){
+        if(phone.startsWith("972")){
+            phone = 0 + phone.substring(3);
+        }
+        return phone;
     }
 
     public static String getRoundedStringFromNumber(float num) {
