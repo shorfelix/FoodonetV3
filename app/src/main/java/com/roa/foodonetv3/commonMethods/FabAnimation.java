@@ -14,10 +14,10 @@ import android.view.animation.DecelerateInterpolator;
 
 public class FabAnimation {
     /** static animator method for floating action button */
-    public static void animateFAB(Context context, final FloatingActionButton fab, int y, long duration, int imageResource, int color, boolean toHide){
+    public static void animateFAB(Context context, final FloatingActionButton fab, long duration, int imageResource, int color, boolean setVisible){
         /** in order of denying user input during animation, turn the clickable to false */
         fab.setClickable(false);
-        if (toHide){
+        if (!setVisible){
             /** if there should be no fab visible, just hide it */
             fab.hide();
         } else {
@@ -41,9 +41,9 @@ public class FabAnimation {
                 }
             });
 
-            ObjectAnimator moveAnimation = ObjectAnimator.ofFloat(fab, "y", y);
-            moveAnimation.setInterpolator(new DecelerateInterpolator());
-            moveAnimation.setDuration(duration);
+//            ObjectAnimator moveAnimation = ObjectAnimator.ofFloat(fab, "y", y);
+//            moveAnimation.setInterpolator(new DecelerateInterpolator());
+//            moveAnimation.setDuration(duration);
 
             ObjectAnimator fadeOutImageAnimation = ObjectAnimator.ofInt(fab, "imageAlpha", 255, 0);
             fadeOutImageAnimation.setDuration(duration / 2);
@@ -84,7 +84,10 @@ public class FabAnimation {
                 public void onAnimationRepeat(Animator animator) {
                 }
             });
-            animation.play(colorAnimation).with(moveAnimation).with(fadeOutImageAnimation).with(fadeInImageAnimation);
+            animation.play(colorAnimation)
+//                    .with(moveAnimation)
+                    .with(fadeOutImageAnimation)
+                    .with(fadeInImageAnimation);
             animation.start();
         }
     }}

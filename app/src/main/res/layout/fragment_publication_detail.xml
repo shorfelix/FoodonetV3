@@ -98,10 +98,12 @@
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="@dimen/image_size_height_200"
+        android:layout_height="@dimen/image_size_height_150"
         app:srcCompat="@drawable/camera_xxh"
         android:id="@+id/imagePicturePublication"
-        android:layout_below="@+id/divider"/>
+        android:layout_below="@+id/divider"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:layout_width="match_parent"
@@ -143,7 +145,7 @@
     <ImageView
         android:layout_width="20dp"
         android:layout_height="20dp"
-        app:srcCompat="@drawable/camera_xxh"
+        app:srcCompat="@drawable/star"
         android:layout_below="@+id/textPublicationAddress"
         android:layout_toRightOf="@+id/imagePublisherUser"
         android:layout_toEndOf="@+id/imagePublisherUser"
@@ -153,7 +155,6 @@
         android:layout_marginTop="@dimen/margin_8" />
 
     <TextView
-        android:text="4.2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textPublicationAddress"
@@ -224,7 +225,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="?attr/colorPrimary">
+        android:background="?attr/colorPrimary"
+        android:id="@+id/layoutRegisteredDetails">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -234,7 +236,7 @@
                 android:layout_width="@dimen/image_size_50"
                 android:layout_height="@dimen/image_size_50"
                 android:src="@drawable/join"
-                android:id="@+id/imageActionPublicationJoin"
+                android:id="@+id/imageActionPublicationReport"
                 android:layout_centerHorizontal="true" />
         </RelativeLayout>
 
@@ -280,4 +282,64 @@
         </RelativeLayout>
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="?attr/colorPrimary"
+        android:id="@+id/layoutAdminDetails">
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="@dimen/image_size_50"
+                android:layout_height="@dimen/image_size_50"
+                android:src="@drawable/facebook"
+                android:id="@+id/imageActionAdminShareFacebook"
+                android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="@dimen/image_size_50"
+                android:layout_height="@dimen/image_size_50"
+                android:src="@drawable/twitter"
+                android:id="@+id/imageActionAdminShareTwitter"
+                android:layout_centerHorizontal="true" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="@dimen/image_size_50"
+                android:layout_height="@dimen/image_size_50"
+                android:src="@drawable/sms"
+                android:id="@+id/imageActionAdminSMS"
+                android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
+                android:layout_width="@dimen/image_size_50"
+                android:layout_height="@dimen/image_size_50"
+                android:src="@drawable/call"
+                android:id="@+id/imageActionAdminPhone"
+                android:layout_centerHorizontal="true" />
+
+        </RelativeLayout>
+    </LinearLayout>
 </RelativeLayout>

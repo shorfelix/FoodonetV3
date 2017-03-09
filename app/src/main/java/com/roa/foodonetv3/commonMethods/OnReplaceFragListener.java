@@ -4,5 +4,5 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 
 public interface OnReplaceFragListener {
-    void replaceFrags(String openFragType, ArrayList<Parcelable> arrayList);
+    void onReplaceFrags(String openFragType, long id);
 }

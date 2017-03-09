@@ -28,7 +28,7 @@ public class GroupsDBHandler {
             groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));
             userID = c.getLong(c.getColumnIndex(FoodonetDBProvider.GroupsDB.ADMIN_ID_COLUMN));
 
-            groups.add(new Group(groupName,userID,null,groupID));
+            groups.add(new Group(groupName,userID,groupID));
         }
         if(c!=null){
             c.close();
@@ -40,7 +40,7 @@ public class GroupsDBHandler {
     public ArrayList<Group> getAllGroupsWithPublic(){
         Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,null,null,null);
         ArrayList<Group> groups = new ArrayList<>();
-        groups.add(new Group(context.getResources().getString(R.string.audience_public),-1,null,0));
+        groups.add(new Group(context.getResources().getString(R.string.audience_public),-1,0));
         String groupName;
         long userID, groupID;
         while(c!=null && c.moveToNext()){
@@ -48,12 +48,43 @@ public class GroupsDBHandler {
             groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));
             userID = c.getLong(c.getColumnIndex(FoodonetDBProvider.GroupsDB.ADMIN_ID_COLUMN));
 
-            groups.add(new Group(groupName,userID,null,groupID));
+            groups.add(new Group(groupName,userID,groupID));
         }
         if(c!=null){
             c.close();
         }
         return groups;
+    }
+
+    public Group getGroup(long groupID){
+        String where = String.format("%1$s = ?",FoodonetDBProvider.GroupsDB.GROUP_ID_COLUMN);
+        String[] whereArgs = {String.valueOf(groupID)};
+        Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,where,whereArgs,null);
+        if(c!=null && c.moveToNext()){
+            String groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));
+            long userID = c.getLong(c.getColumnIndex(FoodonetDBProvider.GroupsDB.ADMIN_ID_COLUMN));
+            return new Group(groupName,userID,groupID);
+        }
+        if(c!=null){
+            c.close();
+        }
+        return null;
+    }
+
+    public String getGroupName(long groupID) {
+        String groupName = null;
+        String[] projection = {FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN};
+        String where = String.format("%1$s =?",
+                FoodonetDBProvider.GroupsDB.GROUP_ID_COLUMN);
+        String[] whereArgs = {String.valueOf(groupID)};
+        Cursor c = context.getContentResolver().query(FoodonetDBProvider.GroupsDB.CONTENT_URI,projection,where,whereArgs,null);
+        if(c!=null && c.moveToNext()){
+            groupName = c.getString(c.getColumnIndex(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN));
+        }
+        if(c!=null){
+            c.close();
+        }
+        return groupName;
     }
 
     /** get all groups IDs */
@@ -70,6 +101,17 @@ public class GroupsDBHandler {
             c.close();
         }
         return groupsIDs;
+    }
+
+    public void insertGroup(Group group) {
+        ContentResolver resolver = context.getContentResolver();
+
+        ContentValues values = new ContentValues();
+        values.put(FoodonetDBProvider.GroupsDB.GROUP_ID_COLUMN,group.getGroupID());
+        values.put(FoodonetDBProvider.GroupsDB.GROUP_NAME_COLUMN,group.getGroupName());
+        values.put(FoodonetDBProvider.GroupsDB.ADMIN_ID_COLUMN,group.getUserID());
+
+        resolver.insert(FoodonetDBProvider.GroupsDB.CONTENT_URI,values);
     }
 
     /** replaces all groups in the db */
@@ -94,5 +136,11 @@ public class GroupsDBHandler {
     /** deletes all groups from the db */
     public void deleteAllGroups(){
         context.getContentResolver().delete(FoodonetDBProvider.GroupsDB.CONTENT_URI,null,null);
+    }
+
+    public void deleteGroup(long groupID) {
+        String where = String.format("%1$s = ?",FoodonetDBProvider.GroupsDB.GROUP_ID_COLUMN);
+        String[] whereArgs = {String.valueOf(groupID)};
+        context.getContentResolver().delete(FoodonetDBProvider.GroupsDB.CONTENT_URI,where,whereArgs);
     }
 }

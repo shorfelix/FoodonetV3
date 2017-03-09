@@ -7,11 +7,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,29 +27,27 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.bumptech.glide.Glide;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.PlacesActivity;
+import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SplashForCamera;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.DecimalDigitsInputFilter;
+import com.roa.foodonetv3.commonMethods.OnReceiveResponse;
+import com.roa.foodonetv3.commonMethods.OnReplaceFragListener;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.GroupsDBHandler;
-import com.roa.foodonetv3.db.PublicationsDBHandler;
 import com.roa.foodonetv3.model.Group;
 import com.roa.foodonetv3.model.Publication;
 import com.roa.foodonetv3.model.SavedPlace;
-import com.roa.foodonetv3.model.User;
-import com.roa.foodonetv3.services.FoodonetService;
-import com.squareup.picasso.Picasso;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class AddEditPublicationFragment extends Fragment implements View.OnClickListener {
+public class AddEditPublicationFragment extends Fragment implements View.OnClickListener{
     public static final String TAG = "AddEditPublicationFrag";
     private static final int INTENT_TAKE_PICTURE = 1;
     private static final int INTENT_PICK_PICTURE = 2;
@@ -60,38 +57,46 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
     private Spinner spinnerShareWith;
     private TextView textLocationAddPublication;
     private long endingDate;
-    private String mCurrentPhotoPath;
+    private String mCurrentPhotoPath, pickPhotoPath;
     private ImageView imagePictureAddPublication;
     private SavedPlace place;
     private Publication publication;
     private boolean isEdit;
     private ArrayList<Group> groups;
     private ArrayAdapter<String> spinnerAdapter;
-
     private FoodonetReceiver receiver;
+    private View layoutInfo;
+    private OnReceiveResponse onReceiveResponseListener;
+    private OnReplaceFragListener onReplaceFragListener;
 
-    /** The TransferUtility is the primary class for managing transfer to S3 */
-    private TransferUtility transferUtility;
 
     public AddEditPublicationFragment() {
         // Required empty public constructor
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        onReceiveResponseListener = (OnReceiveResponse) context;
+        onReplaceFragListener = (OnReplaceFragListener) context;
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        /** instantiate the transfer utility for the s3*/
-        transferUtility = CommonMethods.getTransferUtility(getContext());
-        /** local image path that will be used for saving locally and uploading the file name to the server*/
+//        /** instantiate the transfer utility for the s3*/
+//        transferUtility = CommonMethods.getTransferUtility(getContext());
+
+        // local image path that will be used for saving locally and uploading the file name to the server*/
         mCurrentPhotoPath = "";
 
         receiver = new FoodonetReceiver();
         isEdit = getArguments().getInt(TAG, TYPE_NEW_PUBLICATION) != TYPE_NEW_PUBLICATION;
 
         if (isEdit) {
-            /** if there's a publication in the intent - it is an edit of an existing publication */
+            // if there's a publication in the intent - it is an edit of an existing publication */
             if (savedInstanceState == null) {
-                /** also check if there's a savedInstanceState, if there isn't - load the publication, if there is - load from savedInstanceState */
+                // also check if there's a savedInstanceState, if there isn't - load the publication, if there is - load from savedInstanceState */
                 publication = getArguments().getParcelable(Publication.PUBLICATION_KEY);
                 place = new SavedPlace(publication.getAddress(),publication.getLat(),publication.getLng());
             } else {
@@ -106,9 +111,13 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_add_edit_publication, container, false);
 
-        getActivity().setTitle(R.string.new_share);
+        String title = getString(R.string.new_share);
+        if(isEdit){
+            title = publication.getTitle();
+        }
+        getActivity().setTitle(title);
 
-        /** set layouts */
+        // set layouts */
         editTextTitleAddPublication = (EditText) v.findViewById(R.id.editTextTitleAddPublication);
         textLocationAddPublication = (TextView) v.findViewById(R.id.textLocationAddPublication);
         textLocationAddPublication.setOnClickListener(this);
@@ -121,6 +130,27 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         v.findViewById(R.id.imageTakePictureAddPublication).setOnClickListener(this);
         imagePictureAddPublication = (ImageView) v.findViewById(R.id.imagePictureAddPublication);
 
+        if(isEdit){
+            mCurrentPhotoPath = CommonMethods.getPhotoPathByID(getContext(),publication.getId(),publication.getVersion());
+            File mCurrentPhotoFile = new File(mCurrentPhotoPath);
+            if(mCurrentPhotoFile.isFile()){
+                // there's an image path, try to load from file */
+                Glide.with(this).load(mCurrentPhotoFile).centerCrop().into(imagePictureAddPublication);
+            } else{
+                // load default image */
+                Glide.with(this).load(R.drawable.foodonet_image).centerCrop().into(imagePictureAddPublication);
+            }
+        }
+
+        layoutInfo = v.findViewById(R.id.layoutInfo);
+        layoutInfo.setBackgroundColor(getResources().getColor(R.color.fooLightGrey));
+        layoutInfo.setVisibility(View.GONE);
+        TextView textInfo = (TextView) v.findViewById(R.id.textInfo);
+        textInfo.setText(R.string.start_sharing_by_adding_an_image_of_the_food_you_wish_to_share);
+        textInfo.setTextSize(getResources().getDimension(R.dimen.text_size_12));
+        if (isEdit) {
+            loadPublicationIntoViews();
+        }
         return v;
     }
 
@@ -142,16 +172,12 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         }
         spinnerAdapter.addAll(groupsNames);
 
-        if (mCurrentPhotoPath == null) {
-            /** check if there is no path yet, if not, load the default image */
-            // TODO: 13/11/2016 fix image size error
-            Picasso.with(getContext()).load(R.drawable.foodonet_image)
-                    //                .resize(imagePictureAddPublication.getWidth(),imagePictureAddPublication.getHeight())
-                    //                .centerCrop()
-                    .into(imagePictureAddPublication);
-        }
-        if (isEdit) {
-            loadPublicationIntoViews();
+        if (mCurrentPhotoPath == null|| mCurrentPhotoPath.equals("")) {
+            layoutInfo.setVisibility(View.VISIBLE);
+            imagePictureAddPublication.setVisibility(View.GONE);
+        } else{
+            layoutInfo.setVisibility(View.GONE);
+            imagePictureAddPublication.setVisibility(View.VISIBLE);
         }
     }
 
@@ -162,7 +188,6 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(receiver);
     }
 
-    // TODO: 19/11/2016 not tested yet
     public void loadPublicationIntoViews() {
         editTextTitleAddPublication.setText(publication.getTitle());
         textLocationAddPublication.setText(publication.getAddress());
@@ -181,9 +206,9 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                         .setPositiveButton(R.string.camera, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                /** start the popup activity*/
+                                // start the popup activity*/
                                 getContext().startActivity(new Intent(getContext(), SplashForCamera.class));
-                                /**wait for the popup activity before starting the camera */
+                                // wait for the popup activity before starting the camera */
                                 Thread thread = new Thread() {
                                     @Override
                                     public void run() {
@@ -191,7 +216,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                                         synchronized (getContext()) {
                                             try {
                                                 getContext().wait(CommonConstants.SPLASH_CAMERA_TIME);
-                                                /** starts the image taking intent through the default app*/
+                                                // starts the image taking intent through the default app*/
                                                 dispatchTakePictureIntent();
                                             } catch (InterruptedException e) {
                                                 e.printStackTrace();
@@ -205,7 +230,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
                         .setNegativeButton(R.string.gallery, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                /** get image from gallery */
+                                // get image from gallery */
                                 dispatchPickPictureIntent();
                             }
                         });
@@ -213,14 +238,14 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
 
                 break;
             case R.id.textLocationAddPublication:
-                /** start the google places select activity */
+                // start the google places select activity */
                 startActivityForResult(new Intent(getContext(), PlacesActivity.class), PlacesActivity.REQUEST_PLACE_PICKER);
                 break;
         }
     }
 
+    /** starts the image taking intent through the default app*/
     private void dispatchTakePictureIntent() {
-        /** starts the image taking intent through the default app*/
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getContext().getPackageManager()) != null) {
@@ -228,8 +253,7 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             File photoFile = null;
             try {
                 photoFile = CommonMethods.createImageFile(getContext());
-                mCurrentPhotoPath = photoFile.getPath();
-                Log.d(TAG, "photo path: " + mCurrentPhotoPath);
+                pickPhotoPath = photoFile.getPath();
             } catch (IOException ex) {
                 // Error occurred while creating the File
                 Log.e(TAG, ex.getMessage());
@@ -259,8 +283,8 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         File photoFile = null;
         try {
             photoFile = CommonMethods.createImageFile(getContext());
-            mCurrentPhotoPath = photoFile.getPath();
-            Log.d(TAG, "photo path: " + mCurrentPhotoPath);
+            pickPhotoPath = photoFile.getPath();
+            Log.d(TAG, "photo path: " + pickPhotoPath);
             startActivityForResult(chooserIntent, INTENT_PICK_PICTURE);
         } catch (IOException ex) {
             // Error occurred while creating the File
@@ -274,34 +298,28 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
 
-                /** an image was successfully taken, since we have the path already,
-                 *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
-                 *  returns true if successful*/
+                // an image was successfully taken, since we have the path already,
+                //  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
+                //  returns true if successful*/
                 case INTENT_TAKE_PICTURE:
+                    mCurrentPhotoPath = pickPhotoPath;
                     if (CommonMethods.editOverwriteImage(getContext(), mCurrentPhotoPath)) {
-                        /** let picasso handle the caching and scaling to the imageView */
-                        Picasso.with(getContext())
-                                .load("file:" + mCurrentPhotoPath)
-                                .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
-                                .centerCrop()
-                                .into(imagePictureAddPublication);
+                        /** let glide handle the caching and scaling to the imageView */
+                        Glide.with(this).load(mCurrentPhotoPath).centerCrop().into(imagePictureAddPublication);
                     }
                     break;
-                /** an image was successfully picked, since we have the path already,
-                 *  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
-                 *  returns true if successful*/
+                // an image was successfully picked, since we have the path already,
+                //  we'll run the editOverwriteImage method that scales down, shapes and overwrites the images in the path
+                //  returns true if successful*/
                 case INTENT_PICK_PICTURE:
+                    mCurrentPhotoPath = pickPhotoPath;
                     Uri uri = data.getData();
 
                     try {
                         Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), uri);
                         if (CommonMethods.editOverwriteImage(mCurrentPhotoPath,bitmap)) {
-                            /** let picasso handle the caching and scaling to the imageView */
-                            Picasso.with(getContext())
-                                    .load("file:" + mCurrentPhotoPath)
-                                    .resize(imagePictureAddPublication.getWidth(), imagePictureAddPublication.getHeight())
-                                    .centerCrop()
-                                    .into(imagePictureAddPublication);
+                            // let glide handle the caching and scaling to the imageView */
+                            Glide.with(this).load(mCurrentPhotoPath).centerCrop().into(imagePictureAddPublication);
                         }
                     } catch (IOException e) {
                         Log.e(TAG,e.getMessage());
@@ -315,18 +333,17 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         }
     }
 
-    public void uploadPublicationToServer() {
-        /** upload the publication to the foodonet server */
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String contactInfo = PreferenceManager.getDefaultSharedPreferences(getContext()).getString(User.PHONE_NUMBER, "");
+    public void uploadPublicationToServer(boolean isAddNewPublication) {
+        // upload the publication to the foodonet server */
+        String contactInfo = CommonMethods.getMyUserPhone(getContext());
         String title = editTextTitleAddPublication.getText().toString();
         String location = textLocationAddPublication.getText().toString();
         String priceS = editTextPriceAddPublication.getText().toString();
         String details = editTextDetailsAddPublication.getText().toString();
-        /** currently starting time is now */
+        // currently starting time is now */
         long startingDate = System.currentTimeMillis()/1000;
         if (endingDate == 0) {
-            /** default ending date is 2 days after creation */
+            // default ending date is 2 days after creation */
             endingDate = startingDate + 172800;
         }
         long localPublicationID;
@@ -335,7 +352,14 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         } else {
             localPublicationID = publication.getId();
         }
-        if (title.equals("") || location.equals("") || place.getLat()== CommonConstants.LATLNG_ERROR || place.getLng()==CommonConstants.LATLNG_ERROR) {
+        String photoPath;
+        if(mCurrentPhotoPath==null || mCurrentPhotoPath.equals("")){
+            photoPath = null;
+        } else{
+            photoPath = "file:"+mCurrentPhotoPath;
+        }
+        if (title.equals("") || location.equals("") || place.getLat()== CommonConstants.LATLNG_ERROR || place.getLng()==CommonConstants.LATLNG_ERROR
+                || photoPath == null) {
             Toast.makeText(getContext(), R.string.post_please_enter_all_fields, Toast.LENGTH_SHORT).show();
         } else {
             double price;
@@ -352,89 +376,61 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
             }
 
             // TODO: 08/11/2016 currently some fields are hard coded for testing
+
             publication = new Publication(localPublicationID, -1, title, details, location, (short) 2, place.getLat(), place.getLng(),
                     String.valueOf(startingDate), String.valueOf(endingDate), contactInfo, true, CommonMethods.getDeviceUUID(getContext()),
-                    CommonMethods.getFileNameFromPath(mCurrentPhotoPath), CommonMethods.getMyUserID(getContext()),
-                    groups.get(spinnerShareWith.getSelectedItemPosition()).getGroupID() , user.getDisplayName(), price, "");
-            // TODO: 27/11/2016 currently just adding publications, no logic for edit yet
-            Intent i = new Intent(getContext(), FoodonetService.class);
-            i.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ADD_PUBLICATION);
-            i.putExtra(ReceiverConstants.JSON_TO_SEND, publication.getPublicationJson().toString());
-            getContext().startService(i);
+                    photoPath,
+                    CommonMethods.getMyUserID(getContext()),
+                    groups.get(spinnerShareWith.getSelectedItemPosition()).getGroupID() , CommonMethods.getMyUserName(getContext()), price, "");
+            if(isAddNewPublication){
+                ServerMethods.addPublication(getContext(),publication);
+            } else{
+                ServerMethods.editPublication(getContext(),publication);
+            }
         }
-    }
-
-    /**
-     * Begins to upload the file specified by the file path.
-     */
-    private void beginS3Upload(String filePath) {
-        /** upload the file to the S3 server */
-        if (filePath == null) {
-            Toast.makeText(getContext(), "Could not find the filepath of the selected file",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        String[] split = filePath.split(":");
-        File file = new File(split[1]);
-        transferUtility.upload(getResources().getString(R.string.amazon_bucket), file.getName(), file);
-        // TODO: 09/11/2016 add logic to completion or failure of upload image
-        /*
-         * Note that usually we set the transfer listener after initializing the
-         * transfer. However it isn't required in this sample app. The flow is
-         * click upload button -> start an activity for image selection
-         * startActivityForResult -> onActivityResult -> beginS3Upload -> onResume
-         * -> set listeners to in progress transfers.
-         */
-        // observer.setTransferListener(new UploadListener());
     }
 
     private class FoodonetReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            /** receiver for reports got from the service */
+            // receiver for reports got from the service */
             int action = intent.getIntExtra(ReceiverConstants.ACTION_TYPE, -1);
             switch (action) {
                 case ReceiverConstants.ACTION_FAB_CLICK:
-                    /** button for uploading the publication to the server, if an image was taken,
-                     * start uploading to the s3 server as well, currently no listener for s3 finished upload*/
+                    // button for uploading the publication to the server */
                     if (intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR, false)) {
                         // TODO: 18/12/2016 add logic if fails
                         Toast.makeText(context, "fab failed", Toast.LENGTH_SHORT).show();
                     } else {
-                        if (intent.getIntExtra(ReceiverConstants.FAB_TYPE, -1) == ReceiverConstants.FAB_TYPE_SAVE_NEW_PUBLICATION) {
-                            uploadPublicationToServer();
-                            if (!mCurrentPhotoPath.equals("")) {
-                                beginS3Upload("file:" + mCurrentPhotoPath);
-                            } else {
-                                Toast.makeText(getContext(), "no photo path", Toast.LENGTH_SHORT).show();
-                            }
+                        int fabType = intent.getIntExtra(ReceiverConstants.FAB_TYPE, -1);
+                        if (fabType == ReceiverConstants.FAB_TYPE_SAVE_NEW_PUBLICATION) {
+                            uploadPublicationToServer(true);
+                        }else if(fabType == ReceiverConstants.FAB_TYPE_EDIT_PUBLICATION){
+                            uploadPublicationToServer(false);
                         }
                     }
                     break;
 
                 case ReceiverConstants.ACTION_ADD_PUBLICATION:
-                    /** gets the new publication's ID and version to be saved into the db */
+                    onReceiveResponseListener.onReceiveResponse();
                     if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
-                        // TODO: 20/12/2016 add logic if fails
+                        // TODO: 27/11/2016 add logic if fails
                         Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
                     } else{
-                        long publicationID = intent.getLongExtra(Publication.PUBLICATION_ID,-1);
-                        int publicationVersion = intent.getIntExtra(Publication.PUBLICATION_VERSION,-1);
-                        if(publicationID==-1 || publicationVersion == -1){
-                            // TODO: 15/01/2017 change
-                            Toast.makeText(context, "failed to add publication", Toast.LENGTH_SHORT).show();
-                        } else{
-                            publication.setId(publicationID);
-                            publication.setVersion(publicationVersion);
-                            // TODO: 15/01/2017 add logic to check that the publication is the same one
-                            PublicationsDBHandler handler = new PublicationsDBHandler(getContext());
-                            handler.insertPublication(publication);
-                            getActivity().finish();
-                        }
+                        onReplaceFragListener.onReplaceFrags(PublicationActivity.BACK_IN_STACK_TAG,-1);
                     }
+                    break;
+
+                case ReceiverConstants.ACTION_EDIT_PUBLICATION:
+                    onReceiveResponseListener.onReceiveResponse();
+                    if(intent.getBooleanExtra(ReceiverConstants.SERVICE_ERROR,false)){
+                        // TODO: 27/11/2016 add logic if fails
+                        Toast.makeText(context, "service failed", Toast.LENGTH_SHORT).show();
+                    } else{
+                        onReplaceFragListener.onReplaceFrags(PublicationActivity.BACK_IN_STACK_TAG,publication.getId());
+                    }
+                    break;
             }
         }
     }
-
-
 }
