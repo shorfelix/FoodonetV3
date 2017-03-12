@@ -19,18 +19,18 @@ public class FoodonetGcmListenerService extends GcmListenerService {
     public static final String PUBLICATION_NUMBER = "pubnumber";
     @Override
     public void onMessageReceived(String s, Bundle bundle) {
-        /*
-        if(from.startsWith(getString(R.string.push_notification_prefix)) || from.compareTo(getString(R.string.notifications_server_id)) == 0){
-            String msg = data.getString(PUSH_OBJECT_MSG);
+
+        if(s.startsWith(getString(R.string.push_notification_prefix)) || s.compareTo(getString(R.string.notifications_server_id)) == 0) {
+            String msg = bundle.getString(PUSH_OBJECT_MSG);
             JSONObject jo = new JSONObject();
             try {
                 jo = new JSONObject(msg);
             } catch (JSONException e) {
                 e.printStackTrace();
-            }*/
-           // pushNotification = FNotification.ParseSingleNotificationFromJSON(jo);//PushObject.DecodePushObject(data);
-          //  HandleMessage(pushNotification);
-
+            }
+            // pushNotification = FNotification.ParseSingleNotificationFromJSON(jo);//PushObject.DecodePushObject(data);
+            //  HandleMessage(pushNotification);
+        }
     }
 
 
