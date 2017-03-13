@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -33,6 +35,7 @@ import com.roa.foodonetv3.model.GroupMember;
 import com.roa.foodonetv3.services.GetDataService;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -323,62 +326,67 @@ public class CommonMethods {
         return newFile;
     }
 
-    /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
-     * then, it will overwrite the local original one.
-     * returns true if successful*/
-    public static boolean editOverwriteImage(String mCurrentPhotoPath, Bitmap sourceImage) {
-        return compressImage(sourceImage,mCurrentPhotoPath);
-    }
-
-    /** after capturing an image, we'll crop, downsize and compress it to be sent to the s3 server,
-     * then, it will overwrite the local original one.
-     * returns true if successful*/
-    public static boolean editOverwriteImage(Context context, String mCurrentPhotoPath){
-        try {
-            Bitmap sourceBitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), Uri.parse("file:" + mCurrentPhotoPath));
-            return compressImage(sourceBitmap,mCurrentPhotoPath);
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
-        }
-        return false;
-    }
-
-    private static boolean compressImage(Bitmap sourceBitmap, String mCurrentPhotoPath){
+    public static String compressImage(Context context, Uri uri, String photoPath) throws FileNotFoundException {
         /** ratio - 16:9 */
         final float ratio = 16 / 9f;
-        final int WANTED_HEIGHT = 720;
+        final int WANTED_HEIGHT = 560;
         final int WANTED_WIDTH = (int) (WANTED_HEIGHT * ratio);
-        Bitmap cutBitmap;
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        if(uri != null){
+            BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri),null,options);
+        } else{
+            BitmapFactory.decodeFile(photoPath,options);
+        }
+        int originHeight = options.outHeight;
+        int originWidth = options.outWidth;
+        int scale = 1;
+        while(true) {
+            if(originWidth / 2 < WANTED_WIDTH || originHeight / 2 < WANTED_HEIGHT)
+                break;
+            originWidth /= 2;
+            originHeight /= 2;
+            scale *= 2;
+        }
+
+        options.inJustDecodeBounds = false;
+        options.inSampleSize = scale;
+        Bitmap bitmap;
+        if(uri!= null){
+            bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri),null,options);
+        } else{
+            bitmap = BitmapFactory.decodeFile(photoPath,options);
+        }
 
         /** cut the image to display as a 16:9 image */
-        if (sourceBitmap.getHeight() * ratio < sourceBitmap.getWidth()) {
+        if (bitmap.getHeight() * ratio < bitmap.getWidth()) {
             /** full height of the image, cut the width*/
-            cutBitmap = Bitmap.createBitmap(
-                    sourceBitmap,
-                    (int) ((sourceBitmap.getWidth() - (sourceBitmap.getHeight() * ratio)) / 2),
+            bitmap = Bitmap.createBitmap(
+                    bitmap,
+                    (int) ((bitmap.getWidth() - (bitmap.getHeight() * ratio)) / 2),
                     0,
-                    (int) (sourceBitmap.getHeight() * ratio),
-                    sourceBitmap.getHeight()
+                    (int) (bitmap.getHeight() * ratio),
+                    bitmap.getHeight()
             );
         } else {
             /** full width of the image, cut the height*/
-            cutBitmap = Bitmap.createBitmap(
-                    sourceBitmap,
+            bitmap = Bitmap.createBitmap(
+                    bitmap,
                     0,
-                    (int) ((sourceBitmap.getHeight() - (sourceBitmap.getWidth() / ratio)) / 2),
-                    sourceBitmap.getWidth(),
-                    (int) (sourceBitmap.getWidth() / ratio)
+                    (int) ((bitmap.getHeight() - (bitmap.getWidth() / ratio)) / 2),
+                    bitmap.getWidth(),
+                    (int) (bitmap.getWidth() / ratio)
             );
         }
         /** scale the image down*/
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(cutBitmap, WANTED_WIDTH, WANTED_HEIGHT, false);
+        bitmap = Bitmap.createScaledBitmap(bitmap, WANTED_WIDTH, WANTED_HEIGHT, false);
 
-        /** compress the image and overwrite the original one*/
         FileOutputStream out = null;
         try {
-            out = new FileOutputStream(mCurrentPhotoPath);
-            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-            return true;
+            out = new FileOutputStream(photoPath);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            return photoPath;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         } finally {
@@ -390,9 +398,8 @@ public class CommonMethods {
                 Log.e(TAG, e.getMessage());
             }
         }
-        return false;
+        return photoPath;
     }
-
 
     /**
      * Gets an instance of CognitoCachingCredentialsProvider which is
