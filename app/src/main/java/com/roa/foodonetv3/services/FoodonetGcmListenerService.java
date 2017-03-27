@@ -4,25 +4,20 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-
+import android.util.Log;
 import com.google.android.gms.gcm.GcmListenerService;
 import com.roa.foodonetv3.R;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static android.R.attr.data;
-
-/**
- * Created by felixshor on 3/8/17.
- */
-
 public class FoodonetGcmListenerService extends GcmListenerService {
+    private static final String TAG = "GcmListenerService";
+
     public static final String PUSH_OBJECT_MSG = "message";
     public static final String PUBLICATION_NUMBER = "pubnumber";
     @Override
     public void onMessageReceived(String s, Bundle bundle) {
-
+        Log.d(TAG, s);
         if(s.startsWith(getString(R.string.push_notification_prefix)) || s.compareTo(getString(R.string.notifications_server_id)) == 0) {
             String msg = bundle.getString(PUSH_OBJECT_MSG);
             JSONObject jo = new JSONObject();
