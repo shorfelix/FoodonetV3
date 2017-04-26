@@ -62,7 +62,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         /** get non user publications from db */
         PublicationsDBHandler handler = new PublicationsDBHandler(this);
-        publications = handler.getPublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_NON_USER_PUBLICATIONS);
+        publications = handler.getPublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_NON_USER_PUBLICATIONS, CommonConstants.PUBLICATION_SORT_TYPE_CLOSEST);
         adapter.updatePublications(publications);
 
         /** set the broadcast receiver for future stuff */
@@ -157,7 +157,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void updateMap(){
         PublicationsDBHandler handler = new PublicationsDBHandler(getBaseContext());
-        publications = handler.getPublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_NON_USER_PUBLICATIONS);
+        publications = handler.getPublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_NON_USER_PUBLICATIONS,CommonConstants.PUBLICATION_SORT_TYPE_CLOSEST);
         adapter.updatePublications(publications);
         startMap();
     }

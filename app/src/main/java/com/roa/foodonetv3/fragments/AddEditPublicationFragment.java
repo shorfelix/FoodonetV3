@@ -133,11 +133,15 @@ public class AddEditPublicationFragment extends Fragment implements View.OnClick
         imagePictureAddPublication = (ImageView) v.findViewById(R.id.imagePictureAddPublication);
 
         if(isEdit){
+            spinnerShareWith.setEnabled(false);
             mCurrentPhotoPath = CommonMethods.getPhotoPathByID(getContext(),publication.getId(),publication.getVersion());
-            File mCurrentPhotoFile = new File(mCurrentPhotoPath);
-            if(mCurrentPhotoFile.isFile()){
-                // there's an image path, try to load from file */
-                Glide.with(this).load(mCurrentPhotoFile).centerCrop().into(imagePictureAddPublication);
+            File mCurrentPhotoFile = null;
+            if (mCurrentPhotoPath != null) {
+                mCurrentPhotoFile = new File(mCurrentPhotoPath);
+                if(mCurrentPhotoFile.isFile()){
+                    // there's an image path, try to load from file */
+                    Glide.with(this).load(mCurrentPhotoFile).centerCrop().into(imagePictureAddPublication);
+            }
             } else{
                 // load default image */
                 Glide.with(this).load(R.drawable.foodonet_image).centerCrop().into(imagePictureAddPublication);

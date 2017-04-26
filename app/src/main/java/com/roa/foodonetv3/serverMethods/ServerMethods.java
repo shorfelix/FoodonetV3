@@ -230,4 +230,10 @@ public class ServerMethods {
         context.startService(intent);
     }
 
+    public static void activeDeviceUpdateLocation(Context context, String stringToSend){
+        Intent intent = new Intent(context, FoodonetService.class);
+        intent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_ACTIVE_DEVICE_UPDATE_USER_LOCATION);
+        intent.putExtra(ReceiverConstants.JSON_TO_SEND,stringToSend);
+        context.startService(intent);
+    }
 }

@@ -45,9 +45,11 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
     private LatLng userLatLng;
     private PublicationsDBHandler publicationsDBHandler;
     private OnReplaceFragListener onReplaceFragListener;
+    private int sortType;
 
-    public PublicationsRecyclerAdapter(Context context) {
+    public PublicationsRecyclerAdapter(Context context, int sortType) {
         this.context = context;
+        this.sortType = sortType;
         onReplaceFragListener = (OnReplaceFragListener) context;
         /** get the S3 utility */
         transferUtility = CommonMethods.getTransferUtility(context);
@@ -55,21 +57,12 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
     }
 
     /** updates the recycler */
-    public void updatePublications(ArrayList<Publication> publications, LongSparseArray<Integer> registeredUsersArray){
-        this.registeredUsersArray = registeredUsersArray;
-        filteredPublications.clear();
-        filteredPublications.addAll(publications);
-        this.publications = publications;
-        notifyDataSetChanged();
-    }
-
-    /** updates the recycler */
-    public void updatePublications(int typeFilter){
+    public void updatePublications(int typePublicationFilter){
         if(publicationsDBHandler == null){
             publicationsDBHandler = new PublicationsDBHandler(context);
         }
         RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(context);
-        ArrayList<Publication> publications = publicationsDBHandler.getPublications(typeFilter);
+        ArrayList<Publication> publications = publicationsDBHandler.getPublications(typePublicationFilter, sortType);
         registeredUsersArray = registeredUsersDBHandler.getAllRegisteredUsersCount();
         filteredPublications.clear();
         filteredPublications.addAll(publications);
@@ -162,16 +155,18 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
             }
             String registeredUsers = String.format(Locale.US, "%1$d %2$s", numberRegisteredUsers, context.getResources().getString(R.string.users_joined));
             textPublicationUsers.setText(registeredUsers);
-            //add photo here
-            mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context, publication.getId(), publication.getVersion()));
-            if (mCurrentPhotoFile.isFile()) {
-                Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
-            } else {
-                String imagePath = CommonMethods.getFileNameFromPublicationID(publication.getId(), publication.getVersion());
-                TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_publications_bucket),
-                        imagePath, mCurrentPhotoFile);
-                observer.setTransferListener(this);
-                observerId = observer.getId();
+            String mCurrentPhotoFileString = CommonMethods.getPhotoPathByID(context, publication.getId(), publication.getVersion());
+            if(mCurrentPhotoFileString!= null){
+                mCurrentPhotoFile = new File(mCurrentPhotoFileString);
+                if (mCurrentPhotoFile.isFile()) {
+                    Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
+                } else {
+                    String imagePath = CommonMethods.getFileNameFromPublicationID(publication.getId(), publication.getVersion());
+                    TransferObserver observer = transferUtility.download(context.getResources().getString(R.string.amazon_publications_bucket),
+                            imagePath, mCurrentPhotoFile);
+                    observer.setTransferListener(this);
+                    observerId = observer.getId();
+                }
             }
         }
 
@@ -183,7 +178,6 @@ public class PublicationsRecyclerAdapter extends RecyclerView.Adapter<Publicatio
                 if (observerId == id) {
                     Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(imagePublication);
                 }
-
             }
         }
 

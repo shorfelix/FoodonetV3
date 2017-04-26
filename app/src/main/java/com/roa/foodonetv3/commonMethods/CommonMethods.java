@@ -2,6 +2,7 @@ package com.roa.foodonetv3.commonMethods;
 
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -25,6 +27,9 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.android.gms.maps.model.LatLng;
+import com.roa.foodonetv3.activities.NotificationActivity;
+import com.roa.foodonetv3.activities.SplashScreenActivity;
+import com.roa.foodonetv3.db.NotificationsDBHandler;
 import com.roa.foodonetv3.dialogs.ContactUsDialog;
 import com.roa.foodonetv3.activities.GroupsActivity;
 import com.roa.foodonetv3.R;
@@ -35,7 +40,13 @@ import com.roa.foodonetv3.activities.PrefsActivity;
 import com.roa.foodonetv3.activities.PublicationActivity;
 import com.roa.foodonetv3.activities.SignInActivity;
 import com.roa.foodonetv3.model.GroupMember;
+import com.roa.foodonetv3.model.NotificationFoodonet;
+import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.GetDataService;
+import com.roa.foodonetv3.services.NotificationsDismissService;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,13 +55,20 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class CommonMethods {
     private static final String TAG = "CommonMethods";
 
-    /** we only need one instance of the clients and credentials provider */
+    /**
+     * we only need one instance of the clients and credentials provider
+     */
     private static AmazonS3Client sS3Client;
     private static CognitoCachingCredentialsProvider sCredProvider;
     private static TransferUtility sTransferUtility;
@@ -89,23 +107,30 @@ public class CommonMethods {
                 }
                 break;
             case R.id.nav_notifications:
+                intent = new Intent(context, NotificationActivity.class);
+//                if(context instanceof  NotificationActivity){
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                    context.startActivity(intent);
+//                } else{
+                context.startActivity(intent);
+//                }
 
                 break;
             case R.id.nav_groups:
                 intent = new Intent(context, GroupsActivity.class);
-                if(context instanceof GroupsActivity || context instanceof MainActivity){
+                if (context instanceof GroupsActivity || context instanceof MainActivity) {
                     // TODO: 06/12/2016 test
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     context.startActivity(intent);
-                } else{
+                } else {
                     context.startActivity(intent);
                 }
                 break;
             case R.id.nav_settings:
-                if(getMyUserID(context)==-1){
+                if (getMyUserID(context) == -1) {
                     /** if the user is not signed in yet, open the sign in activity */
-                    intent = new Intent(context,SignInActivity.class);
-                } else{
+                    intent = new Intent(context, SignInActivity.class);
+                } else {
                     /** open the preferences fragment activity */
                     intent = new Intent(context, PrefsActivity.class);
                 }
@@ -122,24 +147,28 @@ public class CommonMethods {
         }
     }
 
-    /** returns current epoch time in seconds(NOT MILLIS!) */
+    /**
+     * returns current epoch time in seconds(NOT MILLIS!)
+     */
     public static double getCurrentTimeSeconds() {
-        long currentTime = System.currentTimeMillis()/1000;
+        long currentTime = System.currentTimeMillis() / 1000;
         return currentTime;
     }
 
-    /** returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the duration */
+    /**
+     * returns a string of time difference between two times in epoch time seconds (NOT MILLIS!) with a changing perspective according to the duration
+     */
     public static String getTimeDifference(Context context, Double earlierTimeInSeconds, Double laterTimeInSeconds) {
         long timeDiff = (long) (laterTimeInSeconds - earlierTimeInSeconds) / 60; // minutes as start
         StringBuilder message = new StringBuilder();
         if (timeDiff < 0) {
             return "N/A";
-        } else if(timeDiff < 1440){
+        } else if (timeDiff < 1440) {
             /** hours, minutes */
-            if(timeDiff /60 != 0){
-                message.append(String.format(Locale.US,"%1$d%2$s ", timeDiff / 60 , context.getResources().getString(R.string.h_hours)));
+            if (timeDiff / 60 != 0) {
+                message.append(String.format(Locale.US, "%1$d%2$s ", timeDiff / 60, context.getResources().getString(R.string.h_hours)));
             }
-            message.append(String.format(Locale.US,"%1$d%2$s", timeDiff % 60, context.getResources().getString(R.string.min_minutes)));
+            message.append(String.format(Locale.US, "%1$d%2$s", timeDiff % 60, context.getResources().getString(R.string.min_minutes)));
         } else {
             /** days, hours */
             long days = timeDiff / 1440;
@@ -158,19 +187,21 @@ public class CommonMethods {
         return message.toString();
     }
 
-    public static boolean isUserGroupAdmin(Context context, ArrayList<GroupMember> members){
+    public static boolean isUserGroupAdmin(Context context, ArrayList<GroupMember> members) {
         long userID = getMyUserID(context);
         GroupMember member;
-        for(int i = 0; i < members.size(); i++){
+        for (int i = 0; i < members.size(); i++) {
             member = members.get(i);
-            if(member.getUserID() == userID){
+            if (member.getUserID() == userID) {
                 return member.isAdmin();
             }
         }
         return false;
     }
 
-    /** get the message according to the server specified report type */
+    /**
+     * get the message according to the server specified report type
+     */
     public static String getReportStringFromType(Context context, int typeOfReport) {
         switch (typeOfReport) {
             case CommonConstants.REPORT_TYPE_HAS_MORE:
@@ -183,29 +214,37 @@ public class CommonMethods {
         return null;
     }
 
-    public static void getNewData(Context context){
+    public static void getNewData(Context context) {
         Intent getDataIntent = new Intent(context, GetDataService.class);
-        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_GET_DATA);
+        getDataIntent.putExtra(ReceiverConstants.ACTION_TYPE, ReceiverConstants.ACTION_GET_DATA);
         context.startService(getDataIntent);
     }
 
-    /** returns a UUID */
+    /**
+     * returns a UUID
+     */
     public static String getDeviceUUID(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_device_uuid), null);
     }
 
-    /** returns the userID from shared preferences */
+    /**
+     * returns the userID from shared preferences
+     */
     public static long getMyUserID(Context context) {
-        long userID = PreferenceManager.getDefaultSharedPreferences(context).getLong(context.getString(R.string.key_prefs_user_id),(long) -1);
+        long userID = PreferenceManager.getDefaultSharedPreferences(context).getLong(context.getString(R.string.key_prefs_user_id), (long) -1);
         return userID;
     }
 
-    /** @return returns the userName from shared preferences */
-    public static String getMyUserName(Context context){
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_name),"");
+    /**
+     * @return returns the userName from shared preferences
+     */
+    public static String getMyUserName(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_name), "");
     }
 
-    /** saves the userID to shared preferences */
+    /**
+     * saves the userID to shared preferences
+     */
     public static void setMyUserID(Context context, long userID) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putLong(context.getString(R.string.key_prefs_user_id), userID).apply();
     }
@@ -214,30 +253,32 @@ public class CommonMethods {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(context.getString(R.string.key_prefs_user_phone), null);
     }
 
-    public static LatLng getLastLocation(Context context){
+    public static LatLng getLastLocation(Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return new LatLng(Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lat),String.valueOf(CommonConstants.LATLNG_ERROR))),
-                Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lng),String.valueOf(CommonConstants.LATLNG_ERROR))));
+        return new LatLng(Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lat), String.valueOf(CommonConstants.LATLNG_ERROR))),
+                Double.valueOf(preferences.getString(context.getString(R.string.key_prefs_user_lng), String.valueOf(CommonConstants.LATLNG_ERROR))));
     }
 
-    /** should increment negatively for a unique id until the server gives us a server unique publication id to replace it */
+    /**
+     * should increment negatively for a unique id until the server gives us a server unique publication id to replace it
+     */
     public static long getNewLocalPublicationID() {
         //todo add a check for available negative id, currently hard coded
-        return (long)-1;
+        return (long) -1;
     }
 
-    public static String getDigitsFromPhone(String origin){
+    public static String getDigitsFromPhone(String origin) {
         return origin.replaceAll("[^0-9]", "");
     }
 
-    public static boolean comparePhoneNumbers(String first, String second){
+    public static boolean comparePhoneNumbers(String first, String second) {
         first = removeInternationalPhoneCode(getDigitsFromPhone(first));
         second = removeInternationalPhoneCode(getDigitsFromPhone(second));
-        return PhoneNumberUtils.compare(first,second);
+        return PhoneNumberUtils.compare(first, second);
     }
 
-    private static String removeInternationalPhoneCode(String phone){
-        if(phone.startsWith("972")){
+    private static String removeInternationalPhoneCode(String phone) {
+        if (phone.startsWith("972")) {
             phone = 0 + phone.substring(3);
         }
         return phone;
@@ -253,17 +294,80 @@ public class CommonMethods {
         return df.format(num);
     }
 
-    public static void sendNotification(Context context,final String title,final String body) {
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+    public static void sendNotification(Context context) {
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        long loadNotificationsFromID = PreferenceManager.getDefaultSharedPreferences(context)
+                .getLong(context.getString(R.string.key_prefs_unread_notification_id), CommonConstants.NOTIFICATION_ID_CLEAR);
+        NotificationsDBHandler notificationsDBHandler = new NotificationsDBHandler(context);
+        ArrayList<NotificationFoodonet> notificationsToDisplay = notificationsDBHandler.getUnreadNotification(loadNotificationsFromID);
+
+        Intent resultIntent = new Intent(context, NotificationsDismissService.class);
+        resultIntent.setAction(CommonConstants.NOTIF_ACTION_OPEN);
+        PendingIntent resultPendingIntent = PendingIntent.getService(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent dismissNotificationsIntent = new Intent(context, NotificationsDismissService.class);
+        dismissNotificationsIntent.setAction(CommonConstants.NOTIF_ACTION_DISMISS);
+        PendingIntent dismissNotificationsPendingIntent = PendingIntent.getService(context, 0, dismissNotificationsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        int notificationsToDisplaySize = notificationsToDisplay.size();
+        String contentText;
+        if(notificationsToDisplaySize >1){
+            contentText = String.format("%1$s %2$s",String.valueOf(notificationsToDisplaySize),context.getString(R.string.new_messages));
+        } else{
+            contentText = context.getString(R.string.new_message);
+        }
+        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.drawer_notifications).setContentTitle(title)
-                .setContentText(body)
-                .setSound(defaultSoundUri);
-        NotificationManager mNotificationManager = (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(R.string.notifications_server_id, mBuilder.build());
+                .setContentTitle(context.getString(R.string.foodonet))
+                .setContentText(contentText)
+                .setSound(defaultSoundUri)
+                .setAutoCancel(true)
+                .setDeleteIntent(dismissNotificationsPendingIntent)
+                .setContentIntent(resultPendingIntent)
+                .setSmallIcon(R.drawable.drawer_notifications)
+                .setGroup("foodonet")
+                .setGroupSummary(true);
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle()
+                .setBigContentTitle(context.getString(R.string.foodonet))
+                .setSummaryText(contentText);
+        NotificationFoodonet notification;
+        for(int i = 0; i < notificationsToDisplaySize && i < 7; i++){
+            if(i== 6){
+                inboxStyle.addLine(String.format("+ %1$s",String.valueOf(notificationsToDisplaySize - 6)));
+            } else{
+                notification = notificationsToDisplay.get(i);
+                inboxStyle.addLine(notification.getNotificationMessage(context));
+            }
+        }
+        mBuilder.setStyle(inboxStyle);
+
+        mNotificationManager.notify(1, mBuilder.build());
     }
 
+    public static void updateUnreadNotificationID(Context context, long _id){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String keyPrefsUnreadNotificationID = context.getString(R.string.key_prefs_unread_notification_id);
+        if(_id == CommonConstants.NOTIFICATION_ID_CLEAR ||
+                sharedPreferences.getLong(keyPrefsUnreadNotificationID,CommonConstants.NOTIFICATION_ID_CLEAR) == CommonConstants.NOTIFICATION_ID_CLEAR){
+            sharedPreferences.edit().putLong(keyPrefsUnreadNotificationID,_id).apply();
+        }
+    }
+
+    /** currently trying to update returns a 404, disabling for now */
+    public static void updateUserLocationToServer(Context context){
+        JSONObject activeDeviceRoot = new JSONObject();
+        JSONObject activeDevice = new JSONObject();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        try {
+            activeDevice.put("dev_uuid",CommonMethods.getDeviceUUID(context));
+            activeDevice.put("last_location_latitude", preferences.getString(context.getString(R.string.key_prefs_user_lat), String.valueOf(CommonConstants.LATLNG_ERROR)));
+            activeDevice.put("last_location_longitude", preferences.getString(context.getString(R.string.key_prefs_user_lng),String.valueOf(CommonConstants.LATLNG_ERROR)));
+            activeDeviceRoot.put("active_device",activeDevice);
+            ServerMethods.activeDeviceUpdateLocation(context,activeDeviceRoot.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Calculate distance between two points in latitude and longitude taking
@@ -282,6 +386,46 @@ public class CommonMethods {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = R * c;
         return distance;
+    }
+
+    public static int[] getListIndexSortedValues(ArrayList<Double> list){
+        int length = list.size();
+        TreeMap<Integer,Double> listMap = new TreeMap<>();
+        for (int i = 0; i < length; i++) {
+            listMap.put(i,list.get(i));
+        }
+        double num;
+        double lastMin = -1;
+        double min;
+        int minIndex;
+        int lastMinIndex = -1;
+        int[] sortedIndex = new int[length];
+        for (int i = 0; i < length; i++) {
+            min = -1;
+            minIndex = -1;
+            for (int j = 0; j < length; j++) {
+                num = listMap.get(j);
+                if(min == -1 && num > lastMin){
+                    min = num;
+                    minIndex = j;
+                }
+                if(num == lastMin){
+                    if(j > lastMinIndex){
+                        minIndex = j;
+                        min = lastMin;
+                        break;
+                    }
+                }
+                if(num < min && num > lastMin){
+                    min = num;
+                    minIndex = j;
+                }
+            }
+            lastMin = min;
+            lastMinIndex = minIndex;
+            sortedIndex[i] = minIndex;
+        }
+        return sortedIndex;
     }
 
     /** Creates a local image file name for taking the picture with the camera */
@@ -305,7 +449,6 @@ public class CommonMethods {
 //                storageDir      /* directory */);
 
         File newFile = new File(storageDir.getPath() + "/" + imageFileName + ".jpg");
-        Log.d(TAG, "newFile = " + newFile.getPath());
         return newFile;
     }
 
@@ -334,10 +477,13 @@ public class CommonMethods {
     /** Creates a local image file name for downloaded images from s3 server of a specific publication */
     public static String getPhotoPathByID(Context context, long publicationID, int version) {
         String imageFileName = getFileNameFromPublicationID(publicationID,version);
-        String storageDir = (context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getPath());
-        String newFile = storageDir + "/" + imageFileName;
-        Log.d(TAG, "newFile = " + newFile);
-        return newFile;
+        File directoryPictures = (context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
+        if(directoryPictures!= null){
+            String storageDir = directoryPictures.getPath();
+            return storageDir + "/" + imageFileName;
+        }
+
+        return null;
     }
 
     public static String compressImage(Context context, Uri uri, String photoPath) throws FileNotFoundException {
@@ -496,6 +642,4 @@ public class CommonMethods {
             return false;
         }
     }
-
-
 }

@@ -10,6 +10,8 @@ import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
+import com.roa.foodonetv3.db.NotificationsDBHandler;
+import com.roa.foodonetv3.model.NotificationFoodonet;
 import com.roa.foodonetv3.model.User;
 import com.roa.foodonetv3.serverMethods.StartFoodonetServiceMethods;
 import com.roa.foodonetv3.db.GroupMembersDBHandler;
@@ -210,17 +212,18 @@ public class FoodonetService extends IntentService {
                     if(publication.getPhotoURL()!=null && !publication.getPhotoURL().equals("")){
                         String[] split = publication.getPhotoURL().split(":");
                         File file = new File(split[1]);
-                        File destFile = new File(CommonMethods.getPhotoPathByID(this,publicationID,publicationVersion));
-                        Log.d(TAG,"pre"+file.getPath());
-                        String s3Name = CommonMethods.getFileNameFromPublicationID(publicationID,publicationVersion);
-                        boolean renamed = file.renameTo(destFile);
-                        Log.d(TAG,"post"+destFile.getPath());
-                        if(renamed){
-                            transferUtility.upload(getResources().getString(R.string.amazon_publications_bucket),s3Name,destFile);
-                        }else{
-                            Log.d(TAG,"Rename failed");
+                        String destFileString = CommonMethods.getPhotoPathByID(this,publicationID,publicationVersion);
+                        if(destFileString!= null){
+                            File destFile = new File(destFileString);
+                            String s3Name = CommonMethods.getFileNameFromPublicationID(publicationID,publicationVersion);
+                            boolean renamed = file.renameTo(destFile);
+                            if(renamed){
+                                transferUtility.upload(getResources().getString(R.string.amazon_publications_bucket),s3Name,destFile);
+                            }else{
+                                Log.d(TAG,"Rename failed");
+                            }
+                            // TODO: 25/01/2017 currently not checking if the upload was successful or not
                         }
-                        // TODO: 25/01/2017 currently not checking if the upload was successful or not
                     }
                 }
             }
@@ -240,17 +243,18 @@ public class FoodonetService extends IntentService {
                     if(publication.getPhotoURL()!=null && !publication.getPhotoURL().equals("")){
                         String[] split = publication.getPhotoURL().split(":");
                         File file = new File(split[1]);
-                        File destFile = new File(CommonMethods.getPhotoPathByID(this,publicationID,publicationVersion));
-                        Log.d(TAG,"pre"+file.getPath());
-                        String s3Name = CommonMethods.getFileNameFromPublicationID(publicationID,publicationVersion);
-                        boolean renamed = file.renameTo(destFile);
-                        Log.d(TAG,"post"+destFile.getPath());
-                        if(renamed){
-                            transferUtility.upload(getResources().getString(R.string.amazon_publications_bucket),s3Name,destFile);
-                        }else{
-                            Log.d(TAG,"Rename failed");
+                        String destFileString = CommonMethods.getPhotoPathByID(this,publicationID,publicationVersion);
+                        if(destFileString!= null) {
+                            File destFile = new File(destFileString);
+                            String s3Name = CommonMethods.getFileNameFromPublicationID(publicationID,publicationVersion);
+                            boolean renamed = file.renameTo(destFile);
+                            if(renamed){
+                                transferUtility.upload(getResources().getString(R.string.amazon_publications_bucket),s3Name,destFile);
+                            }else{
+                                Log.d(TAG,"Rename failed");
+                            }
+                            // TODO: 05/03/2017 currently not checking if the upload was successful or not
                         }
-                        // TODO: 05/03/2017 currently not checking if the upload was successful or not
                     }
                 }
             }
@@ -272,6 +276,7 @@ public class FoodonetService extends IntentService {
                 Double lat,lng,price;
                 boolean isOnAir;
                 int version;
+
                 JSONObject publicationObject = new JSONObject(responseRoot);
                 audience = publicationObject.getLong("audience");
                 activeDeviceDevUUID = publicationObject.getString("active_device_dev_uuid");
@@ -301,10 +306,14 @@ public class FoodonetService extends IntentService {
                     publicationsDBHandler.insertPublication(publication);
 
                     boolean notifyUser = args[1].equals(String.valueOf(CommonConstants.VALUE_TRUE));
-                    if(notifyUser){
-                        final String msgTitle = getString(R.string.foodonet);
-                        final String msgBody = String.format("%1$s: %2$s",getString(R.string.new_share),publication.getTitle());
-                        CommonMethods.sendNotification(this,msgTitle,msgBody);
+                    boolean userNotAdmin = publisherID != CommonMethods.getMyUserID(this);
+                    if(userNotAdmin){
+                        NotificationsDBHandler notificationsDBHandler = new NotificationsDBHandler(this);
+                        notificationsDBHandler.insertNotification(new NotificationFoodonet(NotificationFoodonet.NOTIFICATION_TYPE_NEW_PUBLICATION,
+                                id,title,CommonMethods.getCurrentTimeSeconds()));
+                        if(notifyUser){
+                            CommonMethods.sendNotification(this);
+                        }
                     }
                     intent.putExtra(User.IDENTITY_PROVIDER_USER_ID,publisherID);
                     updateData = true;
@@ -378,11 +387,6 @@ public class FoodonetService extends IntentService {
                 registeredUsersDBHandler = new RegisteredUsersDBHandler(this);
                 registeredUsersDBHandler.insertRegisteredUser(registeredUser);
             }
-
-//            else if(actionType == ReceiverConstants.ACTION_GET_PUBLICATION_REGISTERED_USERS){
-//                JSONArray registeredUsersArray = new JSONArray(responseRoot);
-//                intent.putExtra(Publication.PUBLICATION_COUNT_OF_REGISTER_USERS_KEY,registeredUsersArray.length());
-//            }
 
             else if(actionType == ReceiverConstants.ACTION_GET_ALL_PUBLICATIONS_REGISTERED_USERS){
                 ArrayList<RegisteredUser> registeredUsers = new ArrayList<>();
@@ -529,6 +533,10 @@ public class FoodonetService extends IntentService {
 
             else if(actionType == ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER){
 
+            }
+
+            else if(actionType == ReceiverConstants.ACTION_ACTIVE_DEVICE_UPDATE_USER_LOCATION){
+                Log.d(TAG,responseRoot);
             }
         } catch (JSONException e){
             Log.e(TAG,e.getMessage());

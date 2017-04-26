@@ -22,5 +22,6 @@ public class PrefsActivity extends AppCompatActivity implements PrefsFragment.On
         Intent intent = new Intent(this,GetDataService.class);
         intent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_SIGN_OUT);
         this.startService(intent);
+        finish();
     }
 }

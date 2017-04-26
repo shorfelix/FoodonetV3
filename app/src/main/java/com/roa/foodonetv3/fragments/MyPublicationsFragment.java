@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.FoodonetDBProvider;
@@ -51,7 +52,7 @@ public class MyPublicationsFragment extends Fragment{
         // set recycler view */
         recyclerMyPublications = (RecyclerView) v.findViewById(R.id.recyclerMyPublications);
         recyclerMyPublications.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new PublicationsRecyclerAdapter(getContext());
+        adapter = new PublicationsRecyclerAdapter(getContext(), CommonConstants.PUBLICATION_SORT_TYPE_RECENT);
         recyclerMyPublications.setAdapter(adapter);
 
         // set info screen for when there are no user publication yet */
@@ -73,16 +74,13 @@ public class MyPublicationsFragment extends Fragment{
 
         // update the recycler view from publications from the db */
         PublicationsDBHandler publicationsDBHandler = new PublicationsDBHandler(getContext());
-        ArrayList<Publication> publications = publicationsDBHandler.getPublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_USER_PUBLICATIONS);
-        RegisteredUsersDBHandler registeredUsersDBHandler = new RegisteredUsersDBHandler(getContext());
-        LongSparseArray<Integer> registeredUsers = registeredUsersDBHandler.getAllRegisteredUsersCount();
-        if(publications.size()==0){
-            recyclerMyPublications.setVisibility(View.GONE);
-            layoutInfo.setVisibility(View.VISIBLE);
-        } else{
+        if(publicationsDBHandler.areUserPublicationsAvailable()){
             recyclerMyPublications.setVisibility(View.VISIBLE);
             layoutInfo.setVisibility(View.GONE);
-            adapter.updatePublications(publications, registeredUsers);
+            adapter.updatePublications(FoodonetDBProvider.PublicationsDB.TYPE_GET_USER_PUBLICATIONS);
+        } else{
+            recyclerMyPublications.setVisibility(View.GONE);
+            layoutInfo.setVisibility(View.VISIBLE);
         }
     }
 

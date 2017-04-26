@@ -35,6 +35,7 @@ public class ReceiverConstants {
     public static final int ACTION_DELETE_GROUP_MEMBER = 51;
     public static final int ACTION_POST_FEEDBACK = 60;
     public static final int ACTION_ACTIVE_DEVICE_NEW_USER = 70;
+    public static final int ACTION_ACTIVE_DEVICE_UPDATE_USER_LOCATION = 71;
 
 
     /** Local types */

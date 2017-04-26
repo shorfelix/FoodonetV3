@@ -20,10 +20,14 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.roa.foodonetv3.R;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.CommonMethods;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.serverMethods.ServerMethods;
 import com.roa.foodonetv3.services.GetDataService;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -97,11 +101,33 @@ public class WelcomeUserActivity extends AppCompatActivity implements View.OnCli
         String userName = editUserName.getText().toString();
         if(PhoneNumberUtils.isGlobalPhoneNumber(phone)){
             ServerMethods.addUser(this, phone, userName);
+            registerToPushNotification(this);
             dialog = new ProgressDialog(WelcomeUserActivity.this);
             dialog.show();
         } else{
             Toast.makeText(WelcomeUserActivity.this, R.string.invalid_phone_number, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void registerToPushNotification(Context context){
+        JSONObject activeDeviceRoot = new JSONObject();
+        JSONObject activeDevice = new JSONObject();
+        try {
+            String token = preferences.getString(getString(R.string.key_prefs_notification_token), null);
+            activeDevice.put("dev_uuid",CommonMethods.getDeviceUUID(context));
+            if (token== null) {
+                activeDevice.put("remote_notification_token", JSONObject.NULL);
+            }else {
+                activeDevice.put("remote_notification_token", token);
+            }
+            activeDevice.put("is_ios", false);
+            activeDevice.put("last_location_latitude", preferences.getString(getString(R.string.key_prefs_user_lat), String.valueOf(CommonConstants.LATLNG_ERROR)));
+            activeDevice.put("last_location_longitude", preferences.getString(getString(R.string.key_prefs_user_lng),String.valueOf(CommonConstants.LATLNG_ERROR)));
+            activeDeviceRoot.put("active_device",activeDevice);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        ServerMethods.activeDeviceNewUser(this,activeDeviceRoot.toString());
     }
 
     private class FoodonetReceiver extends BroadcastReceiver{
