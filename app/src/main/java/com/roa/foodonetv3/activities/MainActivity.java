@@ -50,8 +50,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
     private ViewPager viewPager;
-    private SharedPreferences preferenceManager;
-    private Button buttonTest;
     private CircleImageView circleImageView;
     private TextView headerTxt;
 
@@ -66,19 +64,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar.setTitle(R.string.foodonet);
         setSupportActionBar(toolbar);
 
-        preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // TODO: 16/01/2017 remove this after finished testing the push notification user sign in
-        buttonTest = (Button) findViewById(R.id.buttonTest);
-        // disabling the button for now
-//        buttonTest.setVisibility(View.GONE);
-        buttonTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                registerToPushNotification(MainActivity.this);
-            }
-        });
-
         /** set the google api ? */
         GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
@@ -86,12 +71,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .build();
 
 
-        // TODO: 01/01/2017 remove the notification token generator to initializes place
-        /** generate notification token to register the device to get notification*/
-        String token = preferenceManager.getString(getString(R.string.key_prefs_notification_token),null);
-        if (token == null) {
-            generateNotificationToken();
-        }
+//        // TODO: 01/01/2017 remove the notification token generator to initializes place
+//        /** generate notification token to register the device to get notification*/
+//        String token = preferenceManager.getString(getString(R.string.key_prefs_notification_token),null);
+//        if (token == null) {
+//            generateNotificationToken();
+//        }
 
         /** set the drawer */
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -136,6 +121,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(i);
             }
         });
+
+        // trying to update the location returns a 404, disabling for now
+        // TODO: 24/04/2017 temp test
+        // CommonMethods.updateUserLocationToServer(this);
     }
 
     @Override
@@ -224,9 +213,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             switch (position){
                 case 0:
                     return new ActiveFragment();
+//                case 1:
+//                    return new RecentFragment();
                 case 1:
-                    return new RecentFragment();
-                case 2:
                     return new ClosestFragment();
             }
             return null;
@@ -236,9 +225,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             switch (position){
                 case 0:
                     return getString(R.string.view_pager_tab_active);
+//                case 1:
+//                    return getString(R.string.view_pager_tab_recent);
                 case 1:
-                    return getString(R.string.view_pager_tab_recent);
-                case 2:
                     return getString(R.string.view_pager_tab_closest);
             }
 
@@ -247,54 +236,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         @Override
         public int getCount() {
-            return 3;
+            return 2;
         }
-    }
-
-    // TODO: 15/01/2017 THIS IS A TEST
-    /** test - sign to notifications */
-    public void registerToPushNotification(Context context){
-        JSONObject activeDeviceRoot = new JSONObject();
-        JSONObject activeDevice = new JSONObject();
-        try {
-            String token = preferenceManager.getString(getString(R.string.key_prefs_notification_token), null);
-            activeDevice.put("dev_uuid",CommonMethods.getDeviceUUID(context));
-            if (token== null) {
-                activeDevice.put("remote_notification_token", activeDevice.NULL);
-            }else {
-                activeDevice.put("remote_notification_token", token);
-            }
-            activeDevice.put("is_ios", false);
-            activeDevice.put("last_location_latitude", preferenceManager.getString(getString(R.string.key_prefs_user_lat), String.valueOf(CommonConstants.LATLNG_ERROR)));
-            activeDevice.put("last_location_longitude", preferenceManager.getString(getString(R.string.key_prefs_user_lng),String.valueOf(CommonConstants.LATLNG_ERROR)));
-            activeDeviceRoot.put("active_device",activeDevice);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        ServerMethods.activeDeviceNewUser(this,activeDeviceRoot.toString());
-    }
-
-    // TODO: 15/01/2017 TEST
-    public void generateNotificationToken(){
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                super.run();
-                try {
-                    String token = InstanceID.getInstance(MainActivity.this).getToken(getString(R.string.gcm_defaultSenderId),
-                            GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-
-                    SharedPreferences.Editor editor = preferenceManager.edit();
-                    editor.putString(getString(R.string.key_prefs_notification_token), token);
-                    editor.apply();
-
-                    Log.i(TAG, "GCM Registration Token: " + token);
-
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to complete token refresh " + e.getMessage(), e);
-                }
-            }
-        };
-        t.start();
     }
 }

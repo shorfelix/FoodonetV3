@@ -256,7 +256,6 @@ public class GroupsActivity extends AppCompatActivity implements NavigationView.
                             break;
                         case ADMIN_GROUP_TAG:
                             /** pressed on create a new user in a group the user is the admin of */
-                            // TODO: 14/12/2016 currently not working... getting a 440 json response
                             Toast.makeText(this, "add new member", Toast.LENGTH_SHORT).show();
                             Intent fabClickIntent = new Intent(ReceiverConstants.BROADCAST_FOODONET);
                             fabClickIntent.putExtra(ReceiverConstants.ACTION_TYPE,ReceiverConstants.ACTION_FAB_CLICK);

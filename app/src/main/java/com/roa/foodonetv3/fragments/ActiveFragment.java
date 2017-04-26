@@ -22,11 +22,9 @@ import android.widget.Toast;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.activities.MainActivity;
 import com.roa.foodonetv3.adapters.PublicationsRecyclerAdapter;
+import com.roa.foodonetv3.commonMethods.CommonConstants;
 import com.roa.foodonetv3.commonMethods.ReceiverConstants;
 import com.roa.foodonetv3.db.FoodonetDBProvider;
-import com.roa.foodonetv3.model.Publication;
-
-import java.util.ArrayList;
 
 public class ActiveFragment extends Fragment {
     private static final String TAG = "ActiveFragment";
@@ -55,7 +53,7 @@ public class ActiveFragment extends Fragment {
         /** set the recycler view and adapter for all publications */
         RecyclerView activePubRecycler = (RecyclerView) v.findViewById(R.id.activePubRecycler);
         activePubRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new PublicationsRecyclerAdapter(getContext());
+        adapter = new PublicationsRecyclerAdapter(getContext(), CommonConstants.PUBLICATION_SORT_TYPE_RECENT);
         activePubRecycler.setAdapter(adapter);
         return v;
     }
