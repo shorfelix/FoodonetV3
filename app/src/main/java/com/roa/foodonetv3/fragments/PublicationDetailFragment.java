@@ -279,10 +279,13 @@ public class PublicationDetailFragment extends Fragment implements View.OnClickL
         }
         textPublicationPrice.setText(priceS);
         textPublicationDetails.setText(publication.getSubtitle());
-        File mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(getContext(),publication.getId(),publication.getVersion()));
-        if(mCurrentPhotoFile.isFile()){
-            // there's an image path, try to load from file */
-            Glide.with(this).load(mCurrentPhotoFile).centerCrop().into(imagePicturePublication);
+        String mCurrentPhotoFileString = CommonMethods.getPhotoPathByID(getContext(),publication.getId(),publication.getVersion());
+        if(mCurrentPhotoFileString != null){
+            File mCurrentPhotoFile = new File(mCurrentPhotoFileString);
+            if(mCurrentPhotoFile.isFile()){
+                // there's an image path, try to load from file */
+                Glide.with(this).load(mCurrentPhotoFile).centerCrop().into(imagePicturePublication);
+        }
         } else{
             // load default image */
             Glide.with(this).load(R.drawable.foodonet_image).centerCrop().into(imagePicturePublication);

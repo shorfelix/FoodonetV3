@@ -7,7 +7,7 @@ public class CommonConstants {
     public static final short VALUE_FALSE = 0;
     public static final short VALUE_TRUE = 1;
 
-    public static final long NON_FOODONET_MEMBER_ID = (long)0;
+    public static final long NON_FOODONET_MEMBER_ID = 0;
 
     public static final double LATLNG_ERROR = -9999;
 
@@ -30,4 +30,18 @@ public class CommonConstants {
     public static final float ZOOM_IN = 13.6f;
 
     public static final int DEFAULT_NOTIFICATION_RADIUS_ITEM = 2;
+    public static final double CLEAR_NOTIFICATIONS_TIME_SECONDS = 604800; // 1 week 604800
+    public static final long NOTIFICATION_ID_CLEAR = -1;
+
+    // as named by server push
+    public static final String NOTIF_TYPE_NEW_PUBLICATION = "new_publication";
+    public static final String NOTIF_TYPE_DELETED_PUBLICATION = "deleted_publication";
+    public static final String NOTIF_TYPE_REGISTRATION_FOR_PUBLICATION = "registration_for_publication";
+    public static final String NOTIF_TYPE_PUBLICATION_REPORT = "publication_report";
+    public static final String NOTIF_TYPE_GROUP_MEMBERS = "group_members";
+    public static final String NOTIF_ACTION_DISMISS = "notif_action_dismiss";
+    public static final String NOTIF_ACTION_OPEN = "notif_action_open";
+
+    public static final int PUBLICATION_SORT_TYPE_RECENT = 1;
+    public static final int PUBLICATION_SORT_TYPE_CLOSEST = 2;
 }

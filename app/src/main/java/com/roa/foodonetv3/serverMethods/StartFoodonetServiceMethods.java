@@ -70,6 +70,7 @@ public class StartFoodonetServiceMethods {
                 builder.append(context.getResources().getString(R.string.foodonet_publications));
                 builder.append(String.format(Locale.US,"/%1$s",args[0]));
                 builder.append(context.getResources().getString(R.string.foodonet_publication_reports));
+                builder.append(context.getResources().getString(R.string._json));
                 break;
             case ReceiverConstants.ACTION_ADD_USER:
                 builder.append(context.getResources().getString(R.string.foodonet_users));
@@ -125,6 +126,10 @@ public class StartFoodonetServiceMethods {
                 break;
             case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
                 builder.append(context.getResources().getString(R.string.foodonet_active_devices));
+                builder.append(context.getResources().getString(R.string._json));
+                break;
+            case ReceiverConstants.ACTION_ACTIVE_DEVICE_UPDATE_USER_LOCATION:
+                builder.append(context.getResources().getString(R.string.foodonet_active_devices_put));
                 break;
         }
         return builder.toString();
@@ -173,6 +178,8 @@ public class StartFoodonetServiceMethods {
                 return CommonConstants.HTTP_DELETE;
             case ReceiverConstants.ACTION_ACTIVE_DEVICE_NEW_USER:
                 return CommonConstants.HTTP_POST;
+            case ReceiverConstants.ACTION_ACTIVE_DEVICE_UPDATE_USER_LOCATION:
+                return CommonConstants.HTTP_PUT;
         }
         return -1;
     }

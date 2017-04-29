@@ -16,6 +16,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
 import com.google.android.gms.maps.model.LatLng;
 import com.roa.foodonetv3.R;
 import com.roa.foodonetv3.commonMethods.CommonConstants;
@@ -25,6 +28,8 @@ import com.roa.foodonetv3.model.User;
 import java.util.UUID;
 
 public class SplashScreenActivity extends AppCompatActivity implements LocationListener {
+    private static final String TAG = "SplashScreenActivity";
+
     private LocationManager locationManager;
     private static final int PERMISSION_REQUEST_NEW_LOCATION = 1;
     private static final int PERMISSION_REQUEST_UNREGISTER = 2;
@@ -55,6 +60,9 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
                 finish();
             }
         }, 1000);
+        if (PreferenceManager.getDefaultSharedPreferences(this).getString(getString(R.string.key_prefs_notification_token),null) == null){
+            generateNotificationToken();
+        }
     }
 
     private void init(){
@@ -67,14 +75,46 @@ public class SplashScreenActivity extends AppCompatActivity implements LocationL
         Log.d("Got new device UUID",deviceUUID);
     }
 
+    public void generateNotificationToken(){
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                try {
+                    String token = InstanceID.getInstance(SplashScreenActivity.this).getToken(getString(R.string.gcm_defaultSenderId),
+                            GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
+
+                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(SplashScreenActivity.this).edit();
+                    editor.putString(getString(R.string.key_prefs_notification_token), token);
+                    editor.apply();
+
+                    Log.i(TAG, "GCM Registration Token: " + token);
+
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to complete token refresh " + e.getMessage(), e);
+                }
+            }
+        };
+        t.start();
+    }
+
     public void startGps(){
         /** get a network based position (fastest, and accuracy is not an issue) so when the app starts it will have a reference to distances */
         // TODO: 21/12/2016 change the logic to be run from a different class, add common methods - getUserLocation method
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        String providerName = LocationManager.NETWORK_PROVIDER;
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(providerName, 1000, 100, SplashScreenActivity.this);
+        String locationType = null;
+        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            locationType = LocationManager.NETWORK_PROVIDER;
+        } else if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            locationType = LocationManager.GPS_PROVIDER;
+        } else{
+            Toast.makeText(this, "no location provider", Toast.LENGTH_SHORT).show();
+        }
+        if(locationType != null){
+            int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+            if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                locationManager.requestLocationUpdates(locationType, 1000, 100, SplashScreenActivity.this);
+            }
         }
     }
 

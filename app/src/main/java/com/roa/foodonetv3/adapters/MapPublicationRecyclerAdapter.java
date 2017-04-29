@@ -79,11 +79,14 @@ public class MapPublicationRecyclerAdapter extends RecyclerView.Adapter<MapPubli
         }
 
         void bindPublication(Publication publication){
-            File mCurrentPhotoFile = new File(CommonMethods.getPhotoPathByID(context,publication.getId(),publication.getVersion()));
-            if(mCurrentPhotoFile.isFile()){
-                /** there's an image path, try to load from file */
-                Log.d(TAG,"layout size: "+mapRecyclerImageView.getWidth()+","+mapRecyclerImageView.getHeight());
-                Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(mapRecyclerImageView);
+            String mCurrentPhotoFileString = CommonMethods.getPhotoPathByID(context,publication.getId(),publication.getVersion());
+            if(mCurrentPhotoFileString!= null){
+                File mCurrentPhotoFile = new File(mCurrentPhotoFileString);
+                if(mCurrentPhotoFile.isFile()){
+                    /** there's an image path, try to load from file */
+                    Log.d(TAG,"layout size: "+mapRecyclerImageView.getWidth()+","+mapRecyclerImageView.getHeight());
+                    Glide.with(context).load(mCurrentPhotoFile).centerCrop().into(mapRecyclerImageView);
+            }
             } else{
                 /** load default image */
                 Glide.with(context).load(R.drawable.foodonet_image).centerCrop().into(mapRecyclerImageView);

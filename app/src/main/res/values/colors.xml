@@ -9,6 +9,7 @@
     <color name="fooGrey">#707070</color>
     <color name="fooLightGrey">#B0B0B0</color>
     <color name="fooDivider">#FF909090</color>
+    <color name="fooRed">#FF3030</color>
 
     <color name="black_overlay">#66000000</color>
 </resources>
